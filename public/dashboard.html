@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Quest Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1 class="logo">Coverage Quest</h1>
+    <div class="header-profile-box">
+        <div class="profile-info">
+            <p id="userName">Hello,</p>
+            <a href="profile.html" class="profile-trigger" title="Go to Profile">
+                <img id="headerAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff" alt="Profile">
+            </a>
+            <button id="logoutBtn" class="mini-logout">Logout</button>
+        </div>
+    </div>
+</header>
+
+    <main class="dashboard-content">
+    <div class="dashboard-grid">
+        <div class="dash-card clickable-card" onclick="window.location.href='risk finder.html'">
+            <h3>Risk Finder</h3>
+        </div>
+        <div class="dash-card clickable-card" onclick="window.location.href='risk defender.html'">
+            <h3>Risk Defender</h3>
+        </div>
+        <div class="dash-card clickable-card" onclick="window.location.href='reward.html'">
+            <h3>Rewards</h3>
+        </div>
+        </div>
+    </main>
+
+      <div class="dashboard-grid">
+        <div class="floating-spin-btn" id="openSpinBtn">
+            <div class="mini-scale-container">
+                <div class="wheel-pointer"></div> 
+                <div class="wheel">
+                    <div class="wheel-label" style="transform: rotate(30deg);"></div>
+                    <div class="wheel-label" style="transform: rotate(90deg);"></div>
+                    <div class="wheel-label" style="transform: rotate(150deg);"></div>
+                    <div class="wheel-label" style="transform: rotate(210deg);"></div>
+                    <div class="wheel-label" style="transform: rotate(270deg);"></div>
+                    <div class="wheel-label" style="transform: rotate(330deg);"></div>
+                </div>
+            </div>
+        </div>
+        <div id="spinModal" class="modal-overlay">
+      <div class="login-card">
+          <span class="close-modal" id="closeSpinBtn">&times;</span>
+          <h2>Daily Spin</h2>
+          <p>Win a reward for your next level!</p>
+          <div class="wheel-container">
+              <div class="wheel-pointer"></div>
+              <div id="wheel" class="wheel">
+                  <div class="wheel-label" style="transform: rotate(30deg);">10 pts</div>
+                  <div class="wheel-label" style="transform: rotate(90deg);">XP Boost</div>
+                  <div class="wheel-label" style="transform: rotate(150deg);">100 pts</div>
+                  <div class="wheel-label" style="transform: rotate(210deg);">Try Again</div>
+                  <div class="wheel-label" style="transform: rotate(270deg);">50 pts</div>
+                  <div class="wheel-label" style="transform: rotate(330deg);">Free Life</div>
+              </div>
+          </div>
+
+          <button class="submit-btn" id="spinActionBtn">SPIN NOW</button>
+      </div>
+    </div>
+    </div>
+
+  <script type="module">
+
+    fetch("/auth/user")
+    .then(res => res.json())
+    .then(data => {
+        if (!data.user) {
+            window.location.href = "/index.html";
+        } else {
+            const user = data.user;
+            const userName = user.username || user.email;
+            document.getElementById("userName").textContent = "Hello, " + userName;
+            
+            // --- 核心修改：检查用户是否有自定义头像 ---
+            const avatarImg = document.getElementById("headerAvatar");
+            if (user.profile_pic) {
+                // 如果数据库有路径，使用存储的图片（确保路径正确，如 /uploads/xxx.jpg）
+                avatarImg.src = user.profile_pic;
+            } else {
+                // 如果没有，则使用生成的 UI Avatar
+                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=4a90e2&color=fff`;
+            }
+        }
+    });
+    
+    import SpinWheel from './js/Spin.js';
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.onclick = () => window.location.href = "/auth/logout";
+    }
+
+    const dailySpin = new SpinWheel({
+        modalId: 'spinModal',
+        openBtnId: 'openSpinBtn',
+        closeBtnId: 'closeSpinBtn',
+        wheelId: 'wheel',
+        spinBtnId: 'spinActionBtn',
+        rewardsListId: 'rewardsList',
+        rewards: ["Try Again", "100 pts", "XP Boost", "10 pts", "Free Life", "50 pts"]
+    });
+</script>
+</body>
+</html>

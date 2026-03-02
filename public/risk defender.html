@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Defender - CoverageQuest</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+    <body class="no-scroll-page"> 
+    <header class="dashboard-header">
+        <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
+    </header>
+
+    <main class="game-screen">
+        <div class="controls">
+            <span style="font-weight: bold;">Buy Insurance Shield:</span>
+            <button id="btn-home" class="btn-home active" onclick="setTowerType('home')">🏠 Property Insurance</button>
+            <button id="btn-car" class="btn-car" onclick="setTowerType('car')">🚗 Car insurance</button>
+            <button id="btn-medical" class="btn-medical" onclick="setTowerType('medical')">🏥 Medical insurance</button>
+        </div>
+
+        <canvas id="gameCanvas" width="900" height="500"></canvas>
+
+        <div class="game-info">
+            <p>Click on "Defense Tower" above, then place your defense tower in that area to protect your assets!</p>
+        </div>
+    </main>
+
+    <script src="js/Risk_Defender.js"></script>
+</body>
+</html>

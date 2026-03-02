@@ -1,0 +1,941 @@
+/* --- VARIABLES & BASE --- */
+:root {
+    --primary-blue: #4a90e2;
+    --primary-hover: #357abd;
+    --bg-light: #f4f4f9;
+    --card-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+}
+
+body {
+    background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%); /* 更有质感的微渐变背景 */
+    color: #2d3436;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body.no-scroll-page {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column; /* Stack header on top, game below */
+}
+
+.logo { color: var(--primary-blue); }
+.submit-btn { background-color: var(--primary-blue); }
+
+/* --- NAVIGATION --- */
+.navbar { 
+    background-color: #fff; 
+    padding: 10px 40px; 
+    display: flex; 
+    justify-content: flex-start; /* Title stays left */
+    align-items: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    position: fixed; 
+    top: 0; left: 0; width: 100%;
+    z-index: 1000;
+}
+
+.logo { 
+    font-size: 26px; 
+    font-weight: 800; 
+    text-decoration: none; 
+    letter-spacing: -1px;
+}
+
+/* --- HERO SECTION --- */
+.hero { 
+    height: 85vh; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
+    padding: 20px; 
+    background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+}
+
+.hero h1 { 
+    font-size: clamp(2.5rem, 6vw, 4rem); 
+    margin-bottom: 20px; 
+    color: #2c3e50; 
+    font-weight: 800;
+}
+
+.hero p { 
+    font-size: 1.2rem; 
+    color: #5a6c7d; 
+    max-width: 700px; 
+    margin-bottom: 40px; 
+}
+
+/* --- MODALS & CARDS --- */
+.modal-overlay {
+    display: none; 
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.8); 
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px); 
+}
+
+.login-card {
+    background: #fff;
+    padding: 50px; 
+    border-radius: 32px; 
+    width: 85%;
+    max-width: 650px;
+    position: middle;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#verifyModal .login-card, 
+#resetModal .login-card {
+    max-width: 550px;
+    text-align: center;
+}
+
+@keyframes modalPop {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.close-modal {
+    position: absolute;
+    top: 25px; right: 25px;
+    font-size: 32px;
+    cursor: pointer;
+    color: #cbd5e1;
+    line-height: 1;
+}
+
+.close-modal:hover { color: #64748b; }
+
+/* --- FORMS, TABS & INPUTS --- */
+.tab-switch { 
+    display: flex; 
+    margin-bottom: 30px; 
+    background: #f1f5f9; 
+    border-radius: 12px; 
+    padding: 6px;
+}
+
+.tab { 
+    flex: 1; padding: 12px; border: none; cursor: pointer; 
+    font-weight: 700; background: transparent; border-radius: 8px;
+    color: #64748b; transition: all 0.2s;
+}
+
+.tab.active { 
+    background: #fff; color: var(--primary-blue); 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+form { 
+    display: none; 
+    flex-direction: column; 
+    gap: 20px; 
+}
+
+form.active { display: flex; }
+
+input { 
+    padding: 10px 12px;     
+    border: 2px solid #e2e8f0; 
+    border-radius: 10px; 
+    font-size: 16px; 
+    width: 100%; 
+    transition: border-color 0.3s;
+    margin-bottom: 12px;     
+}
+
+.submit-btn { 
+    color: white; 
+    padding: 18px 24px;   
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    font-size: 1.1rem; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    width: 100%;          
+    display: block;
+}
+
+.hero .login-btn { 
+    background-color: var(--primary-blue); 
+    color: white; 
+    padding: 10px 24px;     
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    font-size: 1rem;       
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    width: auto;           
+}
+
+.login-btn:hover, .submit-btn:hover { 
+    background-color: var(--primary-hover); 
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+}
+
+.login-card input {
+    color: #333 !important;
+    background-color: #fff !important; 
+}
+
+/* --- PASSWORD UI --- */
+
+
+.requirements-box {
+    text-align: left;
+    background: #f8fafc;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 5px 0 20px 0;
+    font-size: 0.8rem;
+    border: 1px solid #e2e8f0;
+}
+.req-item {
+    color: #ef4444; 
+    margin: 3px 0;
+    transition: all 0.2s ease;
+}
+.req-item.valid {
+    color: #10b981; 
+    font-weight: 600;
+}
+
+/* --- DASHBOARD LAYOUT --- */
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-light);
+    width: 100%;
+}
+
+.dash-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow);
+}
+
+.dashboard-header {
+    height: 80px;           /* Keep your fixed height */
+    flex-shrink: 0;         /* CRITICAL: Prevents the header from squashing */
+    width: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    padding: 0 40px; 
+    background-color: #fff; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    position: relative;     /* Changed from 'fixed' to 'relative' */
+    z-index: 1000;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#userName {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.mini-logout {
+    padding: 8px 16px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+/* --- SPIN WHEEL --- */
+.floating-spin-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 80px;  /* Or your desired small size */
+    height: 80px;
+    cursor: pointer;
+    overflow: hidden; /* Keeps the wheel inside the button circle */
+    border-radius: 50%;
+    border: 4px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    z-index: 1000;
+    background-color: #fff;
+    align-items: center;
+    justify-content: center;
+}
+
+/* This is the magic part */
+.mini-scale-container {
+    transform: scale(1.0); 
+    transform-origin: center center;
+    flex-shrink: 0; /* Prevents the wheel from collapsing */
+    width: 300px;  /* Must match original wheel width */
+    height: 300px; /* Must match original wheel height */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-scale-container .wheel-label {
+    visibility: hidden; /* cleaner than text-indent */
+}
+
+.wheel-container { 
+    position: relative; 
+    width: 300px; 
+    height: 300px; 
+    margin: 20px auto; 
+}
+
+.wheel { 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 50%; 
+    border: 8px solid #333; 
+    position: relative; 
+    overflow: hidden; 
+    transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); 
+    background: conic-gradient(
+        #d3e24a 0deg 60deg, 
+        #ffcc00 60deg 120deg, 
+        #d3e24a 120deg 180deg, 
+        #ffcc00 180deg 240deg, 
+        #d3e24a 240deg 300deg, 
+        #ffcc00 300deg 360deg
+    ); 
+}
+
+.wheel-label { 
+    position: absolute; 
+    width: 50%; 
+    height: 2px; 
+    top: 50%; 
+    left: 50%; 
+    transform-origin: left center; 
+    text-align: right; 
+    padding-right: 20px; 
+    font-weight: bold; 
+    color: #333; 
+    pointer-events: none; 
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -15px; /* Adjust based on your design */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: #333; /* Or your pointer color */
+    clip-path: polygon(50% 100%, 0 0, 100% 0); /* Creates a triangle shape */
+    z-index: 10; /* Important: Must be higher than .wheel */
+}
+
+/* Specific fix for the mini version */
+.mini-scale-container .wheel-pointer {
+    z-index: 100; /* Force it to the front in the mini view */
+}
+
+/* ---  PROFILE LAYOUT --- */
+
+.dashboard-content .login-card {
+    max-width: 1100px; 
+    padding: 50px 60px;
+    border-radius: 30px;
+}
+
+.settings-form-wrapper form.active {
+    display: flex !important;
+    flex-direction: row !important; /* Forces side-by-side */
+    flex-wrap: wrap;
+    gap: 50px;
+}
+
+.profile-section-left, .profile-section-right {
+    flex: 1;
+    min-width: 350px;
+}
+
+@media (min-width: 900px) {
+    .profile-section-left {
+        border-right: 1px solid #eef2f6;
+        padding-right: 50px;
+    }
+}
+
+.form-footer {
+    width: 100%;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #f1f5f9;
+}
+/* --- PROFILE TRIGGER & AVATAR --- */
+.profile-trigger img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-blue);
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 20px auto;
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+}
+
+.camera-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--primary-blue);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    border: 3px solid white;
+}
+
+/* --- HELPERS & GROUPS --- */
+
+.user-email {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.logout-full-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 14px;
+    background: #fff5f5;
+    border: 2px solid #feb2b2;
+    color: #ef4444;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.hidden { display: none !important; }
+
+.google-btn {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    width: 100%; 
+    padding: 14px; 
+    background: white; 
+    border: 1px solid #ddd;
+    border-radius: 8px; 
+    cursor: pointer; 
+    text-decoration: none; 
+    color: #333;
+    font-weight: 600; 
+    margin-top: 5px; 
+}
+
+/* Ensure the parent container can hold absolute children */
+.input-group, .password-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+/* Position the eye on the far right of the input */
+.toggle-eye {
+    position: absolute;
+    right: 12px;
+    top: 38px; /* Adjust this based on your label height */
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 5;
+    color: #7f8c8d;
+}
+
+/* Ensure text doesn't go under the eye */
+.input-group input, .password-container input {
+    padding-right: 40px !important;
+}
+
+.dash-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dash-card:hover {
+    transform: translateY(-5px); /* Lifts the card up slightly */
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2); /* Adds a shadow */
+    background-color: #f0f7ff; /* Optional: slight color change */
+}
+
+.dash-card:active {
+    transform: translateY(0); /* "Pushes" the button down when clicked */
+}
+
+/* This keeps the markers stuck to the image, not the page */
+.image-wrapper {
+    position: relative; 
+    display: inline-block;
+    line-height: 0; /* Prevents tiny gaps at the bottom of the image */
+}
+
+/* Updated marker to be a circle */
+.risk-marker {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 4px solid #22c55e; /* Green for success */
+    background: rgba(34, 197, 94, 0.2);
+    border-radius: 50%; /* Makes it a circle */
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    animation: pulse 1s infinite;
+}
+
+
+/* --- GAME LAYOUT --- */
+.game-screen {
+    flex: 1;                /* 占据剩余的垂直高度 */
+    display: flex;
+    flex-direction: column; /* 核心：将横向排列改为纵向堆叠 */
+    align-items: center;    /* 所有子元素水平居中 */
+    justify-content: flex-start; /* 从顶部开始排列 */
+    padding: 15px;
+    background-color: var(--bg-light);
+    overflow: hidden;       /* 确保无滚动条 */
+    gap: 10px;              /* 在上中下三个元素之间增加间距 */
+}
+
+.viewport {
+    width: 100%;
+    height: 100%; /* This makes it large */
+    background: #1e293b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+/* --- SIDEBAR REFINEMENT --- */
+
+.sidebar .dash-card {
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 40px !important;
+}
+
+.dash-card {
+    background: #fff; 
+    padding: 30px;   
+    border: 1px solid #e2e8f0;
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    display: block;
+}
+
+.level-badge {
+    background: var(--primary-blue);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+.pulse {
+    animation: pulse 0.5s infinite;
+    color: #ff0000 !important;
+    text-shadow: 0 0 10px rgba(255,0,0,0.5);
+}
+@keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Container that provides the layout */
+.viewport-wrapper {
+    display: flex;
+    justify-content: center; 
+    align-items: center;     
+    height: 80vh;            /* Increased slightly for better visual impact */
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;           /* Adds breathing room */
+    gap: 30px;               /* Space between image and scoreboard */
+    width: 100%;
+}
+
+.main-layout {
+    display: flex;
+    align-items: flex-start; 
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;             /* Use full container width */
+    max-width: 1200px;       /* Prevents it from becoming giant on huge monitors */
+    margin: 0 auto;
+}
+
+#wrapper {
+    flex: 0 0 55%; 
+    max-height: 80vh;       /* Limits the height so it doesn't push the header away */
+    aspect-ratio: 4/3;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#risk-image {
+    width: 100%;             /* Fills the 70% width of #wrapper */
+    height: auto;            /* Keeps image proportional */
+    display: block;
+}
+
+.sidebar {
+    flex: 0 0 30%;           /* Gives the sidebar a fixed 30% width */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.feedback-marker {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+}
+
+.marker-correct {
+    border: 5px solid #22c55e;
+    border-radius: 50%;
+    background: rgba(34, 197, 94, 0.3);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.marker-wrong::before, .marker-wrong::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 40px; height: 6px;
+    background-color: #ef4444;
+    border-radius: 3px;
+}
+.marker-wrong::before { transform: translate(-50%, -50%) rotate(45deg); }
+.marker-wrong::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.inventory-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+    gap: 15px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.placeholder-text {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.bottom-section {
+    width: 100%;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    border-radius: 16px; 
+}
+
+.dashboard-content {
+    max-width: 1100px !important; 
+    margin: 100px auto 40px !important; 
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 30px !important; 
+}
+
+.top-full-card.login-card {
+    max-width: 100% !important; 
+    width: 100% !important;
+    margin: 0 !important;
+    text-align: center !important;
+    padding: 40px !important;
+    transition: none !important;
+}
+
+.middle-row-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* 核心：平分两列 */
+    gap: 20px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+.featured-box.login-card, 
+.inventory-box.login-card {
+    max-width: 100% !important; 
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 30px !important;
+    min-height: 350px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#inventory-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-top: 15px !important;
+}
+
+.inventory-item-inner {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05) !important;
+    transition: transform 0.2s ease;
+}
+
+.inventory-item-inner:hover {
+    transform: translateY(-5px); 
+}
+
+.inventory-item-inner h4 {
+    color: #4a90e2;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.inventory-item-inner .submit-btn {
+    border-radius: 12px !important;
+    background: #4a90e2 !important;
+    font-size: 0.9rem !important;
+    padding: 10px 0 !important;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+
+.dashboard-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 25px !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .middle-row-container {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.dashboard-grid .dash-card.clickable-card {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    
+    min-height: 400px !important;    
+    padding: 80px 60px !important;   
+    border-radius: 55px !important;  
+    
+    border: none !important;       
+    color: white !important;        
+    box-shadow: 0 20px 45px rgba(0,0,0,0.2) !important; /* Slightly deeper shadow */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: pointer !important;
+    overflow: hidden !important;
+}
+
+.dash-card.clickable-card:hover {  
+    transform: translateY(-20px) scale(1.04) !important; 
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3) !important;
+}
+
+.dash-card.clickable-card h3 {
+    font-size: 1.8rem !important;
+    margin-bottom: 8px !important;
+    font-weight: 500 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dash-card.clickable-card p, 
+.dash-card.clickable-card li {
+    font-size: 1.3rem !important;
+    opacity: 0.9 !important;
+    list-style: none !important;
+}
+
+.dashboard-content .dash-card.clickable-card {
+    border-radius: 40px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Level 1  */
+.dashboard-grid .dash-card.clickable-card:nth-child(1) {
+    background: url('../risk image/1.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+/* Level 2 */
+.dashboard-grid .dash-card.clickable-card:nth-child(2) {
+    background: url('../risk image/2.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+/* Rewards */
+.dashboard-grid .dash-card.clickable-card:nth-child(3) {
+    background: url('../risk image/3.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+/* Container styling */
+.inline-edit-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* This turns the textbox into 'plain text' */
+.ghost-input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 5px 0 !important;
+    font-size: 1.1rem !important;
+    color: #2d3436 !important;
+    cursor: pointer;
+    width: 100%;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+/* When you click (focus) it looks like a field again */
+.ghost-input:focus {
+    border-bottom: 2px solid var(--primary-blue) !important;
+    background: #f8fafc !important;
+    padding: 5px 10px !important;
+}
+
+.controls {
+    background: #2c3e50; /* 论文提到的专业蓝色调 */
+    padding: 15px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    flex-shrink: 0; 
+    margin-bottom: 5px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.controls span { color: #fff; font-size: 0.9rem; }
+
+.controls button {
+    padding: 10px 20px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-home { background-color: #e67e22; }
+.btn-car { background-color: #2980b9; }
+.btn-medical { background-color: #27ae60; }
+
+button.active {
+    outline: 3px solid #f1c40f;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+    transform: scale(1.05);
+}
+
+#gameCanvas {
+    background: radial-gradient(circle, #34495e 0%, #2c3e50 100%);
+    border: 5px solid #1a252f;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    margin-top: 10px;
+}
+
+.controls button:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+.game-info {
+    margin-top: 15px;
+    color: #64748b;
+    font-size: 0.85rem;
+}

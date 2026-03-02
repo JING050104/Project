@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Finder - CoverageQuest</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+    <body class="no-scroll-page"> 
+    <header class="dashboard-header">
+        <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
+    </header>
+
+    <main class="game-screen">
+        <div class="main-layout">
+            <div id="wrapper">
+                <img id="risk-image" alt="Safety Scene">
+            </div>
+
+            <aside class="sidebar">
+                <div class="dash-card">
+                    <h3 style="color: #64748b;">Total Points</h3>
+                    <span class="stat-value" id="score-count">0</span>
+                </div>
+                <div class="dash-card">
+                    <h3 style="color: #64748b;">Chances</h3>
+                    <span class="stat-value" id="risk-count">3</span>
+                    <p id="message">Locate the hazard...</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <div id="game-over-modal" class="modal-overlay">
+    <div class="login-card">
+        <h1 class="logo">Game Over</h1>
+        <p class="user-email">All chances used!</p>
+        
+        <div class="dash-card" style="box-shadow: none; border: none;">
+            <span class="level-badge">Final Score</span>
+            <div class="stat-value pulse" id="final-score">0</div>
+        </div>
+
+        <button onclick="window.location.href='dashboard.html'" class="submit-btn">
+            Back to Home
+        </button>
+    </div>
+    </div>
+
+    <script src="js/Risk_Finder.js"></script>
+</body>
+</html>
