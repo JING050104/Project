@@ -6,6 +6,8 @@ let currentIndex = 0;
 let chances = 3;
 let totalScore = 0;
 let timeLeft = 60; // 秒数
+let isPaused = false;
+let countdown;
 
 // 2. DOM ELEMENTS
 const imgElement = document.getElementById('risk-image');
@@ -20,23 +22,48 @@ const finalScoreDisplay = document.getElementById('final-score');
 
 // 3. CONFIGURATION
 const timerDisplay = document.getElementById("timer");
-
 const timerBox = document.getElementById("timer-box");
+const timeFill = document.getElementById("time-fill");
+const pauseBtn = document.getElementById("pause-btn");
 
-const countdown = setInterval(() => {
-    timeLeft--;
-    timerDisplay.textContent = timeLeft;
+function startTimer() {
+    countdown = setInterval(() => {
 
-    if (timeLeft <= 10) {
-        timerBox.classList.add("timer-warning");
+        if (!isPaused) {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+
+            timeFill.style.width = (timeLeft / 60) * 100 + "%";
+
+            if (timeLeft <= 10) {
+                timerBox.classList.add("timer-warning");
+                timeFill.style.background = "#ff2e2e";
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                endGameByTime();
+            }
+        }
+
+    }, 1000);
+}
+
+startTimer();
+
+pauseBtn.addEventListener("click", () => {
+
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        pauseBtn.textContent = "▶";
+        document.getElementById("wrapper").style.pointerEvents = "none";
+    } else {
+        pauseBtn.textContent = "⏸";
+        document.getElementById("wrapper").style.pointerEvents = "auto";
     }
 
-    if (timeLeft <= 0) {
-        clearInterval(countdown);
-        endGameByTime();
-    }
-
-}, 1000);
+});
 
 function endGameByTime() {
     document.getElementById("final-score").textContent =
@@ -44,6 +71,11 @@ function endGameByTime() {
 
     document.getElementById("game-over-modal").style.display = "flex";
 }
+
+document.body.classList.add("flash-red");
+setTimeout(() => {
+    document.body.classList.remove("flash-red");
+}, 200);
 
 const BASE_PATH = '/image/valid'; 
 

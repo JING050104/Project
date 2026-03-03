@@ -9,13 +9,19 @@
     <body class="no-scroll-page"> 
     <header class="dashboard-header">
         <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
+        <div class="header-controls">
+        <div class="timer-box" id="timer-box">
+                ⏳ Time: <span id="timer">60</span>s
+                <div class="time-bar">
+                    <div class="time-fill" id="time-fill"></div>
+                </div>
+                </div>
+                <button id="pause-btn" class="pause-btn">⏸</button>
+            
     </header>
 
     <main class="game-screen">
         <div class="main-layout">
-            <div class="timer-box" id="timer-box">
-                ⏳ Time: <span id="timer">60</span>s
-            </div>
             <div id="wrapper">
                 <img id="risk-image" alt="Safety Scene">
             </div>
@@ -29,7 +35,6 @@
                     <span class="stat-value" id="risk-count">3</span>
                     <p id="message">Locate the hazard...</p>
                 </div>
-                
             </aside>
         </div>
     </main>
