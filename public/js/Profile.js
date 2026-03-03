@@ -180,16 +180,14 @@ function handleLogout() {
 }
 
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Stops the page from refreshing
+    e.preventDefault(); 
 
-    // 1. Grab the current values from your HTML IDs
     const updatedData = {
         username: document.getElementById('editUsername').value,
         email: document.getElementById('editEmail').value
     };
 
     try {
-        // 2. Send the data to your server (Replace /api/update-profile with your actual route)
         const response = await fetch('/api/update-profile', {
             method: 'POST',
             headers: {
@@ -202,7 +200,6 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
 
         if (response.ok) {
             alert('Profile updated successfully!');
-            // Re-lock the inputs after saving
             document.getElementById('editUsername').readOnly = true;
             document.getElementById('editEmail').readOnly = true;
         } else {
@@ -213,7 +210,6 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
     }
 });
 
-// 1. When clicking the Pencil
 function enableEdit(inputId) {
     const input = document.getElementById(inputId);
     const pencil = document.getElementById('pencil-' + inputId);
@@ -223,12 +219,10 @@ function enableEdit(inputId) {
     input.classList.add('active-field');
     input.focus();
 
-    // Swap icons
     pencil.style.display = 'none';
     check.style.display = 'block';
 }
 
-// 2. When clicking the Checkmark
 async function confirmEdit(inputId) {
     try {
         const response = await fetch('/auth/update-profile', {
@@ -237,21 +231,18 @@ async function confirmEdit(inputId) {
             body: JSON.stringify({ [fieldName]: newValue })
         });
 
-        // 1. 检查响应状态
         if (response.status === 401) {
             alert("Login session expired! Redirecting to login...");
             window.location.href = "/index.html";
             return;
         }
 
-        // 2. 检查是否为 JSON 格式
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
             throw new TypeError("Oops, we didn't get JSON from the server!");
         }
 
         const result = await response.json();
-        // 处理成功逻辑...
         
     } catch (err) {
         console.error("SQA Error Log:", err);

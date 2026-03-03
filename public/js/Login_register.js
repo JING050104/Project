@@ -1,11 +1,9 @@
-// 1. 全局状态管理
 let tempEmail = ""; 
 let resetEmailStorage = "";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 
-// ---------- 2. Helper: UI 反馈消息 ----------
 function showMessage(formType, text, isError = true) {
     const existing = document.querySelector(`.${formType}-message`);
     if (existing) existing.remove();
@@ -22,7 +20,7 @@ function showMessage(formType, text, isError = true) {
     form.parentNode.insertBefore(msg, form.nextSibling);
 }
 
-// ---------- 3. 登录逻辑 (Login) ----------
+// ---------- Login ----------
 loginForm.addEventListener("submit", async e => {
     e.preventDefault();
     const btn = loginForm.querySelector('button[type="submit"]');
@@ -53,7 +51,6 @@ loginForm.addEventListener("submit", async e => {
     }
 });
 
-// ---------- 4. 注册第一步：发送验证码 ----------
 registerForm.addEventListener("submit", async e => {
     e.preventDefault();
     const btn = registerForm.querySelector('button[type="submit"]');
@@ -63,7 +60,6 @@ registerForm.addEventListener("submit", async e => {
     btn.disabled = true;
 
     try {
-        // 核心路径修正
         const res = await fetch("/auth/send-reg-code", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -86,7 +82,6 @@ registerForm.addEventListener("submit", async e => {
     }
 });
 
-// ---------- 5. 注册第二步：完成账户激活 ----------
 document.getElementById("finishRegisterBtn").onclick = async () => {
     const code = document.getElementById("regVerifyCode").value;
     const password = document.getElementById("regPassword").value;
@@ -103,7 +98,7 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
                 email: tempEmail, 
                 code, 
                 password,
-                username: tempEmail.split('@')[0] // 默认生成用户名
+                username: tempEmail.split('@')[0]
             })
         });
         
@@ -117,7 +112,6 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
     } catch (err) { alert("Verification failed."); }
 };
 
-// ---------- 8. 实时密码强度 UI 反馈 ----------
 const regPass = document.getElementById("regPassword");
 if (regPass) {
     regPass.addEventListener('input', () => {
@@ -135,17 +129,11 @@ if (regPass) {
     });
 }
 
-// ---------- 9. Tab 切换逻辑 ----------
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        // 1. 移除所有 tab 的 active 类
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        // 2. 隐藏所有 form
         document.querySelectorAll('.login-card form').forEach(f => f.classList.remove('active'));
-
-        // 3. 给当前点击的 tab 添加 active
         tab.classList.add('active');
-        // 4. 显示对应的 form
         const targetId = tab.getAttribute('data-target') === 'login' ? 'loginForm' : 'registerForm';
         document.getElementById(targetId).classList.add('active');
     });

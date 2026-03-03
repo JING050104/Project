@@ -5,7 +5,7 @@ let currentAnnotations = [];
 let currentIndex = 0;
 let chances = 3;
 let totalScore = 0;
-let timeLeft = 60; // 秒数
+let timeLeft = 60;
 let isPaused = false;
 let countdown;
 

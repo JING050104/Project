@@ -90,7 +90,6 @@ class SpinWheel {
                 body: JSON.stringify({ reward: win })
             });
 
-            // 检查服务器是否重定向到了登录页 (HTML)
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("text/html") || response.redirected) {
                 alert("Session expired. Please refresh and login again before spinning.");
@@ -112,7 +111,6 @@ class SpinWheel {
         }
     }
 
-    // 重置按钮状态
     this.isSpinning = false;
     this.spinBtn.disabled = false;
     this.spinBtn.textContent = "SPIN NOW";

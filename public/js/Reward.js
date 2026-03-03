@@ -10,7 +10,6 @@ const vouchers = [
 const container = document.getElementById('voucher-container');
 const displayPointsElement = document.getElementById('display-points');
 
-// Reward.js - Updated initRewards
 async function initRewards() {
     try {
         const response = await fetch('/api/get-points');
@@ -75,7 +74,6 @@ function renderVouchers() {
     });
 }
 /**
- * 处理兑换逻辑
  * @param {string} voucherName 礼券名称
  * @param {number} cost 消耗积分
  */
@@ -120,5 +118,4 @@ function updateFeatured() {
     }
 }
 
-// 启动页面
 document.addEventListener('DOMContentLoaded', initRewards);

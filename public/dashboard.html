@@ -82,13 +82,10 @@
             const userName = user.username || user.email;
             document.getElementById("userName").textContent = "Hello, " + userName;
             
-            // --- 核心修改：检查用户是否有自定义头像 ---
             const avatarImg = document.getElementById("headerAvatar");
             if (user.profile_pic) {
-                // 如果数据库有路径，使用存储的图片（确保路径正确，如 /uploads/xxx.jpg）
                 avatarImg.src = user.profile_pic;
             } else {
-                // 如果没有，则使用生成的 UI Avatar
                 avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=4a90e2&color=fff`;
             }
         }
