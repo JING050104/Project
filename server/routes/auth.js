@@ -143,15 +143,13 @@ router.get("/logout", (req, res) => {
 // FORGOT PASSWORD
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    console.log("Attempting reset for:", email);
-
     try {
         const [users] = await db.execute(
-            "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))", 
+            "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))",
             [email]
         );
 
-        if (users.length === 0) {
+        if (!users || users.length === 0) {
             return res.status(404).json({ success: false, message: "Email not found" });
         }
 
@@ -159,26 +157,23 @@ router.post('/forgot-password', async (req, res) => {
         const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
 
         await db.execute(
-            "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", 
+            "UPDATE users SET reset_code = ?, reset_expires = ? WHERE email = ?",
             [code, expires, users[0].email]
         );
-        console.log("Database updated successfully. Attempting to send email...");
 
-            await transporter.sendMail({
-                to: email,
-                subject: 'CoverageQuest Reset Code',
-                text: `Your verification code is: ${code}`
-            });
+        await transporter.sendMail({
+            to: email,
+            subject: 'CoverageQuest Reset Code',
+            text: `Your verification code is: ${code}`
+        });
 
-            console.log("Email sent successfully!");
-            res.json({ success: true });
+        return res.json({ success: true, message: "Code sent!" });
 
-        } catch (err) {
-            // This will print the EXACT reason the email failed in your terminal
-            console.error("EMAIL ERROR:", err.message); 
-            res.status(500).json({ success: false, message: "Email failed: " + err.message });
-        }
-      });
+    } catch (err) {
+        console.error("FORGOT PW ERROR:", err.message);
+        return res.status(500).json({ success: false, message: "Failed to send code: " + err.message });
+    }
+});
 
 //RESET PASSWORD
 router.post('/reset-password', async (req, res) => {
