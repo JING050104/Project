@@ -5,6 +5,7 @@ let currentAnnotations = [];
 let currentIndex = 0;
 let chances = 3;
 let totalScore = 0;
+let timeLeft = 60; // 秒数
 
 // 2. DOM ELEMENTS
 const imgElement = document.getElementById('risk-image');
@@ -18,6 +19,29 @@ const gameOverModal = document.getElementById('game-over-modal');
 const finalScoreDisplay = document.getElementById('final-score');
 
 // 3. CONFIGURATION
+const timerDisplay = document.getElementById("timer");
+
+const countdown = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = timeLeft;
+    
+    if (timeLeft <= 10) {
+    timerDisplay.style.color = "red";
+    }
+
+    if (timeLeft <= 0) {
+        clearInterval(countdown);
+        endGameByTime();
+    }
+}, 1000);
+
+function endGameByTime() {
+    document.getElementById("final-score").textContent =
+        document.getElementById("score-count").textContent;
+
+    document.getElementById("game-over-modal").style.display = "flex";
+}
+
 const BASE_PATH = '/image/valid'; 
 
 async function initGame() {
