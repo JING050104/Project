@@ -190,6 +190,32 @@ if (regPass) {
     });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    // 获取元素
+    const forgotLink = document.getElementById("forgotPasswordLink");
+    const loginModal = document.getElementById("loginModal");
+    const resetModal = document.getElementById("resetModal");
+    const closeResetBtn = document.getElementById("closeResetBtn");
+
+    // 1. 点击 'Forgot Password' 链接
+    if (forgotLink) {
+        forgotLink.onclick = (e) => {
+            e.preventDefault();
+            loginModal.style.display = "none"; // 隐藏登录框
+            resetModal.style.display = "flex"; // 显示重置密码框
+        };
+    }
+
+    // 2. 点击重置框的关闭按钮
+    if (closeResetBtn) {
+        closeResetBtn.onclick = () => {
+            resetModal.style.display = "none";
+            // 可选：关掉重置框后重新打开登录框
+            // loginModal.style.display = "flex"; 
+        };
+    }
+});
+
 // ---------- 9. Tab 切换逻辑 ----------
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {

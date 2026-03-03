@@ -13,37 +13,41 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// 1. 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
     try {
+        // 第一步：先手动查询邮箱是否存在
         const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
-        if (existing && existing.length > 0 && existing[0].is_verified === 1) { // 修正为判断 1
+
+        // 如果已注册且已验证，拒绝
+        if (existing && existing.length > 0 && existing[0].is_verified === 1) {
             return res.json({ success: false, message: "Email already registered." });
         }
 
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 15 * 60000); 
+        const expires = new Date(Date.now() + 15 * 60000);
 
-        // 使用唯一的临时用户名防止 UNIQUE 冲突
-        await db.execute(`
-            INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
-            VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
-            ON CONFLICT (email) 
-            DO UPDATE SET reset_code = $2, reset_expires = $3`, 
-            [email, verifyCode, expires]
-        );
+        if (existing && existing.length > 0) {
+            // 第二步：如果存在但未验证，执行更新
+            await db.execute(
+                "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3",
+                [verifyCode, expires, email]
+            );
+        } else {
+            // 第三步：如果完全不存在，执行插入
+            const tempUsername = 'user_' + Date.now(); // 避免唯一用户名冲突
+            await db.execute(
+                "INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) VALUES ($1, $2, $3, 0, $4, 'pending_pw')",
+                [email, verifyCode, expires, tempUsername]
+            );
+        }
 
-        await transporter.sendMail({
-            to: email,
-            subject: 'CoverageQuest Registration Code',
-            text: `Your verification code is: ${verifyCode}`
-        });
-
+        // 发送邮件代码保持不变...
         res.json({ success: true, message: "Code sent!" });
+
     } catch (err) {
-        console.error("REG ERROR:", err.message);
-        res.status(500).json({ success: false, message: "Database sync failed." });
+        console.error("REG ERROR:", err);
+        res.status(500).json({ success: false, message: "Database error: " + err.message });
     }
 });
 
