@@ -5,41 +5,45 @@ const passport = require("passport");
 const db = require("../db");
 const nodemailer = require('nodemailer');
 
-// routes/auth.js
-const { Resend } = require('resend');
-const resend = new Resend('process.env.RESEND_API_KEY'); 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'i23024235@student.newinti.edu.my',
+        pass: 'dciq fgfl emvg awlr'
+    }
+});
 
+// 1. 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
     try {
-        // 1. 数据库逻辑保持不变 (手动检查是否存在)
         const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
-        const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 15 * 60000);
-
-        if (existing && existing.length > 0) {
-            if (existing[0].is_verified === 1) return res.json({ success: false, message: "Email registered." });
-            await db.execute("UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", [verifyCode, expires, email]);
-        } else {
-            const tempUsername = 'user_' + Date.now();
-            await db.execute("INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) VALUES ($1, $2, $3, 0, $4, 'pending_pw')", [email, verifyCode, expires, tempUsername]);
+        if (existing && existing.length > 0 && existing[0].is_verified === 1) { // 修正为判断 1
+            return res.json({ success: false, message: "Email already registered." });
         }
 
-        // 2. 使用 Resend 发送邮件
-        const { data, error } = await resend.emails.send({
-            from: 'CoverageQuest <onboarding@resend.dev>', // 免费测试阶段必须用这个发件人
+        const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 15 * 60000); 
+
+        // 使用唯一的临时用户名防止 UNIQUE 冲突
+        await db.execute(`
+            INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
+            VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
+            ON CONFLICT (email) 
+            DO UPDATE SET reset_code = $2, reset_expires = $3`, 
+            [email, verifyCode, expires]
+        );
+
+        await transporter.sendMail({
             to: email,
-            subject: 'Your Verification Code',
-            html: `<p>Your verification code is: <strong>${verifyCode}</strong></p>`
+            subject: 'CoverageQuest Registration Code',
+            text: `Your verification code is: ${verifyCode}`
         });
 
-        if (error) throw error; // 如果 Resend 报错，进入 catch
-
-        return res.json({ success: true, message: "Code sent!" });
-
+        res.json({ success: true, message: "Code sent!" });
     } catch (err) {
-        console.error("RESEND ERROR:", err);
-        return res.status(500).json({ success: false, message: "Mail service busy. Try again." });
+        console.error("REG ERROR:", err.message);
+        res.status(500).json({ success: false, message: "Database sync failed." });
     }
 });
 
@@ -56,6 +60,7 @@ router.post('/complete-registration', async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid or expired code" });
         }
 
+        // 核心修正：必须加 await 且调用 bcrypt.hash
         const hashedPw = await bcrypt.hash(password, 10); 
         
         await db.execute(
@@ -128,9 +133,11 @@ router.get("/logout", (req, res) => {
   req.logout(() => res.redirect("/index.html"));
 });
 
-//forgot-password
+// FORGOT PASSWORD
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
+    console.log("Attempting reset for:", email);
+
     try {
         const [users] = await db.execute(
             "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))", 
@@ -142,33 +149,29 @@ router.post('/forgot-password', async (req, res) => {
         }
 
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 10 * 60000);
+        const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
 
-        // 1. 先更新数据库
         await db.execute(
             "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", 
             [code, expires, users[0].email]
         );
+        console.log("Database updated successfully. Attempting to send email...");
 
-        // 2. 发送邮件并添加等待
-        await transporter.sendMail({
-            to: email,
-            subject: 'CoverageQuest Reset Code',
-            text: `Your verification code is: ${code}`
-        });
+            await transporter.sendMail({
+                to: email,
+                subject: 'CoverageQuest Reset Code',
+                text: `Your verification code is: ${code}`
+            });
 
-        // 3. 只有成功后才返回 true
-        return res.json({ success: true, message: "Reset code sent!" });
+            console.log("Email sent successfully!");
+            res.json({ success: true });
 
-    } catch (err) {
-        console.error("DETAILED EMAIL ERROR:", err);
-        // 关键：即使邮件发送失败，也要向前端返回错误，防止页面卡死
-        return res.status(500).json({ 
-            success: false, 
-            message: "Mail server timeout. Please try again in a few minutes." 
-        });
-    }
-});
+        } catch (err) {
+            // This will print the EXACT reason the email failed in your terminal
+            console.error("EMAIL ERROR:", err.message); 
+            res.status(500).json({ success: false, message: "Email failed: " + err.message });
+        }
+      });
 
 //RESET PASSWORD
 router.post('/reset-password', async (req, res) => {
