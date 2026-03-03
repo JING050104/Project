@@ -154,7 +154,7 @@ router.post('/forgot-password', async (req, res) => {
             to: email,
             from: "leewanjing040501@gmail.com",
             subject: "CoverageQuest Registration Code",
-            text: `Your verification code is: ${verifyCode}`,
+            text: `Your verification code is: ${code}`,
         });
 
         return res.json({ success: true, message: "Code sent!" });
