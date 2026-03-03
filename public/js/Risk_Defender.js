@@ -19,9 +19,9 @@ window.setTowerType = function(type) {
 class Insurance {
     constructor(x, y, type) {
         this.x = x; this.y = y; this.type = type;
-        if (type === 'home') { this.health = 800; this.color = '#e67e22'; this.label = "房产"; }
-        else if (type === 'car') { this.health = 400; this.color = '#3498db'; this.label = "车辆"; }
-        else { this.health = 250; this.color = '#2ecc71'; this.label = "生命"; }
+        if (type === 'home') { this.health = 800; this.color = '#e67e22'; this.label = "Property"; }
+        else if (type === 'car') { this.health = 400; this.color = '#3498db'; this.label = "Car"; }
+        else { this.health = 250; this.color = '#2ecc71'; this.label = "Life"; }
         this.maxHealth = this.health;
     }
     draw() {
@@ -49,20 +49,20 @@ class Risk {
         
         // --- 核心属性差异化 ---
         if (this.type === 'virus') {
-            this.speed = 2.5;  // 病毒：移动极快
+            this.speed = 1.8;  // 病毒：移动极快
             this.damage = 0.8;
             this.label = "🦠 病毒";
         } else if (this.type === 'fire') {
             this.speed = 0.8;  // 火灾：移动慢，但伤害极高
-            this.damage = 2.5; 
+            this.damage = 1.8; 
             this.label = "🔥 火灾";
         } else if (this.type === 'flood') {
-            this.speed = 0.5;  // 水灾：极其缓慢，持久折磨
+            this.speed = 0.2;  // 水灾：极其缓慢，持久折磨
             this.damage = 1.2;
             this.label = "🌊 水灾";
         } else {
-            this.speed = 1.5;  // 小偷：均衡型
-            this.damage = 1.0;
+            this.speed = 1.3;  // 小偷：均衡型
+            this.damage = 0.3;
             this.label = "👤 小偷";
         }
     }
@@ -75,28 +75,20 @@ class Risk {
     }
 }
 
-// --- 放置逻辑 ---
 canvas.addEventListener('click', (e) => {
-    // 1. 获取 Canvas 元素在屏幕上的实际布局位置
     const rect = canvas.getBoundingClientRect();
 
-    // 2. 计算缩放比例（防止 CSS 缩放导致坐标不准）
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    // 3. 计算点击位置相对于 Canvas 左上角的精确坐标
-    // (点击的绝对位置 - Canvas 的左边界) * 缩放比例
     const mouseX = (e.clientX - rect.left) * scaleX;
     const mouseY = (e.clientY - rect.top) * scaleY;
 
-    // 4. 将精确坐标转换为网格索引 (900x500 的 100 像素网格)
     const x = Math.floor(mouseX / cellSize) * cellSize;
     const y = Math.floor(mouseY / cellSize) * cellSize;
 
-    // 调试日志：如果手机上还是点不准，可以在手机浏览器开发者工具看这个
     console.log(`Touch: (${mouseX.toFixed(1)}, ${mouseY.toFixed(1)}) -> Grid: [${x/100}, ${y/100}]`);
 
-    // 5. 部署防御塔逻辑
     if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
         if (!towers.some(t => t.x === x && t.y === y)) {
             towers.push(new Insurance(x, y, selectedType));
