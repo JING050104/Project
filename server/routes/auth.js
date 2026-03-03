@@ -3,22 +3,9 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const db = require("../db");
-const nodemailer = require('nodemailer');
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'i23024235@student.newinti.edu.my',
-        pass: process.env.SMTP_PASS // 确保你在 Render 的 Env 变量里填了 16 位 App Password
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10秒连接超时
-    greetingTimeout: 10000
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 1. 
 router.post('/send-reg-code', async (req, res) => {
@@ -41,10 +28,11 @@ router.post('/send-reg-code', async (req, res) => {
             [email, verifyCode, expires]
         );
 
-        await transporter.sendMail({
+        await resend.emails.send({
+            from: "onboarding@resend.dev",
             to: email,
-            subject: 'CoverageQuest Registration Code',
-            text: `Your verification code is: ${verifyCode}`
+            subject: "CoverageQuest Registration Code",
+            text: `Your verification code is: ${verifyCode}`,
         });
 
         res.json({ success: true, message: "Code sent!" });
@@ -164,10 +152,11 @@ router.post('/forgot-password', async (req, res) => {
             [code, expires, users[0].email]
         );
 
-        await transporter.sendMail({
+        await resend.emails.send({
+            from: "onboarding@resend.dev",
             to: email,
-            subject: 'CoverageQuest Reset Code',
-            text: `Your verification code is: ${code}`
+            subject: "CoverageQuest Reset Code",
+            text: `Your verification code is: ${code}`,
         });
 
         return res.json({ success: true, message: "Code sent!" });
