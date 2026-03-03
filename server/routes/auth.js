@@ -3,9 +3,8 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const db = require("../db");
-const { Resend } = require("resend");
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // 1. 
 router.post('/send-reg-code', async (req, res) => {
@@ -19,7 +18,6 @@ router.post('/send-reg-code', async (req, res) => {
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 15 * 60000); 
 
-        // 使用唯一的临时用户名防止 UNIQUE 冲突
         await db.execute(`
             INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
             VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
@@ -28,9 +26,9 @@ router.post('/send-reg-code', async (req, res) => {
             [email, verifyCode, expires]
         );
 
-        await resend.emails.send({
-            from: "onboarding@resend.dev",
+        await sgMail.send({
             to: email,
+            from: "leewanjing040501@gmail.com",
             subject: "CoverageQuest Registration Code",
             text: `Your verification code is: ${verifyCode}`,
         });
@@ -152,11 +150,11 @@ router.post('/forgot-password', async (req, res) => {
             [code, expires, users[0].email]
         );
 
-        await resend.emails.send({
-            from: "onboarding@resend.dev",
+        await sgMail.send({
             to: email,
-            subject: "CoverageQuest Reset Code",
-            text: `Your verification code is: ${code}`,
+            from: "leewanjing040501@gmail.com",
+            subject: "CoverageQuest Registration Code",
+            text: `Your verification code is: ${verifyCode}`,
         });
 
         return res.json({ success: true, message: "Code sent!" });
