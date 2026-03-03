@@ -21,12 +21,10 @@
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.2",
     "mysql2": "^3.17.4",
-    "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
-    "pg": "^8.19.0",
-    "resend": "^6.9.3"
+    "pg": "^8.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
