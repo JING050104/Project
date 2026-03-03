@@ -21,18 +21,21 @@ const finalScoreDisplay = document.getElementById('final-score');
 // 3. CONFIGURATION
 const timerDisplay = document.getElementById("timer");
 
+const timerBox = document.getElementById("timer-box");
+
 const countdown = setInterval(() => {
     timeLeft--;
     timerDisplay.textContent = timeLeft;
-    
+
     if (timeLeft <= 10) {
-    timerDisplay.style.color = "red";
+        timerBox.classList.add("timer-warning");
     }
 
     if (timeLeft <= 0) {
         clearInterval(countdown);
         endGameByTime();
     }
+
 }, 1000);
 
 function endGameByTime() {

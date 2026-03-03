@@ -953,3 +953,16 @@ button.active {
     font-size: 18px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
+
+/* 剩下10秒时 */
+.timer-warning {
+    color: #ff3b3b;
+    background: rgba(255, 0, 0, 0.15);
+    animation: pulseRed 1s infinite;
+}
+
+@keyframes pulseRed {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
