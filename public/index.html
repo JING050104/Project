@@ -149,28 +149,50 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        const tabs = document.querySelectorAll('.tab');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
+    const forgotLink = document.getElementById("forgotPasswordLink");
+    const resetModal = document.getElementById("resetModal");
+    const loginModal = document.getElementById("loginModal");
+    const resetSendBtn = document.getElementById("resetSendBtn");
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // 1. 切换 Tab 按钮的样式
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+    if (forgotLink) {
+        forgotLink.onclick = (e) => {
+            e.preventDefault();
+            loginModal.style.display = "none";
+            resetModal.style.display = "flex";
+        };
+    }
 
-                // 2. 切换表单的显示
-                const target = tab.getAttribute('data-target');
-                if (target === 'login') {
-                    loginForm.classList.add('active');
-                    registerForm.classList.remove('active');
+    // 修复发送按钮卡住的问题
+    if (resetSendBtn) {
+        resetSendBtn.onclick = async () => {
+            const email = document.getElementById("resetEmail").value;
+            if (!email) return alert("Please enter email");
+
+            resetSendBtn.textContent = "Sending...";
+            resetSendBtn.disabled = true;
+
+            try {
+                const res = await fetch("/auth/forgot-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById("resetStep1").style.display = "none";
+                    document.getElementById("resetStep2").style.display = "block";
                 } else {
-                    registerForm.classList.add('active');
-                    loginForm.classList.remove('active');
+                    alert(data.message || "Failed to send code");
                 }
-            });
-        });
-    });
+            } catch (err) {
+                alert("Network error.");
+            } finally {
+                resetSendBtn.textContent = "Send Code";
+                resetSendBtn.disabled = false;
+            }
+        };
+    }
+});
 </script>
 </body>
 </html>
