@@ -5,12 +5,9 @@ const passport = require("passport");
 const db = require("../db");
 const nodemailer = require('nodemailer');
 
-const { Resend } = require('resend');
-const resend = new Resend('RESEND_API_KEY'); 
-
 // routes/auth.js
 const { Resend } = require('resend');
-const resend = new Resend('你的_RESEND_API_KEY'); // 建议放在 .env 中
+const resend = new Resend('你的_RESEND_API_KEY'); 
 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
