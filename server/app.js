@@ -15,16 +15,16 @@ require("./passport")(passport); //
 app.use(express.json()); //
 app.use(express.urlencoded({ extended: true })); //
 
-// 3. Session 配置 (修改为内存存储以兼容 Postgres)
 app.use(session({
     key: 'fyp_session_cookie',
     secret: "fyp_secret", 
     resave: false, 
     saveUninitialized: false, 
-    cookie: {
-        secure: false, // 因为 Render 免费版有时不识别 https 转发，先设为 false
+    proxy: true, 
+        secure: false, 
         httpOnly: true, 
-        maxAge: 1000 * 60 * 60 * 24 // 1天
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 
     }
 }));
 

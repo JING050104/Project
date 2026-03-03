@@ -147,6 +147,30 @@
         if (!/[A-Z]/.test(pw)) return "Include at least one Capital Letter.";
         return true;
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const tabs = document.querySelectorAll('.tab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 1. 切换 Tab 按钮的样式
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 2. 切换表单的显示
+                const target = tab.getAttribute('data-target');
+                if (target === 'login') {
+                    loginForm.classList.add('active');
+                    registerForm.classList.remove('active');
+                } else {
+                    registerForm.classList.add('active');
+                    loginForm.classList.remove('active');
+                }
+            });
+        });
+    });
 </script>
 </body>
 </html>

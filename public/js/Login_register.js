@@ -189,3 +189,19 @@ if (regPass) {
         update("reg-req-num", /[0-9]/.test(val));
     });
 }
+
+// ---------- 9. Tab 切换逻辑 ----------
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        // 1. 移除所有 tab 的 active 类
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        // 2. 隐藏所有 form
+        document.querySelectorAll('.login-card form').forEach(f => f.classList.remove('active'));
+
+        // 3. 给当前点击的 tab 添加 active
+        tab.classList.add('active');
+        // 4. 显示对应的 form
+        const targetId = tab.getAttribute('data-target') === 'login' ? 'loginForm' : 'registerForm';
+        document.getElementById(targetId).classList.add('active');
+    });
+});
