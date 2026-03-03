@@ -170,10 +170,10 @@ router.post('/forgot-password', async (req, res) => {
         return res.json({ success: true, message: "Code sent!" });
 
     } catch (err) {
-    console.error("FULL EMAIL ERROR:", err);
-    res.status(500).json({ 
-        success: false, 
-        message: err.message 
+    console.error("FULL ERROR:", err);
+    return res.status(500).json({
+        success: false,
+        message: err.message
     });
 }
 });
