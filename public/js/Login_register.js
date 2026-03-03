@@ -129,6 +129,7 @@ async function sendResetCode() {
     
     if (!email) return alert("Enter email first.");
 
+    // 禁用按钮并显示 Sending
     btn.textContent = "Sending...";
     btn.disabled = true;
 
@@ -145,12 +146,13 @@ async function sendResetCode() {
             document.getElementById("resetStep1").style.display = "none";
             document.getElementById("resetStep2").style.display = "block";
         } else {
-            alert(data.message || "Email not found.");
+            alert(data.message || "Failed to send code.");
         }
     } catch (err) { 
         console.error("Fetch error:", err);
-        alert("Network error, please try again."); 
+        alert("Server timeout. Please check your network or try again later."); 
     } finally { 
+        // 关键：无论成功失败，都必须恢复按钮
         btn.textContent = "Send Code"; 
         btn.disabled = false; 
     }

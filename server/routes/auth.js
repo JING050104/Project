@@ -6,11 +6,16 @@ const db = require("../db");
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, 
     auth: {
         user: 'i23024235@student.newinti.edu.my',
         pass: 'dciq fgfl emvg awlr'
-    }
+    },
+    connectionTimeout: 10000, 
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 router.post('/send-reg-code', async (req, res) => {
