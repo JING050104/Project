@@ -145,7 +145,7 @@ router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
         const [users] = await db.execute(
-            "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))",
+            "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1::text))",
             [email]
         );
 
