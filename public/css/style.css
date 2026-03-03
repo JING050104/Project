@@ -942,7 +942,7 @@ button.active {
 }
 
 .timer-box {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 30px;
     background: rgba(0, 0, 0, 0.75);
@@ -952,6 +952,7 @@ button.active {
     font-weight: bold;
     font-size: 18px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 9999; 
 }
 
 /* 剩下10秒时 */
