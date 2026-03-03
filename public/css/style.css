@@ -500,6 +500,12 @@ input {
 .dash-card {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    background: #fff; 
+    padding: 30px;   
+    border: 1px solid #e2e8f0;
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--card-shadow);
+    text-align: center;
 }
 
 .dash-card:hover {
@@ -562,18 +568,14 @@ input {
 /* --- SIDEBAR REFINEMENT --- */
 
 .sidebar .dash-card {
-    padding: 20px;
-    margin-bottom: 15px;
+    flex: 1;             
+    padding: 40px;       
+    margin-bottom: 0;   
     border-radius: 40px !important;
-}
-
-.dash-card {
-    background: #fff; 
-    padding: 30px;   
-    border: 1px solid #e2e8f0;
-    border: 1px solid #e2e8f0;
-    box-shadow: var(--card-shadow);
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  
+    align-items: center;
 }
 
 .stat-value {
@@ -623,18 +625,17 @@ input {
 
 .main-layout {
     display: flex;
-    align-items: flex-start; 
+    align-items: stretch; 
     justify-content: center;
-    gap: 20px;
+    gap: 30px;
     padding: 20px;
     width: 100%;             /* Use full container width */
     max-width: 1200px;       /* Prevents it from becoming giant on huge monitors */
     margin: 0 auto;
-    position: relative;
 }
 
 #wrapper {
-    flex: 0 0 55%; 
+    flex : 75;
     max-height: 80vh;       /* Limits the height so it doesn't push the header away */
     aspect-ratio: 4/3;
     position: relative;
@@ -650,10 +651,11 @@ input {
 }
 
 .sidebar {
-    flex: 0 0 30%;           /* Gives the sidebar a fixed 30% width */
+    flex: 25;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    height: 100%;
+    gap: 25px;
 }
 
 .feedback-marker {
@@ -966,4 +968,27 @@ button.active {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
+}
+
+.google-btn-circle {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s ease;
+}
+
+.google-btn-circle img {
+    width: 28px;
+    height: 28px;
+}
+
+.google-btn-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
