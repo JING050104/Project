@@ -31,9 +31,6 @@
                     <input type="password" id="loginPass" name="password" placeholder="Password" required>
                     <span class="toggle-eye" onclick="toggleVisibility('loginPass')"></span>
                 </div>
-                <p style="text-align: right; font-size: 12px;">
-                    <a href="#" id="forgotPasswordLink" style="color: #4a90e2;">Forgot Password?</a>
-                </p>
                 <button type="submit" class="submit-btn">Login</button>
             </form>
 
@@ -147,52 +144,6 @@
         if (!/[A-Z]/.test(pw)) return "Include at least one Capital Letter.";
         return true;
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-    const forgotLink = document.getElementById("forgotPasswordLink");
-    const resetModal = document.getElementById("resetModal");
-    const loginModal = document.getElementById("loginModal");
-    const resetSendBtn = document.getElementById("resetSendBtn");
-
-    if (forgotLink) {
-        forgotLink.onclick = (e) => {
-            e.preventDefault();
-            loginModal.style.display = "none";
-            resetModal.style.display = "flex";
-        };
-    }
-
-    // 修复发送按钮卡住的问题
-    if (resetSendBtn) {
-        resetSendBtn.onclick = async () => {
-            const email = document.getElementById("resetEmail").value;
-            if (!email) return alert("Please enter email");
-
-            resetSendBtn.textContent = "Sending...";
-            resetSendBtn.disabled = true;
-
-            try {
-                const res = await fetch("/auth/forgot-password", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById("resetStep1").style.display = "none";
-                    document.getElementById("resetStep2").style.display = "block";
-                } else {
-                    alert(data.message || "Failed to send code");
-                }
-            } catch (err) {
-                alert("Network error.");
-            } finally {
-                resetSendBtn.textContent = "Send Code";
-                resetSendBtn.disabled = false;
-            }
-        };
-    }
-});
 </script>
 </body>
 </html>
