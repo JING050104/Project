@@ -5,60 +5,44 @@ const passport = require("passport");
 const db = require("../db");
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // 587 端口必须为 false
-    auth: {
-        user: 'i23024235@student.newinti.edu.my',
-        pass: 'dciq fgfl emvg awlr' // 确保这是 16 位 App Password
-    },
-    tls: {
-        rejectUnauthorized: false // 允许在受限网络环境下建立连接
-    },
-    connectionTimeout: 20000, // 增加到 20 秒，给云端更多响应时间
-});
+const { Resend } = require('resend');
+const resend = new Resend('RESEND_API_KEY'); 
+
+// routes/auth.js
+const { Resend } = require('resend');
+const resend = new Resend('你的_RESEND_API_KEY'); // 建议放在 .env 中
 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
     try {
-        // 1. 手动检查邮箱是否存在
+        // 1. 数据库逻辑保持不变 (手动检查是否存在)
         const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
-
-        if (existing && existing.length > 0 && existing[0].is_verified === 1) {
-            return res.json({ success: false, message: "Email already registered." });
-        }
-
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 15 * 60000);
 
         if (existing && existing.length > 0) {
-            // 2. 存在但未验证，更新验证码
-            await db.execute(
-                "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3",
-                [verifyCode, expires, email]
-            );
+            if (existing[0].is_verified === 1) return res.json({ success: false, message: "Email registered." });
+            await db.execute("UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", [verifyCode, expires, email]);
         } else {
-            // 3. 不存在，插入新用户
             const tempUsername = 'user_' + Date.now();
-            await db.execute(
-                "INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) VALUES ($1, $2, $3, 0, $4, 'pending_pw')",
-                [email, verifyCode, expires, tempUsername]
-            );
+            await db.execute("INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) VALUES ($1, $2, $3, 0, $4, 'pending_pw')", [email, verifyCode, expires, tempUsername]);
         }
 
-        // 4. 只有数据库操作成功后才发送邮件
-        await transporter.sendMail({
+        // 2. 使用 Resend 发送邮件
+        const { data, error } = await resend.emails.send({
+            from: 'CoverageQuest <onboarding@resend.dev>', // 免费测试阶段必须用这个发件人
             to: email,
-            subject: 'CoverageQuest Registration Code',
-            text: `Your verification code is: ${verifyCode}`
+            subject: 'Your Verification Code',
+            html: `<p>Your verification code is: <strong>${verifyCode}</strong></p>`
         });
 
-        res.json({ success: true, message: "Code sent!" });
+        if (error) throw error; // 如果 Resend 报错，进入 catch
+
+        return res.json({ success: true, message: "Code sent!" });
 
     } catch (err) {
-        console.error("REG ERROR:", err); // 在 Render 日志中查看具体错误
-        res.status(500).json({ success: false, message: "Server error, code not sent." });
+        console.error("RESEND ERROR:", err);
+        return res.status(500).json({ success: false, message: "Mail service busy. Try again." });
     }
 });
 
