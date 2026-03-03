@@ -19,12 +19,11 @@ body {
 }
 
 body.no-scroll-page {
-    height: 100vh;
-    width: 100vw;
     margin: 0;
-    overflow: hidden; 
     display: flex;
-    flex-direction: column; /* Stack header on top, game below */
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .logo { color: var(--primary-blue); }
@@ -542,15 +541,12 @@ input {
 
 /* --- GAME LAYOUT --- */
 .game-screen {
-    flex: 1;                /* 占据剩余的垂直高度 */
+    flex: 1;
     display: flex;
-    flex-direction: column; /* 核心：将横向排列改为纵向堆叠 */
-    align-items: center;    /* 所有子元素水平居中 */
-    justify-content: flex-start; /* 从顶部开始排列 */
-    padding: 15px;
-    background-color: var(--bg-light);
-    overflow: hidden;       /* 确保无滚动条 */
-    gap: 10px;              /* 在上中下三个元素之间增加间距 */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
 }
 
 .viewport {
@@ -925,13 +921,6 @@ button.active {
     transform: scale(1.05);
 }
 
-#gameCanvas {
-    background: radial-gradient(circle, #34495e 0%, #2c3e50 100%);
-    border: 5px solid #1a252f;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-    margin-top: 10px;
-}
-
 .controls button:hover {
     filter: brightness(1.2);
     transform: translateY(-2px);
@@ -1059,4 +1048,150 @@ body.flash-red {
 .game-paused #wrapper {
     pointer-events: none;
     opacity: 0.6;   /* 变淡一点，表示暂停 */
+}
+
+.game-hud {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    background: linear-gradient(135deg, #1f2937, #111827);
+    padding: 12px 40px;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.hud-item span {
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+.canvas-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#gameCanvas {
+    width: min(95vw, 900px);
+    height: auto;
+}
+
+@media (max-width: 768px) {
+
+    .dashboard-header {
+        height: 60px;
+        padding: 0 15px;
+    }
+
+    .logo {
+        font-size: 18px;
+    }
+
+    .game-hud {
+        font-size: 14px;
+        padding: 8px 15px;
+        gap: 15px;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .controls button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .game-info {
+        font-size: 12px;
+        text-align: center;
+    }
+
+}
+
+.no-scroll-page .game-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.no-scroll-page .game-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, #1e3a8a, #0f172a 70%);
+    filter: blur(6px);
+    transform: scale(1.1);
+    z-index: 0;
+}
+
+.no-scroll-page .game-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.6));
+    pointer-events: none;
+}
+
+.main-layout,
+.controls,
+.game-hud,
+canvas {
+    position: relative;
+    z-index: 1;
+}
+
+.cost-tag {
+    margin-left: 8px;
+    font-size: 14px;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 8px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.shop-tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+    z-index: 10;
+}
+
+.controls button {
+    position: relative;
+    border-radius: 15px;
+    padding: 12px 20px;
+    font-weight: bold;
+}
+
+.controls button::after {
+    content: attr(data-cost);
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: gold;
+    color: black;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 10px;
 }

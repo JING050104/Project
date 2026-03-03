@@ -9,18 +9,66 @@
     <body class="no-scroll-page"> 
     <header class="dashboard-header">
         <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
-    </header>
-
-    <main class="game-screen">
-        <div class="controls">
-            <span style="font-weight: bold;">Buy Insurance Shield:</span>
-            <button id="btn-home" class="btn-home active" onclick="setTowerType('home')">🏠 Property Insurance</button>
-            <button id="btn-car" class="btn-car" onclick="setTowerType('car')">🚗 Car insurance</button>
-            <button id="btn-medical" class="btn-medical" onclick="setTowerType('medical')">🏥 Medical insurance</button>
+        <div class="header-controls">
+        <div class="timer-box" id="timer-box">
+                ⏳ Time: <span id="timer">60</span>s
+                <div class="time-bar">
+                    <div class="time-fill" id="time-fill"></div>
+                </div>
         </div>
-
-        <canvas id="gameCanvas" width="900" height="500"></canvas>
-
+            <button id="pause-btn" class="pause-btn">⏸</button>
+            <button id="home-btn" class="home-btn">
+                <svg class="home-icon" viewBox="0 0 24 24" fill="none" 
+                    stroke="currentColor" stroke-width="2" 
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 11l9-8 9 8"></path>
+                    <path d="M5 10v10h14V10"></path>
+                </svg>
+            </button>
+    </header>
+    
+    <main class="game-screen">
+        <div class="game-hud">
+        <div class="hud-item">
+            ❤️ HP: <span id="hud-hp">100</span>
+        </div>
+        <div class="hud-item">
+            💰 Gold: $<span id="hud-gold">200</span>
+        </div>
+        <div class="hud-item">
+            🌊 Wave: <span id="hud-wave">1</span>
+        </div>
+        </div>
+            <div class="controls">
+            <div id="shop-tooltip" class="shop-tooltip"></div>
+            <button id="btn-home"
+                class="btn-home active"
+                onclick="setTowerType('home')"
+                onmouseover="showInfo('home')"
+                onmouseout="hideInfo()">
+                🏠 Property Insurance
+                <span class="cost-tag">$100</span>
+            </button>
+            <button id="btn-car"
+                class="btn-car"
+                onclick="setTowerType('car')"
+                onmouseover="showInfo('car')"
+                onmouseout="hideInfo()">
+                🚗 Car Insurance
+                <span class="cost-tag">$80</span>
+            </button>
+            <button id="btn-medical"
+                class="btn-medical"
+                onclick="setTowerType('medical')"
+                onmouseover="showInfo('medical')"
+                onmouseout="hideInfo()">
+                🏥 Medical Insurance
+                <span class="cost-tag">$60</span>
+            </button>
+            </div>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="900" height="500"></canvas>
+        </div>
         <div class="game-info">
             <p>Click on "Defense Tower" above, then place your defense tower in that area to protect your assets!</p>
         </div>
