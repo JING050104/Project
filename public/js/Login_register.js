@@ -126,6 +126,7 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
 async function sendResetCode() {
     const email = document.getElementById("resetEmail").value;
     const btn = document.getElementById("resetSendBtn");
+    
     if (!email) return alert("Enter email first.");
 
     btn.textContent = "Sending...";
@@ -137,17 +138,22 @@ async function sendResetCode() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email })
         });
+        
         const data = await res.json(); 
         if (data.success) {
-            resetEmailStorage = email;
             alert("Reset code sent!");
             document.getElementById("resetStep1").style.display = "none";
             document.getElementById("resetStep2").style.display = "block";
         } else {
             alert(data.message || "Email not found.");
         }
-    } catch (err) { alert("Network error."); }
-    finally { btn.textContent = "Send Code"; btn.disabled = false; }
+    } catch (err) { 
+        console.error("Fetch error:", err);
+        alert("Network error, please try again."); 
+    } finally { 
+        btn.textContent = "Send Code"; 
+        btn.disabled = false; 
+    }
 }
 
 // ---------- 7. 找回密码：更新密码 ----------

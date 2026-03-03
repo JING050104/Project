@@ -141,11 +141,9 @@ router.get("/logout", (req, res) => {
   req.logout(() => res.redirect("/index.html"));
 });
 
-// FORGOT PASSWORD
+//forgot-password
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    console.log("Attempting reset for:", email);
-
     try {
         const [users] = await db.execute(
             "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))", 
@@ -157,29 +155,26 @@ router.post('/forgot-password', async (req, res) => {
         }
 
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
+        const expires = new Date(Date.now() + 10 * 60000);
 
         await db.execute(
             "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", 
             [code, expires, users[0].email]
         );
-        console.log("Database updated successfully. Attempting to send email...");
 
-            await transporter.sendMail({
-                to: email,
-                subject: 'CoverageQuest Reset Code',
-                text: `Your verification code is: ${code}`
-            });
+        await transporter.sendMail({
+            to: email,
+            subject: 'CoverageQuest Reset Code',
+            text: `Your verification code is: ${code}`
+        });
 
-            console.log("Email sent successfully!");
-            res.json({ success: true });
+        return res.json({ success: true, message: "Reset code sent!" });
 
-        } catch (err) {
-            // This will print the EXACT reason the email failed in your terminal
-            console.error("EMAIL ERROR:", err.message); 
-            res.status(500).json({ success: false, message: "Email failed: " + err.message });
-        }
-      });
+    } catch (err) {
+        console.error("EMAIL ERROR:", err.message); 
+        return res.status(500).json({ success: false, message: "Failed to send email: " + err.message });
+    }
+});
 
 //RESET PASSWORD
 router.post('/reset-password', async (req, res) => {
