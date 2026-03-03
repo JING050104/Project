@@ -157,7 +157,7 @@ router.post('/forgot-password', async (req, res) => {
         const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
 
         await db.execute(
-            "UPDATE users SET reset_code = ?, reset_expires = ? WHERE email = ?",
+            "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3",
             [code, expires, users[0].email]
         );
 
