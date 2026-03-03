@@ -1020,8 +1020,8 @@ body.flash-red {
     height: 45px;
     border-radius: 50%;
     border: none;
-    background: #ffb703;
-    color: #000;
+    background: #1f2937;
+    color: white;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
@@ -1029,5 +1029,34 @@ body.flash-red {
 }
 
 .pause-btn:hover {
-    background: #fb8500;
+    background: #1f2937;
+}
+
+.home-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: #1f2937; /* 深灰背景 */
+    color: white;         /* SVG 会继承这个颜色 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.home-btn:hover {
+    background: #374151;
+}
+
+.home-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.game-paused #wrapper {
+    pointer-events: none;
+    opacity: 0.6;   /* 变淡一点，表示暂停 */
 }

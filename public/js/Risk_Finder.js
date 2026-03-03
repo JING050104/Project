@@ -25,6 +25,8 @@ const timerDisplay = document.getElementById("timer");
 const timerBox = document.getElementById("timer-box");
 const timeFill = document.getElementById("time-fill");
 const pauseBtn = document.getElementById("pause-btn");
+const homeBtn = document.getElementById("home-btn");
+const pauseIcon = document.getElementById("pause-icon");
 
 function startTimer() {
     countdown = setInterval(() => {
@@ -50,6 +52,18 @@ function startTimer() {
 }
 
 startTimer();
+
+homeBtn.addEventListener("click", () => {
+
+    const confirmLeave = confirm(
+        "Your game progress will be lost. Are you sure?"
+    );
+
+    if (confirmLeave) {
+        window.location.href = "dashboard.html";
+    }
+
+});
 
 pauseBtn.addEventListener("click", () => {
 
