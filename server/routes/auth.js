@@ -5,18 +5,19 @@ const passport = require("passport");
 const db = require("../db");
 const nodemailer = require('nodemailer');
 
-// routes/auth.js 中的配置修改
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587, // 切换到 587 端口
-    secure: false, // 必须为 false
+    port: 587,
+    secure: false,
     auth: {
         user: 'i23024235@student.newinti.edu.my',
-        pass: process.env.SMTP_PASS
+        pass: process.env.SMTP_PASS // 确保你在 Render 的 Env 变量里填了 16 位 App Password
     },
     tls: {
-        rejectUnauthorized: false // 允许云端环境跳过证书拦截
-    }
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10秒连接超时
+    greetingTimeout: 10000
 });
 
 // 1. 

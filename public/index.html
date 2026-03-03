@@ -252,14 +252,20 @@
                     body: JSON.stringify({ email: emailInput })
                 });
                 const data = await res.json();
-                if (!result.success) alert(result.message);
+                
                 if (data.success) {
                     tempEmail = emailInput; 
                     loginModal.style.display = "none";
                     verifyModal.style.display = "flex";
-                } else alert(data.message);
-            } catch (err) { alert("Server Error."); }
-            finally { btn.textContent = "Get Verification Code"; btn.disabled = false; }
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { 
+                alert("Server connection timeout. Please check your email later."); 
+            } finally { 
+                btn.textContent = "Get Verification Code"; 
+                btn.disabled = false; 
+            }
         };
 
         document.getElementById("finishRegisterBtn").onclick = async () => {
