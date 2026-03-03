@@ -6,10 +6,15 @@ const db = require("../db");
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // 587 端口必须设为 false
     auth: {
         user: 'i23024235@student.newinti.edu.my',
         pass: 'dciq fgfl emvg awlr'
+    },
+    tls: {
+        rejectUnauthorized: false // 允许云端环境建立连接
     }
 });
 
