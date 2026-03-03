@@ -13,22 +13,22 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// 1. Initial Email Step
+// 1. 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
     try {
         const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
-        if (existing && existing.length > 0 && existing[0].is_verified) {
+        if (existing && existing.length > 0 && existing[0].is_verified === 1) { // 修正为判断 1
             return res.json({ success: false, message: "Email already registered." });
         }
 
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 15 * 60000); 
 
-        // 核心修复：确保 VALUES 数量与列名数量一致 ($1 to $5)
+        // 使用唯一的临时用户名防止 UNIQUE 冲突
         await db.execute(`
             INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
-            VALUES ($1, $2, $3, 0, 'pending_' || floor(random()*1000), 'pending_pw')
+            VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
             ON CONFLICT (email) 
             DO UPDATE SET reset_code = $2, reset_expires = $3`, 
             [email, verifyCode, expires]
@@ -37,17 +37,17 @@ router.post('/send-reg-code', async (req, res) => {
         await transporter.sendMail({
             to: email,
             subject: 'CoverageQuest Registration Code',
-            text: `Your code is: ${verifyCode}`
+            text: `Your verification code is: ${verifyCode}`
         });
 
         res.json({ success: true, message: "Code sent!" });
     } catch (err) {
         console.error("REG ERROR:", err.message);
-        res.status(500).json({ success: false, message: "Database error." });
+        res.status(500).json({ success: false, message: "Database sync failed." });
     }
 });
 
-// 2. Final Registration Step
+// 2. 
 router.post('/complete-registration', async (req, res) => {
     const { email, code, password, username } = req.body; 
     try {
@@ -60,7 +60,9 @@ router.post('/complete-registration', async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid or expired code" });
         }
 
-        const hashedPw = await db.execute(
+        const hashedPw = await bcrypt.hash(password, 10); 
+        
+        await db.execute(
             "UPDATE users SET username = $1, password = $2, is_verified = 1, reset_code = NULL, reset_expires = NULL WHERE email = $3",
             [username, hashedPw, email]
         );

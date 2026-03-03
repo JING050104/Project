@@ -1,7 +1,16 @@
+/**
+ * Coverage Quest - 整合身份验证逻辑脚本
+ * 包含：登录、注册、两步验证、找回密码
+ */
+
+// 1. 全局状态管理
+let tempEmail = ""; 
+let resetEmailStorage = "";
+
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 
-// ---------- 1. Helper: Show Messages ----------
+// ---------- 2. Helper: UI 反馈消息 ----------
 function showMessage(formType, text, isError = true) {
     const existing = document.querySelector(`.${formType}-message`);
     if (existing) existing.remove();
@@ -9,58 +18,25 @@ function showMessage(formType, text, isError = true) {
     const msg = document.createElement('div');
     msg.className = `${formType}-message`;
     msg.textContent = text;
-    msg.style.marginTop = '10px';
-    msg.style.padding = '8px 12px';
-    msg.style.borderRadius = '4px';
-    msg.style.fontSize = '14px';
-    msg.style.textAlign = 'center';
-    msg.style.border = '1px solid';
+    msg.style.cssText = `margin-top:10px; padding:8px; border-radius:4px; text-align:center; font-size:14px; border:1px solid;`;
     msg.style.backgroundColor = isError ? '#ffebee' : '#e8f5e9';
     msg.style.color = isError ? '#c62828' : '#2e7d32';
     msg.style.borderColor = isError ? '#ffcdd2' : '#c8e6c9';
 
-    const form = formType === 'login' ? loginForm : registerForm;
+    const form = formType === 'login' ? loginForm : (formType === 'register' ? registerForm : document.getElementById("resetStep1"));
     form.parentNode.insertBefore(msg, form.nextSibling);
 }
 
-// ---------- 2. Password Requirements Logic ----------
-const passwordInputs = ["regPassword", "newPassword"];
-passwordInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('input', () => {
-            const val = el.value;
-            updateReq("req-length", val.length >= 8);
-            updateReq("req-upper", /[A-Z]/.test(val));
-            updateReq("req-lower", /[a-z]/.test(val));
-            updateReq("req-num", /[0-9]/.test(val));
-            updateReq("req-special", /[!@#$%^&*(),.?":{}|<>]/.test(val));
-        });
-    }
-});
-
-function updateReq(id, isValid) {
-    const item = document.getElementById(id);
-    if (!item) return;
-    if (isValid) {
-        item.classList.add('valid');
-        item.innerHTML = item.innerHTML.replace('✖', '✔');
-    } else {
-        item.classList.remove('valid');
-        item.innerHTML = item.innerHTML.replace('✔', '✖');
-    }
-}
-
-// ---------- 3. Login Logic ----------
+// ---------- 3. 登录逻辑 (Login) ----------
 loginForm.addEventListener("submit", async e => {
     e.preventDefault();
     const btn = loginForm.querySelector('button[type="submit"]');
-    const originalText = btn.textContent;
+    const data = Object.fromEntries(new FormData(loginForm).entries());
+
     btn.textContent = "Logging in...";
     btn.disabled = true;
 
     try {
-        const data = Object.fromEntries(new FormData(loginForm).entries());
         const res = await fetch("/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,63 +51,141 @@ loginForm.addEventListener("submit", async e => {
             showMessage('login', result.message || "Invalid credentials");
         }
     } catch (err) {
-        showMessage('login', "Network error. Try again.");
+        showMessage('login', "Server connection error.");
     } finally {
-        btn.textContent = originalText;
+        btn.textContent = "Login";
         btn.disabled = false;
     }
 });
 
-// ---------- 4. Register Logic (Includes Duplicate Check) ----------
+// ---------- 4. 注册第一步：发送验证码 ----------
 registerForm.addEventListener("submit", async e => {
     e.preventDefault();
     const btn = registerForm.querySelector('button[type="submit"]');
+    const emailInput = registerForm.email.value; //
+
+    btn.textContent = "Sending Code...";
     btn.disabled = true;
 
     try {
-        const formData = new FormData(registerForm);
-        const data = Object.fromEntries(formData.entries());
-
-        // This call MUST check the DB for existing email
-        const res = await fetch("/auth/register", {
+        // 核心路径修正
+        const res = await fetch("/auth/send-reg-code", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ email: emailInput })
         });
 
         const result = await res.json();
-
         if (result.success) {
-            showMessage('register', "Success! Check email for code.", false);
-            // Show verification modal instead of prompt for better UX
+            tempEmail = emailInput; 
             document.getElementById("loginModal").style.display = "none";
             document.getElementById("verifyModal").style.display = "flex";
-            tempEmail = data.email; 
         } else {
-            // IF EMAIL ALREADY EXISTS, THIS WILL SHOW THE ERROR MESSAGE
-            showMessage('register', result.message); 
+            showMessage('register', result.message);
         }
     } catch (err) {
-        showMessage('register', "Network error.");
+        showMessage('register', "Failed to contact server.");
     } finally {
+        btn.textContent = "Get Verification Code";
         btn.disabled = false;
     }
 });
 
-// ---------- 5. Verification Logic ----------
-async function verifyAccount(email, code) {
-    const res = await fetch("/auth/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code })
-    });
-    
-    const result = await res.json();
-    if (result.success) {
-        alert("Account Verified! Redirecting to login...");
-        window.location.reload();
-    } else {
-        alert("Verification failed: " + result.message);
-    }
+// ---------- 5. 注册第二步：完成账户激活 ----------
+document.getElementById("finishRegisterBtn").onclick = async () => {
+    const code = document.getElementById("regVerifyCode").value;
+    const password = document.getElementById("regPassword").value;
+    const confirm = document.getElementById("regConfirmPassword").value;
+
+    if (password !== confirm) return alert("Passwords do not match!");
+    if (password.length < 8) return alert("Password too short!");
+
+    try {
+        const res = await fetch("/auth/complete-registration", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                email: tempEmail, 
+                code, 
+                password,
+                username: tempEmail.split('@')[0] // 默认生成用户名
+            })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            alert("Account Activated! You can now login.");
+            location.reload();
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (err) { alert("Verification failed."); }
+};
+
+// ---------- 6. 找回密码：发送重置码 ----------
+async function sendResetCode() {
+    const email = document.getElementById("resetEmail").value;
+    const btn = document.getElementById("resetSendBtn");
+    if (!email) return alert("Enter email first.");
+
+    btn.textContent = "Sending...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch("/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json(); 
+        if (data.success) {
+            resetEmailStorage = email;
+            alert("Reset code sent!");
+            document.getElementById("resetStep1").style.display = "none";
+            document.getElementById("resetStep2").style.display = "block";
+        } else {
+            alert(data.message || "Email not found.");
+        }
+    } catch (err) { alert("Network error."); }
+    finally { btn.textContent = "Send Code"; btn.disabled = false; }
 }
 
+// ---------- 7. 找回密码：更新密码 ----------
+async function verifyAndReset() {
+    const code = document.getElementById("resetVerifyCode").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const confirm = document.getElementById("ConfirmPassword").value;
+
+    if (newPassword !== confirm) return alert("Passwords mismatch!");
+
+    try {
+        const res = await fetch("/auth/reset-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resetEmailStorage, code, newPassword })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert("Password updated! Please login.");
+            location.reload();
+        } else { alert(data.message); }
+    } catch (err) { alert("Reset failed."); }
+}
+
+// ---------- 8. 实时密码强度 UI 反馈 ----------
+const regPass = document.getElementById("regPassword");
+if (regPass) {
+    regPass.addEventListener('input', () => {
+        const val = regPass.value;
+        const update = (id, valid) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('valid', valid);
+                el.innerText = valid ? el.innerText.replace('×', '√') : el.innerText.replace('√', '×');
+            }
+        };
+        update("reg-req-length", val.length >= 8);
+        update("reg-req-upper", /[A-Z]/.test(val));
+        update("reg-req-num", /[0-9]/.test(val));
+    });
+}
