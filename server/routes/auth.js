@@ -24,22 +24,20 @@ const transporter = nodemailer.createTransport({
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
     try {
-        // 核心修复 1：添加 ::text
-        const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1::text", [email]);
-        
-        if (existing && existing.length > 0 && existing[0].is_verified === 1) {
+        const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
+        if (existing && existing.length > 0 && existing[0].is_verified === 1) { // 修正为判断 1
             return res.json({ success: false, message: "Email already registered." });
         }
 
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 15 * 60000); 
 
-        // 核心修复 2：为所有占位符添加明确的类型转换
+        // 使用唯一的临时用户名防止 UNIQUE 冲突
         await db.execute(`
             INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
-            VALUES ($1::text, $2::text, $3::timestamp, 0, 'user_' || floor(random()*10000), 'pending_pw')
+            VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
             ON CONFLICT (email) 
-            DO UPDATE SET reset_code = $2::text, reset_expires = $3::timestamp`, 
+            DO UPDATE SET reset_code = $2, reset_expires = $3`, 
             [email, verifyCode, expires]
         );
 
@@ -49,11 +47,10 @@ router.post('/send-reg-code', async (req, res) => {
             text: `Your verification code is: ${verifyCode}`
         });
 
-        return res.json({ success: true, message: "Code sent!" });
+        res.json({ success: true, message: "Code sent!" });
     } catch (err) {
         console.error("REG ERROR:", err.message);
-        // 建议把具体的错误打印出来，方便你调试
-        return res.status(500).json({ success: false, message: "Database sync failed: " + err.message });
+        res.status(500).json({ success: false, message: "Database sync failed." });
     }
 });
 
