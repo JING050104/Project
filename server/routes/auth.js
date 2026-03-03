@@ -49,9 +49,12 @@ router.post('/send-reg-code', async (req, res) => {
 
         res.json({ success: true, message: "Code sent!" });
     } catch (err) {
-        console.error("REG ERROR:", err.message);
-        res.status(500).json({ success: false, message: "Database sync failed." });
-    }
+    console.error("FULL ERROR:", err);
+    return res.status(500).json({
+        success: false,
+        message: err.message
+    });
+}
 });
 
 // 2. 
