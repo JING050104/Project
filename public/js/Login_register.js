@@ -1,8 +1,3 @@
-/**
- * Coverage Quest - 整合身份验证逻辑脚本
- * 包含：登录、注册、两步验证、找回密码
- */
-
 // 1. 全局状态管理
 let tempEmail = ""; 
 let resetEmailStorage = "";

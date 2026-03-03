@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 
 // routes/auth.js
 const { Resend } = require('resend');
-const resend = new Resend('你的_RESEND_API_KEY'); 
+const resend = new Resend('re_ETi1KFrH_Q4nEGZEpCaPNP2DpGtmWQDQh'); 
 
 router.post('/send-reg-code', async (req, res) => {
     const { email } = req.body;
