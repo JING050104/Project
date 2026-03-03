@@ -122,64 +122,6 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
     } catch (err) { alert("Verification failed."); }
 };
 
-// ---------- 6. 找回密码：发送重置码 ----------
-async function sendResetCode() {
-    const email = document.getElementById("resetEmail").value;
-    const btn = document.getElementById("resetSendBtn");
-    
-    if (!email) return alert("Enter email first.");
-
-    // 禁用按钮并显示 Sending
-    btn.textContent = "Sending...";
-    btn.disabled = true;
-
-    try {
-        const res = await fetch("/auth/forgot-password", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
-        });
-        
-        const data = await res.json(); 
-        if (data.success) {
-            alert("Reset code sent!");
-            document.getElementById("resetStep1").style.display = "none";
-            document.getElementById("resetStep2").style.display = "block";
-        } else {
-            alert(data.message || "Failed to send code.");
-        }
-    } catch (err) { 
-        console.error("Fetch error:", err);
-        alert("Server timeout. Please check your network or try again later."); 
-    } finally { 
-        // 关键：无论成功失败，都必须恢复按钮
-        btn.textContent = "Send Code"; 
-        btn.disabled = false; 
-    }
-}
-
-// ---------- 7. 找回密码：更新密码 ----------
-async function verifyAndReset() {
-    const code = document.getElementById("resetVerifyCode").value;
-    const newPassword = document.getElementById("newPassword").value;
-    const confirm = document.getElementById("ConfirmPassword").value;
-
-    if (newPassword !== confirm) return alert("Passwords mismatch!");
-
-    try {
-        const res = await fetch("/auth/reset-password", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: resetEmailStorage, code, newPassword })
-        });
-        const data = await res.json();
-        if (data.success) {
-            alert("Password updated! Please login.");
-            location.reload();
-        } else { alert(data.message); }
-    } catch (err) { alert("Reset failed."); }
-}
-
 // ---------- 8. 实时密码强度 UI 反馈 ----------
 const regPass = document.getElementById("regPassword");
 if (regPass) {
@@ -197,32 +139,6 @@ if (regPass) {
         update("reg-req-num", /[0-9]/.test(val));
     });
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    // 获取元素
-    const forgotLink = document.getElementById("forgotPasswordLink");
-    const loginModal = document.getElementById("loginModal");
-    const resetModal = document.getElementById("resetModal");
-    const closeResetBtn = document.getElementById("closeResetBtn");
-
-    // 1. 点击 'Forgot Password' 链接
-    if (forgotLink) {
-        forgotLink.onclick = (e) => {
-            e.preventDefault();
-            loginModal.style.display = "none"; // 隐藏登录框
-            resetModal.style.display = "flex"; // 显示重置密码框
-        };
-    }
-
-    // 2. 点击重置框的关闭按钮
-    if (closeResetBtn) {
-        closeResetBtn.onclick = () => {
-            resetModal.style.display = "none";
-            // 可选：关掉重置框后重新打开登录框
-            // loginModal.style.display = "flex"; 
-        };
-    }
-});
 
 // ---------- 9. Tab 切换逻辑 ----------
 document.querySelectorAll('.tab').forEach(tab => {

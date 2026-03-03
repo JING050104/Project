@@ -7,15 +7,16 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, 
+    port: 587,
+    secure: false, // 587 端口必须为 false
     auth: {
         user: 'i23024235@student.newinti.edu.my',
-        pass: 'dciq fgfl emvg awlr'
+        pass: 'dciq fgfl emvg awlr' // 确保这是 16 位 App Password
     },
-    connectionTimeout: 10000, 
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    tls: {
+        rejectUnauthorized: false // 允许在受限网络环境下建立连接
+    },
+    connectionTimeout: 20000, // 增加到 20 秒，给云端更多响应时间
 });
 
 router.post('/send-reg-code', async (req, res) => {
@@ -162,22 +163,29 @@ router.post('/forgot-password', async (req, res) => {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 10 * 60000);
 
+        // 1. 先更新数据库
         await db.execute(
             "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3", 
             [code, expires, users[0].email]
         );
 
+        // 2. 发送邮件并添加等待
         await transporter.sendMail({
             to: email,
             subject: 'CoverageQuest Reset Code',
             text: `Your verification code is: ${code}`
         });
 
+        // 3. 只有成功后才返回 true
         return res.json({ success: true, message: "Reset code sent!" });
 
     } catch (err) {
-        console.error("EMAIL ERROR:", err.message); 
-        return res.status(500).json({ success: false, message: "Failed to send email: " + err.message });
+        console.error("DETAILED EMAIL ERROR:", err);
+        // 关键：即使邮件发送失败，也要向前端返回错误，防止页面卡死
+        return res.status(500).json({ 
+            success: false, 
+            message: "Mail server timeout. Please try again in a few minutes." 
+        });
     }
 });
 
