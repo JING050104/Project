@@ -286,7 +286,6 @@
         };
 
         document.getElementById("finishRegisterBtn").onclick = async () => {
-            const code = document.getElementById("regVerifyCode").value;
             const password = document.getElementById("regPassword").value;
             const confirm = document.getElementById("regConfirmPassword").value;
 
@@ -378,6 +377,7 @@
             });
             const data = await res.json();
             if (data.success) {
+                document.getElementById("regVerifyCode").disabled = true;
                 document.getElementById("verifyStep1").style.display = "none";
                 document.getElementById("verifyStep2").style.display = "block";
             } else {
