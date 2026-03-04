@@ -1,141 +1,172 @@
-let tempEmail = ""; 
-let resetEmailStorage = "";
+/* ==========================================
+   1. GLOBAL VARIABLES & SELECTORS
+   ========================================== */
+let tempEmail = "";
 let tempCode = "";
+let flowType = "";
+
+const loginModal = document.getElementById("loginModal");
+const verifyModal = document.getElementById("verifyModal");
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 
-function showMessage(formType, text, isError = true) {
-    const existing = document.querySelector(`.${formType}-message`);
-    if (existing) existing.remove();
+const ctaBtn = document.getElementById("ctaBtn");
+const closeBtn = document.getElementById("closeBtn");
 
-    const msg = document.createElement('div');
-    msg.className = `${formType}-message`;
-    msg.textContent = text;
-    msg.style.cssText = `margin-top:10px; padding:8px; border-radius:4px; text-align:center; font-size:14px; border:1px solid;`;
-    msg.style.backgroundColor = isError ? '#ffebee' : '#e8f5e9';
-    msg.style.color = isError ? '#c62828' : '#2e7d32';
-    msg.style.borderColor = isError ? '#ffcdd2' : '#c8e6c9';
 
-    const form = formType === 'login' ? loginForm : (formType === 'register' ? registerForm : document.getElementById("resetStep1"));
-    form.parentNode.insertBefore(msg, form.nextSibling);
+/* ==========================================
+   2. UI CONTROLS
+   ========================================== */
+ctaBtn.onclick = () => loginModal.style.display = "flex";
+closeBtn.onclick = () => loginModal.style.display = "none";
+
+function toggleVisibility(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
 }
 
-// ---------- Login ----------
+
+/* ==========================================
+   3. LOGIN LOGIC
+   ========================================== */
 loginForm.addEventListener("submit", async e => {
     e.preventDefault();
-    const btn = loginForm.querySelector('button[type="submit"]');
     const data = Object.fromEntries(new FormData(loginForm).entries());
 
-    btn.textContent = "Logging in...";
-    btn.disabled = true;
+    const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
 
-    try {
-        const res = await fetch("/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-        if (result.success) {
-            showMessage('login', "Login successful! Redirecting...", false);
-            setTimeout(() => window.location.href = "/dashboard.html", 1000);
-        } else {
-            showMessage('login', result.message || "Invalid credentials");
-        }
-    } catch (err) {
-        showMessage('login', "Server connection error.");
-    } finally {
-        btn.textContent = "Login";
-        btn.disabled = false;
+    const result = await res.json();
+    if (result.success) {
+        window.location.href = "/dashboard.html";
+    } else {
+        alert(result.message);
     }
 });
 
+
+/* ==========================================
+   4. REGISTER - SEND CODE
+   ========================================== */
 registerForm.addEventListener("submit", async e => {
     e.preventDefault();
-    const btn = registerForm.querySelector('button[type="submit"]');
-    const emailInput = registerForm.email.value; //
+    const email = document.getElementById("regEmail").value;
 
-    btn.textContent = "Sending Code...";
-    btn.disabled = true;
+    const res = await fetch("/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            email,
+            type: "register"
+        })
+    });
 
-    try {
-        const res = await fetch("/auth/send-reg-code", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: emailInput })
-        });
-
-        const result = await res.json();
-        if (result.success) {
-            tempEmail = emailInput; 
-            document.getElementById("loginModal").style.display = "none";
-            document.getElementById("verifyModal").style.display = "flex";
-        } else {
-            showMessage('register', result.message);
-        }
-    } catch (err) {
-        showMessage('register', "Failed to contact server.");
-    } finally {
-        btn.textContent = "Get Verification Code";
-        btn.disabled = false;
+    const data = await res.json();
+    if (data.success) {
+        flowType = "register";
+        tempEmail = email;
+        document.getElementById("codeSection").style.display = "block";
+    } else {
+        alert(data.message);
     }
 });
 
+
+/* ==========================================
+   5. VERIFY CODE
+   ========================================== */
+document.getElementById("verifyCodeBtn").onclick = async () => {
+    const codeInput = document.getElementById("regVerifyCode").value;
+    if (!codeInput) return alert("Enter verification code");
+
+    const res = await fetch("/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            email: tempEmail,
+            code: codeInput
+        })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        tempCode = codeInput;
+        loginModal.style.display = "none";
+        verifyModal.style.display = "flex";
+    } else {
+        alert("Invalid code");
+    }
+};
+
+
+/* ==========================================
+   6. FORGOT PASSWORD - INITIAL STEP
+   ========================================== */
+document.getElementById("forgotPasswordLink").onclick = async e => {
+    e.preventDefault();
+    const email = prompt("Enter your email"); 
+    if (!email) return;
+
+    const res = await fetch("/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "reset" })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        flowType = "reset";
+        tempEmail = email;
+        // 关键：重置也借用注册的验证码输入框显示出来
+        document.getElementById("codeSection").style.display = "block";
+        alert("Code sent to email. Please enter it in the verification box.");
+    } else {
+        alert(data.message);
+    }
+};
+
+
+/* ==========================================
+   7. FINISH PROCESS (REGISTER / RESET)
+   ========================================== */
 document.getElementById("finishRegisterBtn").onclick = async () => {
-    const code = document.getElementById("regVerifyCode").value;
     const password = document.getElementById("regPassword").value;
     const confirm = document.getElementById("regConfirmPassword").value;
 
-    if (password !== confirm) return alert("Passwords do not match!");
-    if (password.length < 8) return alert("Password too short!");
+    if (password !== confirm) return alert("Passwords do not match");
 
-    try {
-        const res = await fetch("/auth/complete-registration", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: tempEmail, 
-                code, 
-                password,
-                username: tempEmail.split('@')[0]
-            })
-        });
-        
-        const data = await res.json();
-        if (data.success) {
-            alert("Account Activated! You can now login.");
-            location.reload();
-        } else {
-            alert("Error: " + data.message);
-        }
-    } catch (err) { alert("Verification failed."); }
-};
+    let url = "/auth/complete-registration";
+    let payload = {
+        email: tempEmail,
+        code: tempCode,
+        password,
+        username: tempEmail.split("@")[0]
+    };
 
-const regPass = document.getElementById("regPassword");
-if (regPass) {
-    regPass.addEventListener('input', () => {
-        const val = regPass.value;
-        const update = (id, valid) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.toggle('valid', valid);
-                el.innerText = valid ? el.innerText.replace('×', '√') : el.innerText.replace('√', '×');
-            }
+    if (flowType === "reset") {
+        url = "/auth/reset-password";
+        payload = {
+            email: tempEmail,
+            code: tempCode,
+            newPassword: password
         };
-        update("reg-req-length", val.length >= 8);
-        update("reg-req-upper", /[A-Z]/.test(val));
-        update("reg-req-num", /[0-9]/.test(val));
-    });
-}
+    }
 
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.login-card form').forEach(f => f.classList.remove('active'));
-        tab.classList.add('active');
-        const targetId = tab.getAttribute('data-target') === 'login' ? 'loginForm' : 'registerForm';
-        document.getElementById(targetId).classList.add('active');
+    const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
     });
-});
+
+    const data = await res.json();
+    if (data.success) {
+        alert("Success");
+        location.reload();
+    } else {
+        alert(data.message);
+    }
+};
