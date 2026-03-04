@@ -1,5 +1,6 @@
 let tempEmail = ""; 
 let resetEmailStorage = "";
+let tempCode = "";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");

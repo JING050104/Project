@@ -291,9 +291,9 @@
             const password = document.getElementById("regPassword").value;
             const confirm = document.getElementById("regConfirmPassword").value;
 
-            const isValid = validatePassword(password);
-            if (isValid !== true) return alert(isValid);
             if (password !== confirm) return alert("Passwords do not match!");
+            if (password.length < 8) return alert("Password too short!");
+            if (!tempCode) return alert("Session expired. Please verify your email again."); 
 
             try {
                 const res = await fetch("/auth/complete-registration", {
@@ -301,17 +301,22 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         email: tempEmail, 
-                        password, 
-                        username: tempEmail.split('@')[0] // 默认将邮箱前缀作为用户名
+                        code: tempCode, 
+                        password: password,
+                        username: tempEmail.split('@')[0]
                     })
                 });
                 
                 const data = await res.json();
                 if (data.success) {
-                    alert("Account Activated!");
+                    alert("Account Activated! You can now login.");
                     location.reload();
-                } else alert(data.message);
-            } catch (err) { alert("Verification failed."); }
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (err) { 
+                alert("Verification failed."); 
+            }
         };
 
         async function sendResetCode() {
@@ -386,30 +391,29 @@
         }
 
         document.getElementById("verifyCodeBtn").onclick = async () => {
-            const code = document.getElementById("regVerifyCode").value;
-            if (!code) return alert("Enter verification code");
+            const codeInput = document.getElementById("regVerifyCode").value;
+            if (!codeInput) return alert("Enter verification code");
 
             const res = await fetch("/auth/verify-code", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     email: tempEmail,
-                    code
+                    code: codeInput
                 })
             });
 
             const data = await res.json();
-
             if (data.success) {
-                loginModal.style.display = "none"; 
-                verifyModal.style.display = "flex"; 
+                tempCode = codeInput; 
+                document.getElementById("loginModal").style.display = "none"; 
+                document.getElementById("verifyModal").style.display = "flex"; 
                 document.getElementById("verifyStep2").style.display = "block";
-                document.getElementById("codeSection").style.display = "none";
             } else {
                 alert("Invalid Code");
             }
         };
-        
+
         window.addEventListener("load", () => {
             if(localStorage.getItem("codeSentTime")){
                 startResendTimer();
