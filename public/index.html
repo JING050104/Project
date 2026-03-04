@@ -257,9 +257,10 @@
         document.getElementById("registerForm").onsubmit = async (e) => {
             e.preventDefault();
             const emailInput = e.target.email.value;
-            const btn = e.target.querySelector('button');
+            const btn = e.target.querySelector('button[type="submit"]');
             btn.textContent = "Checking...";
             btn.disabled = true;
+
             try {
                 const res = await fetch("/auth/send-reg-code", {
                     method: "POST",
@@ -267,22 +268,22 @@
                     body: JSON.stringify({ email: emailInput })
                 });
                 const data = await res.json();
-                
-                if (result.success) {
-                tempEmail = emailInput;
-                document.getElementById("codeSection").style.display = "block";
-                btn.style.display = "none";
-                localStorage.setItem("codeSentTime", Date.now());
-                startResendTimer();
-            }
+
+                if (data.success) {
+                    tempEmail = emailInput;
+                    document.getElementById("codeSection").style.display = "block";
+                    btn.style.display = "none";
+                    localStorage.setItem("codeSentTime", Date.now());
+                    startResendTimer();
                 } else {
                     alert(data.message);
                 }
-            } catch (err) { 
-                alert("Server connection timeout. Please check your email later."); 
-            } finally { 
-                btn.textContent = "Get Verification Code"; 
-                btn.disabled = false; 
+            } catch (err) {
+                alert("Server connection timeout. Please check your email later.");
+            } finally {
+
+                btn.textContent = "Get Verification Code";
+                btn.disabled = false;
             }
         };
 
