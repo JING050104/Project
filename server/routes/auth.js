@@ -28,7 +28,7 @@ router.post('/send-reg-code', async (req, res) => {
 
         await sgMail.send({
             to: email,
-            from: "leewanjing040501@gmail.com",
+            from: "test@example.com",
             subject: "CoverageQuest Registration Code",
             text: `Your verification code is: ${verifyCode}`,
         });
