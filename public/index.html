@@ -400,7 +400,7 @@
             const data = await res.json();
             if (data.success) {
                 document.getElementById("codeSection").style.display = "none";
-                verifyModal.style.display = "flex";
+                document.getElementById("verifyStep2").style.display = "block";
             } else {
                 alert("Invalid Code");
             }
