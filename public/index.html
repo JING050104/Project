@@ -49,13 +49,27 @@
     </div>
 
     <div id="verifyModal" class="modal-overlay">
-        <div class="login-card">
-            <span class="close-modal" onclick="closeVerify()">&times;</span>
-            <h2>Complete Registration</h2>
-            <p>Enter the 6-digit code and set your password.</p>
-            
-            <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6" required>
-            
+    <div class="login-card">
+        <span class="close-modal" onclick="closeVerify()">&times;</span>
+        <div id="verifyStep1">
+            <h2>Email Verification</h2>
+            <p>Enter the 6-digit code sent to your email.</p>
+
+            <input type="text"
+                   id="regVerifyCode"
+                   class="large-code-input"
+                   placeholder="6 - d i g i t  C o d e"
+                   maxlength="6"
+                   required>
+
+            <button id="verifyCodeBtn" class="submit-btn">
+                Verify Code
+            </button>
+        </div>
+        <div id="verifyStep2" style="display:none;">
+
+            <h2>Create Password</h2>
+
             <div class="password-container">
                 <input type="password" id="regPassword" placeholder="Create Password" required>
                 <span class="toggle-eye" onclick="toggleVisibility('regPassword')"></span>
@@ -73,9 +87,14 @@
                 <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
                 <span class="toggle-eye" onclick="toggleVisibility('regConfirmPassword')"></span>
             </div>
-            
-            <button id="finishRegisterBtn" class="submit-btn">Create Account</button>
+
+            <button id="finishRegisterBtn" class="submit-btn">
+                Create Account
+            </button>
+
         </div>
+
+    </div>
     </div>
 
     <div id="resetModal" class="modal-overlay">
@@ -281,7 +300,6 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         email: tempEmail, 
-                        code, 
                         password, 
                         username: tempEmail.split('@')[0] // 默认将邮箱前缀作为用户名
                     })
@@ -345,6 +363,30 @@
             } catch (err) { alert("Reset failed."); }
             finally { btn.textContent = "Update Password"; btn.disabled = false; }
         }
+
+        document.getElementById("verifyCodeBtn").onclick = async () => {
+        const code = document.getElementById("regVerifyCode").value;
+        if (!code) return alert("Enter verification code");
+        try {
+            const res = await fetch("/auth/verify-code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: tempEmail,
+                    code
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById("verifyStep1").style.display = "none";
+                document.getElementById("verifyStep2").style.display = "block";
+            } else {
+                alert(data.message || "Invalid Code");
+            }
+            } catch {
+                alert("Verification failed");
+            }
+        };
     </script>
 </body>
 </html>
