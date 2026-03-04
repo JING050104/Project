@@ -204,10 +204,29 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     }
 });
 
+const PORT = process.env.PORT || 3000; 
+setInterval(async () => {
+
+    try {
+
+        await db.execute(`
+            DELETE FROM users
+            WHERE is_verified = 0
+            AND reset_expires < NOW()
+        `);
+
+        console.log("Expired unverified users cleaned");
+
+    } catch(err) {
+
+        console.error("Cleanup error:", err);
+
+    }
+
+}, 10 * 60 * 1000);
+
 // --- 8. 启动服务器 ---
 // 优先使用云端分配的端口，如果本地运行则默认使用 3000
-const PORT = process.env.PORT || 3000; 
-
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running! Port: ${PORT}`); 
 });

@@ -268,10 +268,13 @@
                 });
                 const data = await res.json();
                 
-                if (data.success) {
-                    tempEmail = emailInput; 
-                    document.getElementById("codeSection").style.display = "block";
-                    e.target.querySelector('button').style.display = "none";
+                if (result.success) {
+                tempEmail = emailInput;
+                document.getElementById("codeSection").style.display = "block";
+                btn.style.display = "none";
+                localStorage.setItem("codeSentTime", Date.now());
+                startResendTimer();
+            }
                 } else {
                     alert(data.message);
                 }
@@ -360,6 +363,26 @@
             } catch (err) { alert("Reset failed."); }
             finally { btn.textContent = "Update Password"; btn.disabled = false; }
         }
+        
+        function startResendTimer(){
+
+            const btn = document.querySelector("#registerForm button");
+            const sentTime = localStorage.getItem("codeSentTime");
+            if(!sentTime) return;
+            const cooldown = 60000;
+            const interval = setInterval(()=>{
+                const remaining = cooldown - (Date.now() - sentTime);
+                if(remaining <= 0){
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.textContent = "Get Verification Code";
+                    localStorage.removeItem("codeSentTime");
+                }else{
+                    btn.disabled = true;
+                    btn.textContent = `Resend (${Math.ceil(remaining/1000)})`;
+                }
+            },1000);
+        }
 
         document.getElementById("verifyCodeBtn").onclick = async () => {
 
@@ -381,6 +404,12 @@
                 alert("Invalid Code");
             }
         };
+
+        window.addEventListener("load", () => {
+            if(localStorage.getItem("codeSentTime")){
+                startResendTimer();
+            }
+        });
     </script>
 </body>
 </html>

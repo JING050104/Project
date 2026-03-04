@@ -8,39 +8,76 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // 1. 
 router.post('/send-reg-code', async (req, res) => {
+
     const { email } = req.body;
+
     try {
-        const [existing] = await db.execute("SELECT id, is_verified FROM users WHERE email = $1", [email]);
-        if (existing && existing.length > 0 && existing[0].is_verified === 1) { // 修正为判断 1
-            return res.json({ success: false, message: "Email already registered." });
+
+        const [existing] = await db.execute(
+            "SELECT id, is_verified, reset_expires, code_attempts FROM users WHERE email = $1",
+            [email]
+        );
+
+        if (existing.length > 0 && existing[0].is_verified === 1) {
+            return res.json({
+                success:false,
+                message:"Email already registered."
+            });
+        }
+
+        if (existing.length > 0 && existing[0].code_attempts >= 5) {
+            return res.json({
+                success:false,
+                message:"Too many requests. Try again later."
+            });
+        }
+
+        if (existing.length > 0 && existing[0].reset_expires) {
+
+            const lastSent = new Date(existing[0].reset_expires).getTime() - (15 * 60000);
+            const now = Date.now();
+
+            if ((now - lastSent) < 60000) {
+                return res.json({
+                    success:false,
+                    message:"Please wait 60 seconds before requesting another code."
+                });
+            }
         }
 
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 15 * 60000); 
+        const expires = new Date(Date.now() + 15 * 60000);
 
         await db.execute(`
-            INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password) 
-            VALUES ($1, $2, $3, 0, 'user_' || floor(random()*10000), 'pending_pw')
-            ON CONFLICT (email) 
-            DO UPDATE SET reset_code = $2, reset_expires = $3`, 
-            [email, verifyCode, expires]
-        );
+            INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password, code_attempts)
+            VALUES ($1,$2,$3,0,'pending_user','pending_pw',1)
+            ON CONFLICT(email)
+            DO UPDATE SET
+                reset_code = $2,
+                reset_expires = $3,
+                code_attempts = users.code_attempts + 1
+        `,[email,verifyCode,expires]);
 
         await sgMail.send({
             to: email,
-            from: "test@example.com",
+            from: "CoverageQuest <test@example.com>",
             subject: "CoverageQuest Registration Code",
-            text: `Your verification code is: ${verifyCode}`,
+            text: `Your verification code is: ${verifyCode}`
         });
 
-        res.json({ success: true, message: "Code sent!" });
-    } catch (err) {
-    console.error("FULL ERROR:", err);
-    return res.status(500).json({
-        success: false,
-        message: err.message
-    });
-}
+        res.json({success:true,message:"Code sent"});
+
+    } catch(err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success:false,
+            message:"Server error"
+        });
+
+    }
+
 });
 
 // VERIFY CODE
