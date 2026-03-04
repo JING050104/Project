@@ -60,14 +60,15 @@ router.post('/send-reg-code', async (req, res) => {
 
         await sgMail.send({
             to: email,
-            from: "leewanjing040501@gmail.com",
-            subject: "CoverageQuest Registration Code",
-            text: `
-            Hello,
-            Your CoverageQuest verification code is: ${verifyCode}
-            This code will expire in 10 minutes.
-            If you did not request this code, please ignore this email.
-            CoverageQuest Team`
+            from: "CoverageQuest <leewanjing040501@gmail.com>",
+            subject: "CoverageQuest Verification Code",
+            text: `Your verification code is: ${verifyCode}`,
+            html: `
+                <h2>CoverageQuest</h2>
+                <p>Your verification code:</p>
+                <h1>${verifyCode}</h1>
+                <p>This code expires in 10 minutes.</p>
+            `
         });
 
         res.json({success:true,message:"Code sent"});
@@ -226,14 +227,15 @@ router.post('/forgot-password', async (req, res) => {
 
         await sgMail.send({
             to: email,
-            from: "leewanjing040501@gmail.com",
-            subject: "CoverageQuest Registration Code",
-            text: `
-            Hello,
-            Your CoverageQuest verification code is: ${verifyCode}
-            This code will expire in 10 minutes.
-            If you did not request this code, please ignore this email.
-            CoverageQuest Team`
+            from: "CoverageQuest <leewanjing040501@gmail.com>",
+            subject: "CoverageQuest Verification Code",
+            text: `Your verification code is: ${verifyCode}`,
+            html: `
+                <h2>CoverageQuest</h2>
+                <p>Your verification code:</p>
+                <h1>${verifyCode}</h1>
+                <p>This code expires in 10 minutes.</p>
+            `
         });
 
         return res.json({ success: true, message: "Code sent!" });
