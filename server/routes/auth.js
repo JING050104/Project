@@ -62,7 +62,12 @@ router.post('/send-reg-code', async (req, res) => {
             to: email,
             from: "leewanjing040501@gmail.com",
             subject: "CoverageQuest Registration Code",
-            text: `Your verification code is: ${verifyCode}`
+            text: `
+            Hello,
+            Your CoverageQuest verification code is: ${verifyCode}
+            This code will expire in 10 minutes.
+            If you did not request this code, please ignore this email.
+            CoverageQuest Team`
         });
 
         res.json({success:true,message:"Code sent"});
@@ -223,7 +228,12 @@ router.post('/forgot-password', async (req, res) => {
             to: email,
             from: "leewanjing040501@gmail.com",
             subject: "CoverageQuest Registration Code",
-            text: `Your verification code is: ${code}`,
+            text: `
+            Hello,
+            Your CoverageQuest verification code is: ${verifyCode}
+            This code will expire in 10 minutes.
+            If you did not request this code, please ignore this email.
+            CoverageQuest Team`
         });
 
         return res.json({ success: true, message: "Code sent!" });
