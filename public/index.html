@@ -271,6 +271,7 @@
                 if (data.success) {
                     tempEmail = emailInput; 
                     document.getElementById("codeSection").style.display = "block";
+                    e.target.querySelector('button').style.display = "none";
                 } else {
                     alert(data.message);
                 }
