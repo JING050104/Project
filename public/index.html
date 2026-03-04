@@ -386,9 +386,9 @@
         }
 
         document.getElementById("verifyCodeBtn").onclick = async () => {
-
             const code = document.getElementById("regVerifyCode").value;
             if (!code) return alert("Enter verification code");
+
             const res = await fetch("/auth/verify-code", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -397,15 +397,19 @@
                     code
                 })
             });
+
             const data = await res.json();
+
             if (data.success) {
-                document.getElementById("codeSection").style.display = "none";
+                loginModal.style.display = "none"; 
+                verifyModal.style.display = "flex"; 
                 document.getElementById("verifyStep2").style.display = "block";
+                document.getElementById("codeSection").style.display = "none";
             } else {
                 alert("Invalid Code");
             }
         };
-
+        
         window.addEventListener("load", () => {
             if(localStorage.getItem("codeSentTime")){
                 startResendTimer();
