@@ -378,7 +378,7 @@
             const data = await res.json();
             if (data.success) {
                 document.getElementById("regVerifyCode").disabled = true;
-                document.getElementById("verifyStep1").style.display = "none";
+                document.getElementById("verifyStep1").remove();
                 document.getElementById("verifyStep2").style.display = "block";
             } else {
                 alert(data.message || "Invalid Code");
