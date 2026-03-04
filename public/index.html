@@ -64,21 +64,6 @@
     <div id="verifyModal" class="modal-overlay">
     <div class="login-card">
         <span class="close-modal" onclick="closeVerify()">&times;</span>
-        <div id="verifyStep1">
-            <h2>Email Verification</h2>
-            <p>Enter the 6-digit code sent to your email.</p>
-
-            <input type="text"
-                   id="regVerifyCode"
-                   class="large-code-input"
-                   placeholder="6 - d i g i t  C o d e"
-                   maxlength="6"
-                   required>
-
-            <button id="verifyCodeBtn" class="submit-btn">
-                Verify Code
-            </button>
-        </div>
         <div id="verifyStep2" style="display:none;">
 
             <h2>Create Password</h2>
@@ -376,9 +361,9 @@
         }
 
         document.getElementById("verifyCodeBtn").onclick = async () => {
-        const code = document.getElementById("regVerifyCode").value;
-        if (!code) return alert("Enter verification code");
-        try {
+
+            const code = document.getElementById("regVerifyCode").value;
+            if (!code) return alert("Enter verification code");
             const res = await fetch("/auth/verify-code", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -389,14 +374,10 @@
             });
             const data = await res.json();
             if (data.success) {
-                document.getElementById("regVerifyCode").disabled = true;
-                document.getElementById("verifyStep1").remove();
-                document.getElementById("verifyStep2").style.display = "block";
+                document.getElementById("codeSection").style.display = "none";
+                verifyModal.style.display = "flex";
             } else {
-                alert(data.message || "Invalid Code");
-            }
-            } catch {
-                alert("Verification failed");
+                alert("Invalid Code");
             }
         };
     </script>
