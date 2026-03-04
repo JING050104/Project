@@ -17,6 +17,7 @@ let countdown;
 let towers = [];
 let enemies = [];
 let floatingTexts = [];
+let bullets = [];
 
 let frames = 0;
 let selectedType = 'home';
@@ -116,6 +117,7 @@ class Risk {
         this.health = 5;
         this.x = canvas.width;
         this.y = y;
+        this.hitFlash = 0;
 
         const types = ['fire', 'flood', 'thief', 'virus'];
         this.type = types[Math.floor(Math.random() * types.length)];
@@ -124,38 +126,89 @@ class Risk {
             this.speed = 1.8;
             this.damage = 0.8;
             this.label = "🦠";
-        }
-        else if (this.type === 'fire') {
+        } else if (this.type === 'fire') {
             this.speed = 0.8;
             this.damage = 1.8;
             this.label = "🔥";
-        }
-        else if (this.type === 'flood') {
+        } else if (this.type === 'flood') {
             this.speed = 0.6;
             this.damage = 1.2;
             this.label = "🌊";
-        }
-        else {
+        } else {
             this.speed = 1.3;
             this.damage = 0.5;
             this.label = "👤";
         }
+
+        this.baseSpeed = this.speed;
+        this.blocked = false;
+
+        this.attackTimer = 0;
+        this.attackSpeed = 60; // 攻击间隔
     }
 
     update() {
-        this.x -= this.speed;
+        if (!this.blocked) {
+            this.x -= this.baseSpeed;
+        }
     }
 
     draw() {
-        ctx.fillStyle = '#c0392b';
-        ctx.beginPath();
-        ctx.arc(this.x + 50, this.y + 50, 30, 0, Math.PI * 2);
-        ctx.fill();
 
+    if (this.hitFlash > 0) {
         ctx.fillStyle = "white";
-        ctx.fillText(this.label, this.x + 40, this.y + 55);
+        this.hitFlash--;
+    } else {
+        ctx.fillStyle = '#c0392b';
+    }
+
+    ctx.beginPath();
+    ctx.arc(this.x + 50, this.y + 50, 30, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "black";
+    ctx.fillText(this.label, this.x + 40, this.y + 55);
     }
 }
+
+class Bullet {
+
+    constructor(x, y, target, damage) {
+        this.x = x;
+        this.y = y;
+        this.target = target;
+        this.damage = damage;
+        this.speed = 6;
+        this.hit = false;
+    }
+
+    update() {
+
+        if (!this.target) return;
+
+        let dx = (this.target.x + 50) - this.x;
+        let dy = (this.target.y + 50) - this.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 10) {
+            this.target.health -= this.damage;
+            this.target.hitFlash = 10
+            this.hit = true;
+            return;
+        }
+
+        this.x += dx / dist * this.speed;
+        this.y += dy / dist * this.speed;
+    }
+
+    draw() {
+        ctx.fillStyle = "yellow";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
 
 /* ========================
    👑 Boss
@@ -294,22 +347,74 @@ function handleLogic() {
 
     handleWave();
 
+    /* ========= Stage 1 ========= */
+
     towers.forEach(tower => {
+
         tower.timer++;
 
-        enemies.forEach(enemy => {
-            let dx = enemy.x - tower.x;
-            let dy = enemy.y - tower.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
+        let target = null;
+        let minDist = Infinity;
 
-            if (dist < tower.range && tower.timer >= tower.attackSpeed) {
-                enemy.health -= tower.attackPower;
-                tower.timer = 0;
+        enemies.forEach(enemy => {
+
+            let dx = (enemy.x + 50) - (tower.x + 50);
+            let dy = (enemy.y + 50) - (tower.y + 50);
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < tower.range && dist < minDist) {
+                minDist = dist;
+                target = enemy;
             }
         });
+
+        if (target && tower.timer >= tower.attackSpeed) {
+
+            bullets.push(
+                new Bullet(
+                    tower.x + 50,
+                    tower.y + 50,
+                    target,
+                    tower.attackPower
+                )
+            );
+            tower.timer = 0;
+
+            ctx.strokeStyle = "yellow";
+            ctx.beginPath();
+            ctx.moveTo(tower.x + 50, tower.y + 50);
+            ctx.lineTo(target.x + 50, target.y + 50);
+            ctx.stroke();
+        }
     });
 
+    /* ========= Stage 2 ========= */
+
     enemies.forEach((en, i) => {
+
+        en.blocked = false;
+
+        towers.forEach(tower => {
+
+            let closestX = Math.max(tower.x, Math.min(en.x + 50, tower.x + 100));
+            let closestY = Math.max(tower.y, Math.min(en.y + 50, tower.y + 100));
+
+            let dx = (en.x + 50) - closestX;
+            let dy = (en.y + 50) - closestY;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 30) {
+
+                en.blocked = true;
+
+                en.attackTimer++;
+
+                if (en.attackTimer >= en.attackSpeed) {
+                    tower.health -= en.damage;
+                    en.attackTimer = 0;
+                }
+            }
+        });
 
         en.update();
         en.draw();
@@ -317,23 +422,34 @@ function handleLogic() {
         if (en.health <= 0) {
             gold += 20;
             enemies.splice(i, 1);
-
-            floatingTexts.push(
-                new FloatingText("+20", en.x, en.y, "#f1c40f")
-            );
-
             return;
         }
 
         if (en.x < -50) {
+
             baseHealth -= 10;
-            enemies.splice(i, 1);
 
             if (baseHealth <= 0) {
+                baseHealth = 0;           
                 gameState = "gameOver";
             }
+
+            enemies.splice(i, 1);
         }
     });
+
+    /* ========= Stage 3 ========= */
+    bullets.forEach((b, i) => {
+
+    b.update();
+    b.draw();
+
+    if (b.hit || !b.target || b.target.health <= 0) {
+        bullets.splice(i, 1);
+    }
+    });
+
+    /* ========= HUD ========= */
 
     towers = towers.filter(t => t.health > 0);
 
@@ -395,7 +511,7 @@ function startTimer() {
 
     countdown = setInterval(() => {
 
-        if (gameState !== "playing") return;
+        if (gameState !== "playing" || isPaused) return;
 
         timeLeft--;
 
@@ -414,7 +530,13 @@ pauseBtn.addEventListener("click", () => {
 
     isPaused = !isPaused;
 
-    pauseBtn.textContent = isPaused ? "▶" : "⏸";
+    if (isPaused) {
+        pauseBtn.textContent = "▶";
+        document.getElementById("wrapper").style.pointerEvents = "none";
+    } else {
+        pauseBtn.textContent = "⏸";
+        document.getElementById("wrapper").style.pointerEvents = "auto";
+    }
 
 });
 

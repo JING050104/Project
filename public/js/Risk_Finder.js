@@ -194,7 +194,6 @@ function endGame() {
     document.getElementById('final-score').innerText = totalScore;
     document.getElementById('game-over-modal').style.display = 'flex';
 
-    // 2. 将分数发送到数据库 (注意：不需要传 userId，后端会自动识别)
     fetch('/api/save-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
