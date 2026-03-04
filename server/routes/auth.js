@@ -43,6 +43,38 @@ router.post('/send-reg-code', async (req, res) => {
 }
 });
 
+// VERIFY CODE
+router.post('/verify-code', async (req, res) => {
+    const { email, code } = req.body;
+
+    try {
+
+        const [user] = await db.execute(
+            "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()",
+            [email, code]
+        );
+
+        if (!user || user.length === 0) {
+            return res.json({
+                success:false,
+                message:"Invalid or expired code"
+            });
+        }
+
+        return res.json({
+            success:true,
+            message:"Code verified"
+        });
+
+    } catch(err){
+        console.error("VERIFY CODE ERROR:", err);
+        res.status(500).json({
+            success:false,
+            message:"Server error"
+        });
+    }
+});
+
 // 2. 
 router.post('/complete-registration', async (req, res) => {
     const { email, code, password, username } = req.body; 
@@ -223,6 +255,38 @@ router.post('/update-profile', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });
+    }
+});
+
+// VERIFY CODE ONLY
+router.post('/verify-code', async (req, res) => {
+    const { email, code } = req.body;
+
+    try {
+
+        const [user] = await db.execute(
+            "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()",
+            [email, code]
+        );
+
+        if (!user || user.length === 0) {
+            return res.json({
+                success:false,
+                message:"Invalid or expired code"
+            });
+        }
+
+        return res.json({
+            success:true,
+            message:"Code verified"
+        });
+
+    } catch(err){
+        console.error("VERIFY CODE ERROR:", err);
+        res.status(500).json({
+            success:false,
+            message:"Server error"
+        });
     }
 });
 module.exports = router;
