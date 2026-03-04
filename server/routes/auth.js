@@ -4,13 +4,12 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const db = require("../db");
 const sgMail = require("@sendgrid/mail");
-
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// SEND VERIFICATION CODE
-router.post('/send-code', async (req, res) => {
+// 1. 
+router.post('/send-reg-code', async (req, res) => {
 
-    const { email, type } = req.body;
+    const { email } = req.body;
 
     try {
 
@@ -19,30 +18,13 @@ router.post('/send-code', async (req, res) => {
             [email]
         );
 
-
-        // REGISTER CHECK
-        if (type === "register") {
-            if (existing.length > 0 && existing[0].is_verified === 1) {
-                return res.json({
-                    success:false,
-                    message:"Email already registered."
-                });
-            }
+        if (existing.length > 0 && existing[0].is_verified === 1) {
+            return res.json({
+                success:false,
+                message:"Email already registered."
+            });
         }
 
-
-        // RESET CHECK
-        if (type === "reset") {
-            if (existing.length === 0) {
-                return res.json({
-                    success:false,
-                    message:"Email not found."
-                });
-            }
-        }
-
-
-        // LIMIT ATTEMPTS
         if (existing.length > 0 && existing[0].code_attempts >= 5) {
             return res.json({
                 success:false,
@@ -50,8 +32,6 @@ router.post('/send-code', async (req, res) => {
             });
         }
 
-
-        // RESEND COOLDOWN
         if (existing.length > 0 && existing[0].reset_expires) {
 
             const lastSent = new Date(existing[0].reset_expires).getTime() - (15 * 60000);
@@ -65,10 +45,8 @@ router.post('/send-code', async (req, res) => {
             }
         }
 
-
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 15 * 60000);
-
 
         await db.execute(`
             INSERT INTO users (email, reset_code, reset_expires, is_verified, username, password, code_attempts)
@@ -79,7 +57,6 @@ router.post('/send-code', async (req, res) => {
                 reset_expires = $3,
                 code_attempts = users.code_attempts + 1
         `,[email,verifyCode,expires]);
-
 
         await sgMail.send({
             to: email,
@@ -94,9 +71,7 @@ router.post('/send-code', async (req, res) => {
             `
         });
 
-
         res.json({success:true,message:"Code sent"});
-
 
     } catch(err) {
 
@@ -113,7 +88,6 @@ router.post('/send-code', async (req, res) => {
 
 // VERIFY CODE
 router.post('/verify-code', async (req, res) => {
-
     const { email, code } = req.body;
 
     try {
@@ -136,185 +110,201 @@ router.post('/verify-code', async (req, res) => {
         });
 
     } catch(err){
-
-        console.error(err);
-
+        console.error("VERIFY CODE ERROR:", err);
         res.status(500).json({
             success:false,
             message:"Server error"
         });
-
     }
-
 });
 
-// COMPLETE REGISTRATION
+// 2. 
 router.post('/complete-registration', async (req, res) => {
-
-    const { email, code, password, username } = req.body;
-
+    const { email, code, password, username } = req.body; 
     try {
-
         const [user] = await db.execute(
             "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()",
             [email, code]
         );
 
         if (!user || user.length === 0) {
-            return res.status(400).json({
-                success:false,
-                message:"Invalid or expired code"
-            });
+            return res.status(400).json({ success: false, message: "Invalid or expired code" });
         }
 
-
-        const hashedPw = await bcrypt.hash(password, 10);
-
-
+        // 核心修正：必须加 await 且调用 bcrypt.hash
+        const hashedPw = await bcrypt.hash(password, 10); 
+        
         await db.execute(
-            "UPDATE users SET username=$1,password=$2,is_verified=1,reset_code=NULL,reset_expires=NULL WHERE email=$3",
+            "UPDATE users SET username = $1, password = $2, is_verified = 1, reset_code = NULL, reset_expires = NULL WHERE email = $3",
             [username, hashedPw, email]
         );
 
-
-        res.json({
-            success:true,
-            message:"Registration complete!"
-        });
-
-
-    } catch(err) {
-
-        console.error(err);
-
-        res.status(500).json({
-            success:false,
-            message:"Registration failed"
-        });
-
+        res.json({ success: true, message: "Registration complete!" });
+    } catch (err) {
+        console.error("FINAL REGISTRATION ERROR:", err.message);
+        res.status(500).json({ success: false, message: "Final update failed" });
     }
-
 });
 
-
-
-// RESET PASSWORD
-router.post('/reset-password', async (req, res) => {
-
-    const { email, code, newPassword } = req.body;
-
-    try {
-
-        const [user] = await db.execute(
-            "SELECT id FROM users WHERE email=$1 AND reset_code=$2 AND reset_expires > NOW()",
-            [email, code]
-        );
-
-        if (user.length === 0) {
-            return res.json({
-                success:false,
-                message:"Invalid or expired code"
-            });
-        }
-
-
-        const hashedPw = await bcrypt.hash(newPassword, 10);
-
-
-        await db.execute(
-            "UPDATE users SET password=$1,reset_code=NULL,reset_expires=NULL WHERE email=$2",
-            [hashedPw, email]
-        );
-
-
-        res.json({
-            success:true,
-            message:"Password updated"
-        });
-
-    } catch(err) {
-
-        console.error(err);
-
-        res.status(500).json({
-            success:false,
-            message:"Reset failed"
-        });
-
-    }
-
-});
-
-// LOGIN
+// LOGIN ROUTE
 router.post("/login", (req, res, next) => {
-
     passport.authenticate("local", (err, user, info) => {
-
         if (err) {
-            return res.status(500).json({
-                success:false,
-                message:"Server error"
-            });
+            console.error("Login Error:", err);
+            return res.status(500).json({ success: false, message: "Server error during login." });
         }
-
+        
+        // 核心修复：如果验证失败，返回 JSON 错误信息，而不是 redirect
         if (!user) {
-            return res.status(401).json({
-                success:false,
-                message: info ? info.message : "Invalid credentials"
+            return res.status(401).json({ 
+                success: false, 
+                message: info ? info.message : "Invalid credentials." 
             });
         }
 
-        req.logIn(user, err => {
-
+        req.logIn(user, (err) => {
             if (err) return next(err);
-
-            req.session.save(err => {
-
+            req.session.save((err) => {
                 if (err) return next(err);
-
-                res.json({
-                    success:true,
-                    message:"Login successful"
-                });
-
+                return res.json({ success: true, message: "Login successful" });
             });
-
         });
-
-    })(req,res,next);
-
+    })(req, res, next);
 });
 
-// USER SESSION
-router.get("/user", (req,res)=>{
-
-    if(req.isAuthenticated()){
-        res.json({success:true,user:req.user});
-    }else{
-        res.status(401).json({success:false});
-    }
-
+router.get("/user", (req, res) => {
+  if (req.isAuthenticated()) {
+    // Send back the user data if logged in
+    res.json({ success: true, user: req.user });
+  } else {
+    // Send a 401 Unauthorized status if not logged in
+    res.status(401).json({ success: false, user: null });
+  }
 });
 
-// GOOGLE LOGIN
-router.get("/google",
-    passport.authenticate("google",{scope:["profile","email"]})
-);
+// GOOGLE ROUTES
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-router.get("/google/callback",
-    passport.authenticate("google",{failureRedirect:"/login.html"}),
-    (req,res)=>{
-        req.session.save(()=>{
-            res.redirect("/dashboard.html");
-        });
-    }
+router.get("/google/callback", 
+  passport.authenticate("google", { failureRedirect: "/login.html" }),
+  (req, res) => {
+    // Manually save the session before redirecting
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.redirect("/login.html");
+      }
+      res.redirect("/dashboard.html");
+    });
+  }
 );
 
 // LOGOUT
-router.get("/logout",(req,res)=>{
-    req.logout(()=>{
-        res.redirect("/index.html");
+router.get("/logout", (req, res) => {
+  req.logout(() => res.redirect("/index.html"));
+});
+
+// FORGOT PASSWORD
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [users] = await db.execute(
+            "SELECT id, email FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1::text))",
+            [email]
+        );
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({ success: false, message: "Email not found" });
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
+
+        await db.execute(
+            "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3",
+            [code, expires, users[0].email]
+        );
+
+        await sgMail.send({
+            to: email,
+            from: "CoverageQuest <leewanjing040501@gmail.com>",
+            subject: "CoverageQuest Verification Code",
+            text: `Your verification code is: ${verifyCode}`,
+            html: `
+                <h2>CoverageQuest</h2>
+                <p>Your verification code:</p>
+                <h1>${verifyCode}</h1>
+                <p>This code expires in 10 minutes.</p>
+            `
+        });
+
+        return res.json({ success: true, message: "Code sent!" });
+
+    } catch (err) {
+    console.error("FULL ERROR:", err);
+    return res.status(500).json({
+        success: false,
+        message: err.message
     });
+}
+});
+
+//RESET PASSWORD
+router.post('/reset-password', async (req, res) => {
+    const { email, code, newPassword } = req.body;
+    try {
+        const [user] = await db.execute(
+            "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()", 
+            [email, code]
+        );
+
+        if (user.length === 0) return res.json({ success: false, message: "Invalid or expired code" });
+
+        const hashedPw = await require('bcryptjs').hash(newPassword, 10);
+        await db.execute("UPDATE users SET password = $1, reset_code = NULL, reset_expires = NULL WHERE email = $2", [hashedPw, email]);
+
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/update-profile', async (req, res) => {
+    try {
+        if (!req.isAuthenticated()) { 
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { username, email, currentPassword, newPassword } = req.body;
+        const user = req.user;
+
+        // 1. Verify password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password incorrect" });
+        }
+
+        // 2. Hash new password if provided, otherwise keep old one
+        let finalPassword = user.password;
+        if (newPassword) {
+            finalPassword = await bcrypt.hash(newPassword, 10);
+        }
+
+        // 3. Update Database via SQL Query
+        await db.execute(
+            "UPDATE users SET username = $1, email = $2, password = $3 WHERE id = $4",
+            [username, email, finalPassword, user.id]
+        );
+
+        // 4. Update the session so the UI updates
+        req.user.username = username;
+        req.user.email = email;
+        req.user.password = finalPassword;
+
+        res.json({ success: true, message: "Profile updated!" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
 module.exports = router;

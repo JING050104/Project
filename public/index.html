@@ -38,22 +38,9 @@
             </form>
 
             <form id="registerForm">
-            <input type="email" id="regEmail" name="email" placeholder="Enter your Email" required>
-            <button type="submit" class="submit-btn">
-                Get Verification Code
-            </button>
-
-            <div id="codeSection" style="display:none; margin-top:15px;">
-                <input type="text"
-                    id="regVerifyCode"
-                    class="large-code-input"
-                    placeholder="Enter 6-digit code"
-                    maxlength="6">
-                <button type="button" id="verifyCodeBtn" class="submit-btn">
-                    Verify Code
-                </button>
-            </div>
-        </form>
+                <input type="email" name="email" placeholder="Enter your Email" required>
+                <button type="submit" class="submit-btn">Get Verification Code</button>
+            </form>
 
             <a href="/auth/google" class="google-btn-circle">
                 <img src="https://img.icons8.com/color/40/000000/google-logo.png" alt="Google">
@@ -62,12 +49,13 @@
     </div>
 
     <div id="verifyModal" class="modal-overlay">
-    <div class="login-card">
-        <span class="close-modal" onclick="closeVerify()">&times;</span>
-        <div id="verifyStep2" style="display:none;">
-
-            <h2>Create Password</h2>
-
+        <div class="login-card">
+            <span class="close-modal" onclick="closeVerify()">&times;</span>
+            <h2>Complete Registration</h2>
+            <p>Enter the 6-digit code and set your password.</p>
+            
+            <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6" required>
+            
             <div class="password-container">
                 <input type="password" id="regPassword" placeholder="Create Password" required>
                 <span class="toggle-eye" onclick="toggleVisibility('regPassword')"></span>
@@ -85,14 +73,9 @@
                 <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
                 <span class="toggle-eye" onclick="toggleVisibility('regConfirmPassword')"></span>
             </div>
-
-            <button id="finishRegisterBtn" class="submit-btn">
-                Create Account
-            </button>
-
+            
+            <button id="finishRegisterBtn" class="submit-btn">Create Account</button>
         </div>
-
-    </div>
     </div>
 
     <div id="resetModal" class="modal-overlay">
@@ -100,28 +83,17 @@
             <span class="close-modal" id="closeResetBtn">&times;</span>
             
             <div id="resetStep1">
+                <h2>Reset Password</h2>
+                <p>Enter your email to receive a reset code.</p>
                 <input type="email" id="resetEmail" placeholder="Enter your Email" required>
-
-                <button id="resetSendBtn" class="submit-btn">
-                    Get Verification Code
-                </button>
-
-                <div id="resetCodeSection" style="display:none; margin-top:15px;">
-                    <input type="text"
-                        id="resetVerifyCode"
-                        class="large-code-input"
-                        placeholder="Enter 6-digit code"
-                        maxlength="6">
-
-                    <button type="button" id="resetVerifyBtn" class="submit-btn">
-                        Verify Code
-                    </button>
-                </div>
+                <button onclick="sendResetCode()" id="resetSendBtn" class="submit-btn">Send Code</button>
             </div>
 
             <div id="resetStep2" style="display: none;">
                 <h2>Reset Password</h2>
-                <input type="text" id="resetCodeInput" class="large-code-input" placeholder="6-digit code" maxlength="6">
+                <p>Enter the 6-digit code sent to your email.</p>
+                <input type="text" id="resetVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6">
+
                 <div class="password-container">
                     <input type="password" id="newPassword" placeholder="New Password" required>
                     <span class="toggle-eye" onclick="toggleVisibility('newPassword')"></span>
@@ -145,6 +117,234 @@
         </div>
     </div>
 
-    <script src="/js/Login_register.js"></script>
+    <script>
+        const loginModal = document.getElementById("loginModal");
+        const resetModal = document.getElementById("resetModal");
+        const verifyModal = document.getElementById("verifyModal");
+        const ctaBtn = document.getElementById("ctaBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const closeResetBtn = document.getElementById("closeResetBtn");
+
+        // --- PASSWORD VALIDATION FUNCTION ---
+        function validatePassword(pw) {
+            const minLength = 8;
+            const hasUpper = /[A-Z]/.test(pw);
+            const hasLower = /[a-z]/.test(pw);
+            const hasNum = /[0-9]/.test(pw);
+            // Accepts any non-alphanumeric character as special
+            const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+
+            if (pw.length < minLength) return "Password must be at least 8 characters long.";
+            if (!hasUpper) return "Password must include at least one Capital Letter.";
+            if (!hasLower) return "Password must include at least one Small Letter.";
+            if (!hasNum) return "Password must include at least one numeric digit.";
+            if (!hasSpecial) return "Password must include at least one special character.";
+            return true;
+        }
+
+        // --- LIVE REQUIREMENT BOX LOGIC ---
+        function attachLiveValidation(inputId, prefix) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('input', () => {
+                const val = input.value;
+                updateItem(`${prefix}-req-length`, val.length >= 8);
+                updateItem(`${prefix}-req-upper`, /[A-Z]/.test(val));
+                updateItem(`${prefix}-req-lower`, /[a-z]/.test(val));
+                updateItem(`${prefix}-req-num`, /[0-9]/.test(val));
+                updateItem(`${prefix}-req-special`, /[^A-Za-z0-9]/.test(val));
+            });
+        }
+
+        function updateItem(id, isPassed) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isPassed) {
+                el.classList.add('valid');
+                el.innerText = el.innerText.replace('×', '√');
+            } else {
+                el.classList.remove('valid');
+                el.innerText = el.innerText.replace('√', '×');
+            }
+        }
+
+        // Initialize Live Validation
+        attachLiveValidation('regPassword', 'reg');
+        attachLiveValidation('newPassword', 'res');
+
+        // --- MODAL CONTROLS ---
+        if (ctaBtn) ctaBtn.onclick = () => loginModal.style.display = "flex";
+        closeBtn.onclick = () => loginModal.style.display = "none";
+        closeResetBtn.onclick = () => {
+            resetModal.style.display = "none";
+            document.getElementById("resetStep1").style.display = "block";
+            document.getElementById("resetStep2").style.display = "none";
+        };
+
+        function closeVerify() {
+            verifyModal.style.display = 'none';
+            loginModal.style.display = 'flex'; 
+        }
+
+        window.onclick = (e) => {
+            if (e.target === loginModal) loginModal.style.display = "none";
+            if (e.target === resetModal) {
+                resetModal.style.display = "none";
+                document.getElementById("resetStep1").style.display = "block";
+                document.getElementById("resetStep2").style.display = "none";
+            }
+            if (e.target === verifyModal) closeVerify();
+        };
+
+        // --- UI LOGIC ---
+        const tabs = document.querySelectorAll(".tab");
+        const forms = document.querySelectorAll("form");
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                tabs.forEach(t => t.classList.remove("active"));
+                forms.forEach(f => f.classList.remove("active"));
+                tab.classList.add("active");
+                const target = tab.getAttribute("data-target");
+                document.getElementById(target + "Form").classList.add("active");
+            });
+        });
+
+        function toggleVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = (input.type === "password") ? "text" : "password";
+        }
+
+        document.getElementById("forgotPasswordLink").onclick = (e) => {
+            e.preventDefault();
+            loginModal.style.display = "none";
+            resetModal.style.display = "flex";
+        };
+
+        // --- SUBMISSION LOGIC ---
+
+        document.getElementById("loginForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const identifier = e.target.identifier.value; 
+            const password = e.target.password.value;
+            const res = await fetch("/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ identifier, password })
+            });
+            const data = await res.json();
+            if (data.success) window.location.href = "/dashboard.html";
+            else alert(data.message);
+        };
+
+        document.getElementById("registerForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const emailInput = e.target.email.value;
+            const btn = e.target.querySelector('button');
+            btn.textContent = "Checking...";
+            btn.disabled = true;
+            try {
+                const res = await fetch("/auth/send-reg-code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: emailInput })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    tempEmail = emailInput; 
+                    loginModal.style.display = "none";
+                    verifyModal.style.display = "flex";
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { 
+                alert("Server connection timeout. Please check your email later."); 
+            } finally { 
+                btn.textContent = "Get Verification Code"; 
+                btn.disabled = false; 
+            }
+        };
+
+        document.getElementById("finishRegisterBtn").onclick = async () => {
+            const code = document.getElementById("regVerifyCode").value;
+            const password = document.getElementById("regPassword").value;
+            const confirm = document.getElementById("regConfirmPassword").value;
+
+            const isValid = validatePassword(password);
+            if (isValid !== true) return alert(isValid);
+            if (password !== confirm) return alert("Passwords do not match!");
+
+            try {
+                const res = await fetch("/auth/complete-registration", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        email: tempEmail, 
+                        code, 
+                        password, 
+                        username: tempEmail.split('@')[0] // 默认将邮箱前缀作为用户名
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    alert("Account Activated!");
+                    location.reload();
+                } else alert(data.message);
+            } catch (err) { alert("Verification failed."); }
+        };
+
+        async function sendResetCode() {
+            const email = document.getElementById("resetEmail").value;
+            const btn = document.getElementById("resetSendBtn");
+            if (!email) return alert("Please enter your email");
+            btn.textContent = "Sending...";
+            btn.disabled = true;
+            try {
+                const res = await fetch("/auth/forgot-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json(); 
+                if (data.success) {
+                    resetEmailStorage = email;
+                    alert("Code sent to your email!");
+                    document.getElementById("resetStep1").style.display = "none";
+                    document.getElementById("resetStep2").style.display = "block";
+                } else alert(data.message || "Email not found.");
+            } catch (err) { alert("Server connection failed."); }
+            finally { btn.textContent = "Send Code"; btn.disabled = false; }
+        }
+
+        async function verifyAndReset() {
+            const code = document.getElementById("resetVerifyCode").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirm = document.getElementById("ConfirmPassword").value;
+            const btn = document.getElementById("resetFinishBtn");
+
+            const isValid = validatePassword(newPassword);
+            if (isValid !== true) return alert(isValid);
+            if (newPassword !== confirm) return alert("Passwords do not match!");
+            if (!code) return alert("Please enter the code");
+
+            btn.textContent = "Updating...";
+            btn.disabled = true;
+            try {
+                const res = await fetch("/auth/reset-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: resetEmailStorage, code, newPassword })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Password updated successfully!");
+                    location.reload();
+                } else alert(data.message);
+            } catch (err) { alert("Reset failed."); }
+            finally { btn.textContent = "Update Password"; btn.disabled = false; }
+        }
+    </script>
 </body>
 </html>
