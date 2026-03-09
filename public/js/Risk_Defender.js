@@ -1,36 +1,49 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const GAME_WIDTH = 500;
+const GAME_HEIGHT = 700;
 const cellSize = 100;
-
 const hudHp = document.getElementById("hud-hp");
 const hudGold = document.getElementById("hud-gold");
 const hudWave = document.getElementById("hud-wave");
-
 const timerDisplay = document.getElementById("timer");
 const timeFill = document.getElementById("time-fill");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
+const mouse = { x: 0, y: 0 };
+const canvasRect = canvas.getBoundingClientRect();
+const path = [
+    {x: 100, y: 0},
+    {x: 100, y: 300},
+    {x: 400, y: 300},
+    {x: 400, y: 600}
+];
 
 let timeLeft = 60;
 let countdown;
-
 let towers = [];
 let enemies = [];
 let floatingTexts = [];
 let bullets = [];
-
 let frames = 0;
 let selectedType = 'home';
 let baseHealth = 100;
 let gold = 200;
 let wave = 1;
-
 let enemiesPerWave = 10;
 let enemiesSpawned = 0;
 let waveInProgress = true;
-
 let isPaused = false;
 let gameState = "playing";
+let closestTower = null;
+let minDist = Infinity;
+
+function setupCanvas() {
+    canvas.width = GAME_WIDTH;
+    canvas.height = GAME_HEIGHT;
+}
+
+setupCanvas();
 
 /* ========================
    🏰 Tower Class
@@ -52,60 +65,150 @@ window.setTowerType = function(type) {
 
 class Insurance {
     constructor(x, y, type) {
+        this.id = Date.now() + Math.random();
+        this.level = 1; //
         this.x = x;
         this.y = y;
         this.type = type;
+        this.selected = false; 
 
-        if (type === 'home') {
-            this.health = 800;
-            this.color = '#e67e22';
-            this.label = "Property";
-        }
-        else if (type === 'car') {
-            this.health = 400;
-            this.color = '#3498db';
-            this.label = "Car";
-        }
-        else {
-            this.health = 250;
-            this.color = '#2ecc71';
-            this.label = "Life";
+        switch(type) {
+            case 'home': 
+                this.health = 800;
+                this.color = '#e67e22';
+                this.label = "Property";
+                this.attackSpeed = 30; 
+                this.attackPower = 1.0;
+                this.range = 150;
+                break;
+            case 'car': 
+                this.health = 400;
+                this.color = '#3498db';
+                this.label = "Car";
+                this.attackSpeed = 90;
+                this.attackPower = 3.5;
+                this.range = 120;
+                break;
+            case 'medical': 
+                this.health = 250;
+                this.color = '#2ecc71';
+                this.label = "Life";
+                this.attackSpeed = 60;
+                this.attackPower = 0;
+                this.healRate = 0.1; 
+                this.range = 100;
+                this.healTimer = 0; 
+                break;
         }
 
-        this.maxHealth = this.health;
-        this.attackPower = 1.2;
-        this.range = 120;
-        this.attackSpeed = 60;
+        this.maxHealth = this.health; 
         this.timer = 0;
     }
 
     draw() {
-        // range
+    ctx.save();
+        
+    if (this.level >= 4 && this.level < 7) {
+        ctx.translate(this.x + 50, this.y + 50);
+        ctx.rotate(frames * 0.05); 
+        ctx.strokeStyle = "white";
+        ctx.strokeRect(-20, -20, 40, 40);
+        ctx.restore(); 
+    } else if (this.level >= 7) {
+        ctx.beginPath();
+        ctx.arc(this.x + 50, this.y + 50, 40, 0, Math.PI * 2);
+        ctx.strokeStyle = "#f1c40f";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+    }
+
         ctx.beginPath();
         ctx.arc(this.x + 50, this.y + 50, this.range, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.setLineDash([5, 5]); 
         ctx.stroke();
+        ctx.setLineDash([]); 
 
-        // tower body
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x + 10, this.y + 10, 80, 80);
-
-        ctx.fillStyle = 'white';
-        ctx.font = "bold 14px Arial";
-        ctx.fillText(this.label, this.x + 30, this.y + 55);
-
-        // health bar
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + 15, this.y + 80, 70, 5);
-
-        ctx.fillStyle = 'lime';
-        ctx.fillRect(
-            this.x + 15,
-            this.y + 80,
-            (this.health / this.maxHealth) * 70,
-            5
-        );
+    if (this.selected) {
+        ctx.strokeStyle = "#f1c40f"; 
+        ctx.lineWidth = 3;
+        ctx.strokeRect(this.x + 5, this.y + 5, 90, 90);
     }
+
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = this.color;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x + 10, this.y + 10, 80, 80);
+    ctx.shadowBlur = 0; 
+
+    ctx.fillStyle = 'red';
+    ctx.fillRect(this.x + 15, this.y + 80, 70, 5);
+    ctx.fillStyle = 'lime';
+    ctx.fillRect(this.x + 15, this.y + 80, (this.health / this.maxHealth) * 70, 5);
+
+    ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.fillText("Lv." + this.level, this.x + 10, this.y + 20);
+
+    if (this.type === 'medical') {
+        ctx.beginPath();
+        let pulse = Math.sin(frames * 0.1) * 10 + 20; 
+        ctx.arc(this.x + 50, this.y + 50, pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(46, 204, 113, 0.3)";
+        ctx.stroke();
+    }
+
+    if (this.isBuffed) {
+        ctx.fillStyle = "#2ecc71";
+        ctx.font = "bold 20px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("+", this.x + 50, this.y + 40);
+    }
+    
+    ctx.restore();
+}
+
+    upgrade() {
+    let upgradeCost = 60 + (this.level * 20); 
+    if (gold >= upgradeCost) {
+        gold -= upgradeCost;
+        this.level++;
+        
+        this.attackPower *= 1.25; 
+        this.range += 5;
+        this.maxHealth += 100;
+        this.health = Math.min(this.health + 100, this.maxHealth);
+        
+        floatingTexts.push(new FloatingText("-" + upgradeCost, this.x + 25, this.y + 50, "#e74c3c"));
+        floatingTexts.push(new FloatingText("Lv." + this.level, this.x + 25, this.y + 20, "#f1c40f"));
+    } else {
+        floatingTexts.push(new FloatingText("No Gold!", this.x + 25, this.y + 50, "#bdc3c7"));
+    }
+}
+
+    update() {
+    this.isBuffed = false;
+
+    if (this.type === 'medical') {
+        this.healTimer++;
+        
+        if (this.healTimer >= 60) {
+            towers.forEach(t => {
+                let dist = Math.hypot(
+                (t.x + 50) - (this.x + 50),
+                (t.y + 50) - (this.y + 50)
+            );
+            if (dist < this.range && t !== this) {
+                    if (t.health < t.maxHealth) {
+                        t.health = Math.min(t.maxHealth, t.health + 10); // 每次恢复 10 点血
+                        t.isBuffed = true;
+                    }
+                }
+            });
+            this.healTimer = 0;
+        }
+    }
+}
 }
 
 /* ========================
@@ -113,11 +216,16 @@ class Insurance {
 ======================== */
 
 class Risk {
-    constructor(y) {
-        this.health = 5;
-        this.x = canvas.width;
-        this.y = y;
+    constructor(x,wave) {
+        this.pathIndex = 0; 
+        this.x = x;
+        this.y = -100;
+        this.size = 30;
+        this.speed = 1.5;
+        this.health = 5 + (wave * 5); 
+        this.maxHealth = this.health;
         this.hitFlash = 0;
+        this.escaped = false;
 
         const types = ['fire', 'flood', 'thief', 'virus'];
         this.type = types[Math.floor(Math.random() * types.length)];
@@ -144,14 +252,30 @@ class Risk {
         this.blocked = false;
 
         this.attackTimer = 0;
-        this.attackSpeed = 60; // 攻击间隔
+        this.attackSpeed = 30;
     }
 
     update() {
-        if (!this.blocked) {
-            this.x -= this.baseSpeed;
+        if (this.isDying) { this.size -= 2; return; }
+        if (this.blocked) return;
+
+        let target = path[this.pathIndex + 1];
+        if (target) {
+            let dx = target.x - this.x;
+            let dy = target.y - this.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < this.speed) {
+                this.pathIndex++;
+            } else {
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+        } else {
+            this.escaped = true;  
         }
     }
+
 
     draw() {
 
@@ -184,7 +308,10 @@ class Bullet {
 
     update() {
 
-        if (!this.target) return;
+        if (!this.target) {
+            this.hit = true;
+            return;
+        }
 
         let dx = (this.target.x + 50) - this.x;
         let dy = (this.target.y + 50) - this.y;
@@ -192,7 +319,9 @@ class Bullet {
 
         if (dist < 10) {
             this.target.health -= this.damage;
-            this.target.hitFlash = 10
+            for(let i = 0; i < 5; i++) {
+                floatingTexts.push(new Particle(this.target.x, this.target.y));
+            }
             this.hit = true;
             return;
         }
@@ -255,8 +384,15 @@ class FloatingText {
    🖱 Placement / Upgrade
 ======================== */
 
-canvas.addEventListener("click", (e) => {
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    mouse.x = (e.clientX - rect.left) * scaleX;
+    mouse.y = (e.clientY - rect.top) * scaleY;
+});
 
+canvas.addEventListener("click", (e) => {
     if (gameState !== "playing" || isPaused) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -266,31 +402,36 @@ canvas.addEventListener("click", (e) => {
     const x = Math.floor(((e.clientX - rect.left) * scaleX) / cellSize) * cellSize;
     const y = Math.floor(((e.clientY - rect.top) * scaleY) / cellSize) * cellSize;
 
-    let existingTower = towers.find(t => t.x === x && t.y === y);
+    let clickedTower = towers.find(t => t.x === x && t.y === y);
 
-    if (existingTower) {
-        let upgradeCost = 60 + existingTower.maxHealth / 50;
-
-        if (gold >= upgradeCost) {
-            gold -= upgradeCost;
-            existingTower.attackPower += 0.5;
-            existingTower.range += 10;
-            existingTower.maxHealth += 100;
-            existingTower.health += 100;
+    if (clickedTower) {
+        if (clickedTower.selected) {
+            clickedTower.upgrade();
+            console.log(`升级了塔: ${clickedTower.type}，当前等级: ${clickedTower.level}`);
+        } else {
+            towers.forEach(t => t.selected = false);
+            clickedTower.selected = true;
+            setTowerType(clickedTower.type); 
         }
-
-        return; // ⭐ very important
+        return; 
     }
+
+    towers.forEach(t => t.selected = false);
+
+    const isOccupied = towers.some(t => t.x === x && t.y === y);
+    if (isOccupied) return;
 
     let cost = 0;
-    if (selectedType === "home") cost = 100;
-    if (selectedType === "car") cost = 80;
-    if (selectedType === "medical") cost = 60;
+if (selectedType === "home") cost = 20;       // 修改为 20
+else if (selectedType === "car") cost = 30;   // 修改为 30
+else if (selectedType === "medical") cost = 80; // 修改为 80
 
-    if (gold >= cost) {
-        gold -= cost;
-        towers.push(new Insurance(x, y, selectedType));
-    }
+if (gold >= cost) {
+    gold -= cost;
+    towers.push(new Insurance(x, y, selectedType));
+} else {
+    floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
+}
 });
 
 /* ========================
@@ -301,19 +442,15 @@ function handleWave() {
 
     if (!waveInProgress) return;
 
-    let spawnRate = 100;
-
+    let spawnRate = 150;
     if (frames % spawnRate === 0 && enemiesSpawned < enemiesPerWave) {
-
         if (wave % 5 === 0 && enemiesSpawned === enemiesPerWave - 1) {
             enemies.push(new Boss(Math.floor(Math.random() * 5) * cellSize));
         } else {
-            enemies.push(new Risk(Math.floor(Math.random() * 5) * cellSize));
+            enemies.push(new Risk(Math.floor(Math.random() * 5) * cellSize, wave));
         }
-
         enemiesSpawned++;
     }
-
     if (enemiesSpawned >= enemiesPerWave && enemies.length === 0) {
 
         waveInProgress = false;
@@ -344,7 +481,7 @@ function handleWave() {
 function handleLogic() {
 
     if (gameState !== "playing") return;
-
+    towers.forEach(t => t.update());
     handleWave();
 
     /* ========= Stage 1 ========= */
@@ -388,27 +525,18 @@ function handleLogic() {
         }
     });
 
-    /* ========= Stage 2 ========= */
-
-    enemies.forEach((en, i) => {
-
-        en.blocked = false;
-
-        towers.forEach(tower => {
-
-            let closestX = Math.max(tower.x, Math.min(en.x + 50, tower.x + 100));
-            let closestY = Math.max(tower.y, Math.min(en.y + 50, tower.y + 100));
-
-            let dx = (en.x + 50) - closestX;
-            let dy = (en.y + 50) - closestY;
+   /* ========= Stage 2 ========= */
+    for (let i = enemies.length - 1; i >= 0; i--) {
+    let en = enemies[i];
+    en.blocked = false; 
+    towers.forEach(tower => {
+            let dx = (en.x + 50) - (tower.x + 50);
+            let dy = (en.y + 50) - (tower.y + 50);
             let dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 30) {
-
-                en.blocked = true;
-
+            if (dist < 50) { 
+                en.blocked = true; 
                 en.attackTimer++;
-
                 if (en.attackTimer >= en.attackSpeed) {
                     tower.health -= en.damage;
                     en.attackTimer = 0;
@@ -416,28 +544,54 @@ function handleLogic() {
             }
         });
 
-        en.update();
+        en.update(); 
         en.draw();
 
-        if (en.health <= 0) {
-            gold += 20;
-            enemies.splice(i, 1);
-            return;
-        }
-
-        if (en.x < -50) {
-
+        if (en.escaped) {
             baseHealth -= 10;
 
+            floatingTexts.push(
+                new FloatingText("-10 HP", en.x, en.y, "red")
+            );
+
+            enemies.splice(i, 1);
+
             if (baseHealth <= 0) {
-                baseHealth = 0;           
+                baseHealth = 0;
                 gameState = "gameOver";
             }
 
-            enemies.splice(i, 1);
+            return;
         }
-    });
 
+        if (en.health <= 0 && !en.isDying && !en.escaped) {
+            en.isDying = true;
+            gold += 20;
+            floatingTexts.push(new FloatingText("+$20", en.x, en.y, "#FFD700"));
+            
+            for(let j = 0; j < 10; j++) {
+                particles.push(new Particle(en.x + 50, en.y + 50, '#c0392b'));
+            }
+        }
+
+        if (en.isDying) {
+            en.size -= 2; 
+            if (en.size <= 0) {
+                enemies.splice(i, 1); 
+            }
+            return; 
+        }
+
+        if (en.y > canvas.height) { 
+            baseHealth -= 10; 
+            enemies.splice(i, 1); 
+            
+            if (baseHealth <= 0) {
+                baseHealth = 0;          
+                gameState = "gameOver";
+            }
+        }
+    }
     /* ========= Stage 3 ========= */
     bullets.forEach((b, i) => {
 
@@ -459,12 +613,82 @@ function handleLogic() {
 }
 
 /* ========================
+   ✨ Particle System
+======================== */
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 8; 
+        this.vy = (Math.random() - 0.5) * 8;
+        this.alpha = 1;
+        this.size = Math.random() * 4 + 2;
+        this.color = color;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= 0.03;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+let particles = [];
+
+/* ========================
    🎬 Animation
 ======================== */
+
+function drawHoverEffect() {
+    const gridX = Math.floor(mouse.x / cellSize) * cellSize;
+    const gridY = Math.floor(mouse.y / cellSize) * cellSize;
+
+    if (gridX >= 0 && gridX < canvas.width && gridY >= 0 && gridY < canvas.height) {
+        ctx.save();
+        ctx.strokeStyle = "#4a90e2"; 
+        ctx.lineWidth = 3;
+        ctx.strokeRect(gridX + 5, gridY + 5, cellSize - 10, cellSize - 10);
+        ctx.fillStyle = "rgba(74, 144, 226, 0.2)";
+        ctx.fillRect(gridX + 5, gridY + 5, cellSize - 10, cellSize - 10);
+        ctx.restore();
+    }
+}
+
+function drawGrid() {
+    ctx.save(); 
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)"; // 浅白色半透明边框
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x <= canvas.width; x += cellSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= canvas.height; y += cellSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+    ctx.restore(); 
+}
 
 function animate() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawGrid();      
+    drawHoverEffect();
 
     if (gameState === "gameOver") {
         ctx.fillStyle = "red";
@@ -473,7 +697,6 @@ function animate() {
         return;
     }
 
-    // ⭐ 重点：暂停逻辑
     if (isPaused) {
         towers.forEach(t => t.draw());
         enemies.forEach(e => e.draw());
@@ -497,6 +720,12 @@ function animate() {
         text.update();
         text.draw();
         if (text.alpha <= 0) floatingTexts.splice(i, 1);
+    });
+
+    particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) particles.splice(i, 1);
     });
 
     frames++;
