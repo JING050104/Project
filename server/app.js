@@ -124,7 +124,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     try {
         const query = `
             SELECT i.id, 
-                   COALESCE(v.name, i.item_name) as item_name, 
+                   COALESCE(v.name, i.item_name, 'Unknown Item') as item_name, 
                    i.quantity,
                    i.status 
             FROM user_inventory i
