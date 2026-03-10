@@ -6,8 +6,6 @@ const cellSize = 100;
 const hudHp = document.getElementById("hud-hp");
 const hudGold = document.getElementById("hud-gold");
 const hudWave = document.getElementById("hud-wave");
-const timerDisplay = document.getElementById("timer");
-const timeFill = document.getElementById("time-fill");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
@@ -19,8 +17,6 @@ const path = [
     {x: 400, y: 600}
 ];
 
-let timeLeft = 60;
-let countdown;
 let towers = [];
 let enemies = [];
 let floatingTexts = [];
@@ -37,6 +33,7 @@ let isPaused = false;
 let gameState = "playing";
 let closestTower = null;
 let minDist = Infinity;
+let rewardGiven = false;
 
 function setupCanvas() {
     canvas.width = GAME_WIDTH;
@@ -95,7 +92,7 @@ class Insurance {
                 this.label = "Life";
                 this.attackSpeed = 60;
                 this.attackPower = 0;
-                this.healRate = 0.1; 
+                this.healRate = 0.3; 
                 this.range = 100;
                 this.healTimer = 0; 
                 break;
@@ -286,13 +283,15 @@ class Risk {
         ctx.fillStyle = '#c0392b';
     }
 
-    ctx.beginPath();
-    ctx.arc(this.x + 50, this.y + 50, 30, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = 'black';
+    ctx.fillRect(this.x + 30, this.y + 15, 40, 4); // Background
+    ctx.fillStyle = 'red';
+    ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); // Health fill
 
-    ctx.fillStyle = "black";
-    ctx.fillText(this.label, this.x + 40, this.y + 55);
-    }
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText(this.label, this.x + 40, this.y + 60);
+}
 }
 
 class Bullet {
@@ -319,6 +318,7 @@ class Bullet {
 
         if (dist < 10) {
             this.target.health -= this.damage;
+            floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 40, this.target.y + 40, "yellow"));
             for(let i = 0; i < 5; i++) {
                 floatingTexts.push(new Particle(this.target.x, this.target.y));
             }
@@ -450,10 +450,17 @@ function handleWave() {
             enemies.push(new Risk(Math.floor(Math.random() * 5) * cellSize, wave));
         }
         enemiesSpawned++;
+        rewardGiven = false;
     }
     if (enemiesSpawned >= enemiesPerWave && enemies.length === 0) {
 
         waveInProgress = false;
+        rewardGiven = true;
+        
+        gold += 60; 
+        floatingTexts.push(
+            new FloatingText("+60 Gold!", canvas.width / 2, canvas.height / 2, "#FFD700")
+        );
 
         setTimeout(() => {
             wave++;
@@ -613,6 +620,53 @@ function handleLogic() {
 }
 
 /* ========================
+    ℹ️ Information Tooltip
+======================== */
+window.showInfo = function(type) {
+    const tooltip = document.getElementById('shop-tooltip');
+    
+    const temp = new Insurance(0, 0, type);
+    let details = "";
+
+    if (type === 'medical') {
+        details = `
+            <strong>🏥 Medical Insurance</strong><br>
+            💚 Heal: 10 HP/pulse<br>
+            🎯 Range: ${temp.range}<br>
+            🛡️ Tower HP: ${temp.health}
+        `;
+    } else {
+        const icon = type === 'home' ? '🏠' : '🚗';
+        const name = type === 'home' ? 'Property' : 'Car';
+        const speed = (60 / temp.attackSpeed).toFixed(1);
+        
+        details = `
+            <strong>${icon} ${name} Insurance</strong><br>
+            💥 Damage: ${temp.attackPower.toFixed(1)}<br>
+            ⏱ Speed: ${speed} hits/sec<br>
+            🎯 Range: ${temp.range}
+        `;
+    }
+
+    tooltip.innerHTML = details;
+    tooltip.style.display = 'block';
+};
+
+window.hideInfo = function() {
+    const tooltip = document.getElementById('shop-tooltip');
+    tooltip.style.display = 'none';
+};
+
+// Make the tooltip follow the mouse cursor
+document.addEventListener('mousemove', (e) => {
+    const tooltip = document.getElementById('shop-tooltip');
+    if (tooltip && tooltip.style.display === 'block') {
+        tooltip.style.left = (e.pageX + 15) + 'px';
+        tooltip.style.top = (e.pageY + 15) + 'px';
+    }
+});
+
+/* ========================
    ✨ Particle System
 ======================== */
 class Particle {
@@ -691,11 +745,17 @@ function animate() {
     drawHoverEffect();
 
     if (gameState === "gameOver") {
-        ctx.fillStyle = "red";
-        ctx.font = "50px Arial";
-        ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
-        return;
-    }
+
+    let finalPoints = gold - 200;
+    if (finalPoints < 0) finalPoints = 0;
+
+    document.getElementById("final-gold").textContent = finalPoints;
+    document.getElementById("game-over-modal").style.display = "flex";
+    saveScoreToDatabase(finalPoints);
+    
+    gameState = "submitted";
+    return;
+}
 
     if (isPaused) {
         towers.forEach(t => t.draw());
@@ -709,7 +769,7 @@ function animate() {
         ctx.fillText("PAUSED", canvas.width / 2 - 100, canvas.height / 2);
 
         requestAnimationFrame(animate);
-        return;   // 🛑 不执行 handleLogic
+        return; 
     }
 
     towers.forEach(t => t.draw());
@@ -736,24 +796,6 @@ floatingTexts.push(
     new FloatingText("Wave 1", canvas.width / 2 - 40, 100, "white")
 );
 
-function startTimer() {
-
-    countdown = setInterval(() => {
-
-        if (gameState !== "playing" || isPaused) return;
-
-        timeLeft--;
-
-        timerDisplay.textContent = timeLeft;
-        timeFill.style.width = (timeLeft / 60) * 100 + "%";
-
-        if (timeLeft <= 0) {
-            gameState = "gameOver";
-            clearInterval(countdown);
-        }
-
-    }, 1000);
-}
 
 pauseBtn.addEventListener("click", () => {
 
@@ -781,5 +823,24 @@ homeBtn.addEventListener("click", () => {
 
 });
 
-startTimer();
+function saveScoreToDatabase(score) {
+    fetch('/api/save-score', { 
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+            score: score,
+            gameType: 'RiskDefender' 
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Point write in successed:", data.message);
+    })
+    .catch(err => {
+        console.error("Point write in failed:", err);
+    });
+}
+
 animate();

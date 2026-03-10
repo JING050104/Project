@@ -86,6 +86,7 @@ body.no-scroll-page {
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(8px); 
+    z-index: 9999;
 }
 
 .login-card {
@@ -97,6 +98,7 @@ body.no-scroll-page {
     position: middle;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 9999;
 }
 
 #verifyModal .login-card, 
@@ -575,10 +577,13 @@ input {
 }
 
 .stat-value {
-    font-size: 4rem;
-    font-weight: 900;
-    color: var(--primary-blue);
+    font-size: 2.5rem; /* 如果数字很大，可以考虑减小这个值 */
+    font-weight: bold;
     display: block;
+    word-wrap: break-word; /* 强制长数字换行 */
+    overflow-wrap: break-word;
+    max-width: 100%;       /* 限制最大宽度 */
+    color: var(--primary-blue);
 }
 
 .level-badge {
@@ -889,15 +894,15 @@ input {
 }
 
 .controls {
-    background: #2c3e50; /* 论文提到的专业蓝色调 */
+    transform: scale(0.8); 
+    transform-origin: top center; 
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    background: #2c3e50;
     padding: 15px 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    flex-shrink: 0; 
-    margin-bottom: 5px;
-    display: flex;
-    gap: 15px;
-    align-items: center;
+    width: fit-content;
 }
 
 .controls span { color: #fff; font-size: 0.9rem; }
@@ -925,12 +930,6 @@ button.active {
 .controls button:hover {
     filter: brightness(1.2);
     transform: translateY(-2px);
-}
-
-.game-info {
-    margin-top: 15px;
-    color: #64748b;
-    font-size: 0.85rem;
 }
 
 .timer-box {
@@ -1071,19 +1070,23 @@ body.flash-red {
 }
 
 .canvas-wrapper {
+    flex: 1;           
     width: 100%;
-    max-width: 500px;
-    aspect-ratio: 500 / 700;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 0;     
 }
 
 #gameCanvas {
-    width: 100%; 
-    height: 100%;
-    display: block;
+    max-height: 100%; 
+    max-width: 100%;  
+    width: auto;
+    height: auto;
+    object-fit: contain; 
     background-color: #0f172a;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    border-radius: 8px;
 }
 
 @media (max-width: 768px) {
@@ -1098,15 +1101,15 @@ body.flash-red {
     }
 
     .game-hud {
-        font-size: 14px;
-        padding: 8px 15px;
-        gap: 15px;
+        margin-bottom: 10px;
+        padding: 8px 30px;
+        flex-shrink: 0;   
     }
 
     .controls {
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 10px;
+        margin-bottom: 10px;
+        padding: 10px 20px;
+        flex-shrink: 0;    
     }
 
     .controls button {
@@ -1125,8 +1128,10 @@ body.flash-red {
     flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start; 
     align-items: center;
-    position: relative;
+    padding: 10px;
+    height: calc(100vh - 80px); 
     overflow: hidden;
 }
 
@@ -1176,7 +1181,7 @@ button:disabled {
     border-radius: 8px;
     font-size: 14px;
     display: none;
-    z-index: 10;
+    z-index: 0;
 }
 
 .controls button {
