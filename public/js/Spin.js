@@ -53,26 +53,27 @@ class SpinWheel {
      * Handles the rotation animation
      */
     startSpin() {
-        if (this.isSpinning) return;
-        this.isSpinning = true;
+    if (this.isSpinning) return;
+    this.isSpinning = true;
 
-        // Generate random rotation (0-359)
-        const randomRotation = Math.floor(Math.random() * 360);
-        // Spin 5 full times (1800deg) plus the random amount for visual effect
-        const totalRotation = 1800 + randomRotation;
+    this.wheel.style.transition = "none";
+    this.wheel.style.transform = "rotate(0deg)";
+    this.wheel.offsetWidth; 
 
-        // Apply visual rotation to the CSS transform
-        this.wheel.style.transform = `rotate(${totalRotation}deg)`;
-        
-        // Update button state
-        this.spinBtn.disabled = true;
-        this.spinBtn.textContent = "Spinning...";
+    this.wheel.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
 
-        // Wait 4 seconds for the CSS transition to finish
-        setTimeout(() => {
-            this.processResult(randomRotation);
-        }, 4000);
-    }
+    const randomRotation = Math.floor(Math.random() * 360);
+    const totalRotation = 1800 + randomRotation;
+
+    this.wheel.style.transform = `rotate(${totalRotation}deg)`;
+    
+    this.spinBtn.disabled = true;
+    this.spinBtn.textContent = "Spinning...";
+
+    setTimeout(() => {
+        this.processResult(randomRotation);
+    }, 4000);
+}
 
     /**
      * Calculates the reward based on the final angle
