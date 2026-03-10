@@ -73,8 +73,8 @@ async function loadInventory() {
                 <p style="font-size:0.8rem">Owned: ${item.quantity}</p>
                 <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
-    container.appendChild(div);
-});
+            container.appendChild(div);
+        });
     } catch (err) { 
         console.error("Load Inventory Failed:", err);
     }

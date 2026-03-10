@@ -123,10 +123,11 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     const userId = req.user.id; 
     try {
         const query = `
-            SELECT i.id, 
-                   COALESCE(v.name, i.item_name, 'Unknown Item') as item_name, 
-                   i.quantity,
-                   i.status 
+            SELECT 
+                i.id, 
+                COALESCE(v.name, i.item_name, '未知物品') as item_name, 
+                i.quantity, 
+                i.status 
             FROM user_inventory i
             LEFT JOIN vouchers v ON i.voucher_id = v.id
             WHERE i.user_id = $1
@@ -134,7 +135,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
         const { rows } = await db.query(query, [userId]);
         res.json(rows || []);
     } catch (err) {
-        console.error("Inventory Fetch Error:", err);
+        console.error("查询库存错误:", err);
         res.status(500).json([]);
     }
 });
