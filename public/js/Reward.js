@@ -1,29 +1,48 @@
-
+let vouchers = []; 
 let currentPoints = 0;
-
-const vouchers = [
-    { id: 1, name: "RM5 KFC Voucher", cost: 10 },
-    { id: 2, name: "RM10 GrabFood", cost: 20 },
-    { id: 3, name: "10% Insurance Discount", cost: 50 }
-];
 
 const container = document.getElementById('voucher-container');
 const displayPointsElement = document.getElementById('display-points');
 
 async function initRewards() {
     try {
-        const response = await fetch('/api/get-points');
-        const data = await response.json();
-        const displayPointsElement = document.getElementById('display-points');
+        const [pointsRes, vouchersRes] = await Promise.all([
+            fetch('/api/get-points'),
+            fetch('/api/get-vouchers') 
+        ]);
         
-        if (displayPointsElement) {
-            displayPointsElement.innerText = data.points || 0;
-            currentPoints = data.points || 0;
-        }
+        const pointsData = await pointsRes.json();
+        const vouchersData = await vouchersRes.json();
+        
+        currentPoints = pointsData.points || 0;
+        document.getElementById('display-points').innerText = currentPoints;
+        
+        vouchers = vouchersData; 
+        
         renderVouchers();
+        updateFeatured();
         loadInventory();
     } catch (err) {
         console.error("Failed to load rewards:", err);
+    }
+}
+
+async function activateItem(inventoryId) {
+    try {
+        const response = await fetch('/api/activate-item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inventoryId })
+        });
+        
+        if (response.ok) {
+            alert("Voucher activated successfully!");
+            loadInventory();
+        } else {
+            alert("Activation failed.");
+        }
+    } catch (err) {
+        console.error(err);
     }
 }
 

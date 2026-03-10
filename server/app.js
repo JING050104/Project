@@ -70,6 +70,15 @@ app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     }
 });
 
+app.get('/api/get-vouchers', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT id, name, cost FROM vouchers');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
 /**
  * B. 大转盘奖励同步
  */
@@ -110,15 +119,20 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 /**
  * C. 获取用户背包道具
  */
-app.get("/api/get-inventory", ensureAuthenticated, async (req, res) => {
+app.get('/api/get-inventory', async (req, res) => {
+    const userId = req.user.id;
+    
     try {
-        const [rows] = await db.query(
-            "SELECT item_name, quantity FROM user_inventory WHERE user_id = $1 AND quantity > 0", 
-            [req.user.id]
-        ); //
-        res.json(rows); //
+        const query = `
+            SELECT i.id, v.name as item_name, i.quantity 
+            FROM user_inventory i
+            JOIN vouchers v ON i.voucher_id = v.id
+            WHERE i.user_id = $1
+        `;
+        const { rows } = await pool.query(query, [userId]);
+        res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message }); //
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -179,23 +193,25 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
  * F. 兑换礼券 (扣除积分)
  */
 app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id; //
-    const { voucherName, cost } = req.body; //
+    const userId = req.user.id;
+    const { voucherName, cost } = req.body; 
 
     try {
-        // 1. 检查用户积分是否足够
-        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]); //
-        const currentPoints = rows[0] ? rows[0].total_points : 0;
+        const [vResult] = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
+        const voucherId = vResult[0].id;
 
-        if (currentPoints < cost) {
-            return res.status(400).json({ error: "Insufficient points." });
-        }
+        const [pResult] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
+        if (!pResult[0] || pResult[0].total_points < cost) return res.status(400).json({ error: "Insufficient points." });
 
-        // 2. 扣除积分
-        await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]); //
-
-        // 3. (可选) 这里你可以记录一条兑换历史到新表
-        console.log(`--- Success: User ${userId} redeemed ${voucherName} for ${cost} pts ---`);
+        await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]);
+        
+        await db.query(`
+            INSERT INTO user_inventory (user_id, voucher_id, quantity, status) 
+            VALUES ($1, $2, 1, 'unused') 
+            ON CONFLICT (user_id, voucher_id) 
+            DO UPDATE SET quantity = user_inventory.quantity + 1`, 
+            [userId, voucherId]
+        );
 
         res.json({ success: true, message: `Successfully redeemed ${voucherName}!` });
     } catch (err) {
