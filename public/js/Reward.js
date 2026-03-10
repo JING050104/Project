@@ -50,9 +50,19 @@ async function activateItem(inventoryId) {
 async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
+        // 检查响应状态
+        if (!res.ok) throw new Error("Server Error");
+        
         const items = await res.json();
         const container = document.getElementById('inventory-container');
         if (!container) return;
+
+        // 核心校验：确保 items 确实是数组
+        if (!Array.isArray(items)) {
+            console.error("Expected array but got:", items);
+            container.innerHTML = "<p>Data format error.</p>";
+            return;
+        }
 
         container.innerHTML = items.length ? '' : "<p class='placeholder-text'>Empty.</p>";
         items.forEach(item => {
@@ -63,9 +73,11 @@ async function loadInventory() {
                 <p style="font-size:0.8rem">Owned: ${item.quantity}</p>
                 <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
-            container.appendChild(div);
-        });
-    } catch (err) { console.error(err); }
+    container.appendChild(div);
+});
+    } catch (err) { 
+        console.error("Load Inventory Failed:", err);
+    }
 }
 
 /**

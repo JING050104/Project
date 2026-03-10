@@ -126,17 +126,19 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             SELECT i.id, 
                    COALESCE(v.name, i.item_name) as item_name, 
                    i.quantity,
-                   i.status
+                   i.status 
             FROM user_inventory i
             LEFT JOIN vouchers v ON i.voucher_id = v.id
             WHERE i.user_id = $1
         `;
         const { rows } = await db.query(query, [userId]);
-        res.json(rows);
+        res.json(rows || []);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Inventory Fetch Error:", err);
+        res.status(500).json([]);
     }
 });
+
 /**
  * D. 激活/使用道具
  */

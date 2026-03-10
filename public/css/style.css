@@ -742,7 +742,6 @@ input {
     align-items: stretch !important;
 }
 
-.featured-box.login-card, 
 .inventory-box.login-card {
     max-width: 100% !important; 
     width: 100% !important;
