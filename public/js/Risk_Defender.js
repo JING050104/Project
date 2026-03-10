@@ -10,13 +10,14 @@ const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
+const PLACEMENT_COOLDOWN = 5000;
 const path = [
     {x: 100, y: 0},
     {x: 100, y: 300},
     {x: 400, y: 300},
     {x: 400, y: 600}
 ];
-
+let lastPlacementTime = 0;
 let towers = [];
 let enemies = [];
 let floatingTexts = [];
@@ -84,7 +85,7 @@ class Insurance {
                 this.label = "Car";
                 this.attackSpeed = 90;
                 this.attackPower = 3.5;
-                this.range = 120;
+                this.range = 80;
                 break;
             case 'medical': 
                 this.health = 250;
@@ -92,8 +93,8 @@ class Insurance {
                 this.label = "Life";
                 this.attackSpeed = 60;
                 this.attackPower = 0;
-                this.healRate = 0.3; 
-                this.range = 100;
+                this.healRate = 0.1; 
+                this.range = 120;
                 this.healTimer = 0; 
                 break;
         }
@@ -148,12 +149,16 @@ class Insurance {
         ctx.fillText("Lv." + this.level, this.x + 10, this.y + 20);
 
     if (this.type === 'medical') {
-        ctx.beginPath();
-        let pulse = Math.sin(frames * 0.1) * 10 + 20; 
-        ctx.arc(this.x + 50, this.y + 50, pulse, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(46, 204, 113, 0.3)";
-        ctx.stroke();
-    }
+    ctx.beginPath();
+    let speed = 0.1 + (this.level * 0.02);
+    let maxRadius = 20 + (this.level * 5);
+    let pulse = Math.sin(frames * speed) * 10 + maxRadius; 
+    
+    ctx.arc(this.x + 50, this.y + 50, pulse, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
 
     if (this.isBuffed) {
         ctx.fillStyle = "#2ecc71";
@@ -171,8 +176,13 @@ class Insurance {
         gold -= upgradeCost;
         this.level++;
         
-        this.attackPower *= 1.25; 
-        this.range += 5;
+        if (this.type === 'medical') {
+            this.range += 10; 
+            floatingTexts.push(new FloatingText("Heal +", this.x + 25, this.y + 50, "#2ecc71"));
+        } else {
+            this.attackPower *= 1.25; 
+            this.range += 5;
+        }
         this.maxHealth += 100;
         this.health = Math.min(this.health + 100, this.maxHealth);
         
@@ -188,18 +198,17 @@ class Insurance {
 
     if (this.type === 'medical') {
         this.healTimer++;
-        
-        if (this.healTimer >= 60) {
+        if (this.healTimer >= 60) { 
             towers.forEach(t => {
-                let dist = Math.hypot(
-                (t.x + 50) - (this.x + 50),
-                (t.y + 50) - (this.y + 50)
-            );
-            if (dist < this.range && t !== this) {
-                    if (t.health < t.maxHealth) {
-                        t.health = Math.min(t.maxHealth, t.health + 10); // 每次恢复 10 点血
-                        t.isBuffed = true;
-                    }
+                if (t === this) return;
+                let dist = Math.hypot((t.x + 50) - (this.x + 50), (t.y + 50) - (this.y + 50));
+                
+                if (dist < this.range && t.health < t.maxHealth) {
+                    let healAmount = 5 + (this.level * 2); 
+                    t.health = Math.min(t.maxHealth, t.health + healAmount);
+                    t.isBuffed = true;
+                    
+                    floatingTexts.push(new FloatingText("+" + healAmount, t.x + 50, t.y + 20, "#2ecc71"));
                 }
             });
             this.healTimer = 0;
@@ -207,7 +216,6 @@ class Insurance {
     }
 }
 }
-
 /* ========================
    👾 Enemy
 ======================== */
@@ -407,7 +415,6 @@ canvas.addEventListener("click", (e) => {
     if (clickedTower) {
         if (clickedTower.selected) {
             clickedTower.upgrade();
-            console.log(`升级了塔: ${clickedTower.type}，当前等级: ${clickedTower.level}`);
         } else {
             towers.forEach(t => t.selected = false);
             clickedTower.selected = true;
@@ -416,22 +423,28 @@ canvas.addEventListener("click", (e) => {
         return; 
     }
 
-    towers.forEach(t => t.selected = false);
+    const now = Date.now();
+    if (now - lastPlacementTime < PLACEMENT_COOLDOWN) {
+        floatingTexts.push(new FloatingText("Cooling down!", mouse.x, mouse.y, "#e74c3c"));
+        return;
+    }
 
+    towers.forEach(t => t.selected = false);
     const isOccupied = towers.some(t => t.x === x && t.y === y);
     if (isOccupied) return;
 
     let cost = 0;
-if (selectedType === "home") cost = 20;       // 修改为 20
-else if (selectedType === "car") cost = 30;   // 修改为 30
-else if (selectedType === "medical") cost = 80; // 修改为 80
+    if (selectedType === "home") cost = 30;
+    else if (selectedType === "car") cost = 40;
+    else if (selectedType === "medical") cost = 60;
 
-if (gold >= cost) {
-    gold -= cost;
-    towers.push(new Insurance(x, y, selectedType));
-} else {
-    floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
-}
+    if (gold >= cost) {
+        gold -= cost;
+        towers.push(new Insurance(x, y, selectedType));
+        lastPlacementTime = now; 
+    } else {
+        floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
+    }
 });
 
 /* ========================
@@ -456,7 +469,7 @@ function handleWave() {
 
         waveInProgress = false;
         rewardGiven = true;
-        
+
         gold += 60; 
         floatingTexts.push(
             new FloatingText("+60 Gold!", canvas.width / 2, canvas.height / 2, "#FFD700")
@@ -494,23 +507,27 @@ function handleLogic() {
     /* ========= Stage 1 ========= */
 
     towers.forEach(tower => {
-
+        if (tower.type === 'medical') return;
         tower.timer++;
 
         let target = null;
         let minDist = Infinity;
 
         enemies.forEach(enemy => {
+        let enemyCenterX = enemy.x + 15; 
+        let enemyCenterY = enemy.y + 15;
+        let towerCenterX = tower.x + 50;
+        let towerCenterY = tower.y + 50;
 
-            let dx = (enemy.x + 50) - (tower.x + 50);
-            let dy = (enemy.y + 50) - (tower.y + 50);
-            let dist = Math.sqrt(dx * dx + dy * dy);
+        let dx = enemyCenterX - towerCenterX;
+        let dy = enemyCenterY - towerCenterY;
+        let dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < tower.range && dist < minDist) {
-                minDist = dist;
-                target = enemy;
-            }
-        });
+        if (dist < tower.range && dist < minDist) {
+            minDist = dist;
+            target = enemy;
+        }
+    });
 
         if (target && tower.timer >= tower.attackSpeed) {
 
@@ -537,11 +554,11 @@ function handleLogic() {
     let en = enemies[i];
     en.blocked = false; 
     towers.forEach(tower => {
-            let dx = (en.x + 50) - (tower.x + 50);
-            let dy = (en.y + 50) - (tower.y + 50);
-            let dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 50) { 
+            let dist = Math.hypot(
+            (en.x + 15) - (tower.x + 50), 
+            (en.y + 15) - (tower.y + 50)
+        );
+            if (dist < 60) { 
                 en.blocked = true; 
                 en.attackTimer++;
                 if (en.attackTimer >= en.attackSpeed) {
