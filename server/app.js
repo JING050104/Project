@@ -119,50 +119,47 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 /**
  * C. 获取用户背包道具
  */
-app.get('/api/get-inventory', async (req, res) => {
-    const userId = req.user.id;
-    
+app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id; 
     try {
         const query = `
-            SELECT i.id, v.name as item_name, i.quantity 
+            SELECT i.id, 
+                   COALESCE(v.name, i.item_name) as item_name, 
+                   i.quantity,
+                   i.status
             FROM user_inventory i
-            JOIN vouchers v ON i.voucher_id = v.id
+            LEFT JOIN vouchers v ON i.voucher_id = v.id
             WHERE i.user_id = $1
         `;
-        const { rows } = await pool.query(query, [userId]);
+        const { rows } = await db.query(query, [userId]);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-
 /**
  * D. 激活/使用道具
  */
 app.post("/api/activate-item", ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id; //
-    const { itemName } = req.body; //
+    const userId = req.user.id;
+    const { inventoryId } = req.body;
 
     try {
-        const [rows] = await db.query(
-            "SELECT quantity FROM user_inventory WHERE user_id = $1 AND item_name = $2", 
-            [userId, itemName]
-        ); //
-        
-        if (!rows[0] || rows[0].quantity <= 0) {
-            return res.status(400).json({ error: "Item not found or empty." }); //
+        const result = await db.query(
+            "UPDATE user_inventory SET quantity = quantity - 1 WHERE id = $1 AND user_id = $2 AND quantity > 0", 
+            [inventoryId, userId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ error: "Item not found or empty." });
         }
 
-        await db.query(
-            "UPDATE user_inventory SET quantity = quantity - 1 WHERE user_id = $1 AND item_name = $2", 
-            [userId, itemName]
-        ); //
-        
-        res.json({ success: true, message: `${itemName} activated.` }); //
+        res.json({ success: true, message: `Activated successfully.` });
     } catch (err) {
-        res.status(500).json({ error: err.message }); //
+        res.status(500).json({ error: err.message });
     }
 });
+
 /**
  * E. 保存 Risk Finder 游戏得分 (新增)
  */

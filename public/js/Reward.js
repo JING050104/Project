@@ -61,7 +61,7 @@ async function loadInventory() {
             div.innerHTML = `
                 <h4 style="color:var(--primary-blue)">${item.item_name}</h4>
                 <p style="font-size:0.8rem">Owned: ${item.quantity}</p>
-                <button class="submit-btn" style="padding:5px; margin-top:5px" onclick="activateItem('${item.item_name}')">Activate</button>
+                <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
             container.appendChild(div);
         });
