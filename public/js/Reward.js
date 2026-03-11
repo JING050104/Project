@@ -1,6 +1,7 @@
 let vouchers = []; 
 let currentPoints = 0;
-
+window.activateItem = activateItem;
+window.redeemVoucher = redeemVoucher;
 const container = document.getElementById('voucher-container');
 const displayPointsElement = document.getElementById('display-points');
 
@@ -20,7 +21,6 @@ async function initRewards() {
         vouchers = vouchersData; 
         
         renderVouchers();
-        updateFeatured();
         loadInventory();
     } catch (err) {
         console.error("Failed to load rewards:", err);
@@ -50,27 +50,38 @@ async function activateItem(inventoryId) {
 async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
-        // 检查响应状态
         if (!res.ok) throw new Error("Server Error");
         
-        const items = await res.json();
+        let items = await res.json();
+        
+        // 兼容性处理：如果后端返回的是 { rows: [...] } 格式
+        if (items.rows) items = items.rows;
+
         const container = document.getElementById('inventory-container');
         if (!container) return;
 
-        // 核心校验：确保 items 确实是数组
         if (!Array.isArray(items)) {
-            console.error("Expected array but got:", items);
             container.innerHTML = "<p>Data format error.</p>";
             return;
         }
 
-        container.innerHTML = items.length ? '' : "<p class='placeholder-text'>Empty.</p>";
+        if (items.length === 0) {
+            container.innerHTML = "<p class='placeholder-text'>No items in inventory.</p>";
+            return;
+        }
+
+        container.innerHTML = '';
         items.forEach(item => {
-            const div = document.createElement('div');
+        console.log("Rendering item:", item);
+        const div = document.createElement('div');
             div.className = 'inventory-item-inner';
+            div.style.border = "1px solid #ddd";
+            div.style.padding = "10px";
+            div.style.margin = "5px 0";
+            
             div.innerHTML = `
-                <h4 style="color:var(--primary-blue)">${item.item_name}</h4>
-                <p style="font-size:0.8rem">Owned: ${item.quantity}</p>
+                <h4 style="color:var(--primary-blue); margin:0;">${item.item_name || 'Unknown'}</h4>
+                <p style="font-size:0.8rem; margin:5px 0;">Quantity: ${item.quantity}</p>
                 <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
             container.appendChild(div);
@@ -130,22 +141,6 @@ async function redeemVoucher(voucherName, cost) {
     } catch (err) {
         console.error("Redeem request failed:", err);
         alert("Server connection error. Please try again later.");
-    }
-}
-
-function updateFeatured() {
-    const featured = document.getElementById('featured-voucher-content');
-    if (vouchers.length > 0 && featured) {
-        const topV = vouchers[0]; 
-        featured.innerHTML = `
-            <div class="inventory-item-inner" style="margin-top: 20px; text-align: center; flex-direction: column;">
-                <p style="font-weight: bold; color: var(--primary-blue);">${topV.name}</p>
-                <p style="font-size: 0.85rem; color: #64748b; margin: 5px 0 15px;">Cost: ${topV.cost} Pts</p>
-                <button class="submit-btn" style="width: 100%;" onclick="redeemVoucher('${topV.name}', ${topV.cost})">
-                    Quick Redeem
-                </button>
-            </div>
-        `;
     }
 }
 

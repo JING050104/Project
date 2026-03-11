@@ -132,7 +132,17 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             WHERE i.user_id = $1
         `;
         const result = await db.query(query, [userId]);
-        res.json(result.rows || []); // Correctly sending result.rows
+        
+        // 关键修复：确保即使 result 是空的，也返回数组，且优先取 rows
+        let data = [];
+        if (result && result.rows) {
+            data = result.rows;
+        } else if (Array.isArray(result)) {
+            data = result;
+        }
+
+        console.log(`Sending inventory for User ${userId}:`, data);
+        res.json(data); 
     } catch (err) {
         console.error("Inventory Fetch Error:", err);
         res.status(500).json([]);
