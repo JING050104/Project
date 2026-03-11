@@ -10,13 +10,8 @@ const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
-const PLACEMENT_COOLDOWN = 5000;
-const path = [
-    {x: 100, y: 0},
-    {x: 100, y: 300},
-    {x: 400, y: 300},
-    {x: 400, y: 600}
-];
+const PLACEMENT_COOLDOWN = 2000;
+
 let lastPlacementTime = 0;
 let towers = [];
 let enemies = [];
@@ -27,14 +22,15 @@ let selectedType = 'home';
 let baseHealth = 100;
 let gold = 200;
 let wave = 1;
-let enemiesPerWave = 10;
 let enemiesSpawned = 0;
+let totalEnemiesThisWave = 0;
 let waveInProgress = true;
 let isPaused = false;
 let gameState = "playing";
 let closestTower = null;
 let minDist = Infinity;
 let rewardGiven = false;
+let bossWarningTimer = 0;
 
 function setupCanvas() {
     canvas.width = GAME_WIDTH;
@@ -64,11 +60,15 @@ window.setTowerType = function(type) {
 class Insurance {
     constructor(x, y, type) {
         this.id = Date.now() + Math.random();
-        this.level = 1; //
+        this.level = 1;
         this.x = x;
         this.y = y;
         this.type = type;
         this.selected = false; 
+        
+        if (type === "home") this.cost = 50;
+        else if (type === "car") this.cost = 40;
+        else if (type === "medical") this.cost = 60;
 
         switch(type) {
             case 'home': 
@@ -77,7 +77,7 @@ class Insurance {
                 this.label = "Property";
                 this.attackSpeed = 30; 
                 this.attackPower = 1.0;
-                this.range = 150;
+                this.range = 200;
                 break;
             case 'car': 
                 this.health = 400;
@@ -85,7 +85,7 @@ class Insurance {
                 this.label = "Car";
                 this.attackSpeed = 90;
                 this.attackPower = 3.5;
-                this.range = 80;
+                this.range = 150;
                 break;
             case 'medical': 
                 this.health = 250;
@@ -171,7 +171,7 @@ class Insurance {
 }
 
     upgrade() {
-    let upgradeCost = 60 + (this.level * 20); 
+    let upgradeCost = this.cost;
     if (gold >= upgradeCost) {
         gold -= upgradeCost;
         this.level++;
@@ -189,7 +189,7 @@ class Insurance {
         floatingTexts.push(new FloatingText("-" + upgradeCost, this.x + 25, this.y + 50, "#e74c3c"));
         floatingTexts.push(new FloatingText("Lv." + this.level, this.x + 25, this.y + 20, "#f1c40f"));
     } else {
-        floatingTexts.push(new FloatingText("No Gold!", this.x + 25, this.y + 50, "#bdc3c7"));
+        floatingTexts.push(new FloatingText("Insufficient Gold!", this.x + 25, this.y + 50, "#bdc3c7"));
     }
 }
 
@@ -204,7 +204,7 @@ class Insurance {
                 let dist = Math.hypot((t.x + 50) - (this.x + 50), (t.y + 50) - (this.y + 50));
                 
                 if (dist < this.range && t.health < t.maxHealth) {
-                    let healAmount = 5 + (this.level * 2); 
+                    let healAmount = 2 + (this.level * 3); 
                     t.health = Math.min(t.maxHealth, t.health + healAmount);
                     t.isBuffed = true;
                     
@@ -222,10 +222,11 @@ class Insurance {
 
 class Risk {
     constructor(x,wave) {
-        this.pathIndex = 0; 
         this.x = x;
-        this.y = -100;
+        this.y = -50;
+        this.spawnCol = Math.floor(x / cellSize);
         this.size = 30;
+    
         this.speed = 1.5;
         this.health = 5 + (wave * 5); 
         this.maxHealth = this.health;
@@ -264,23 +265,47 @@ class Risk {
         if (this.isDying) { this.size -= 2; return; }
         if (this.blocked) return;
 
-        let target = path[this.pathIndex + 1];
-        if (target) {
-            let dx = target.x - this.x;
-            let dy = target.y - this.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
+        let targetX = (this.spawnCol * cellSize) + (cellSize / 2);
+        let targetY = canvas.height + 50;
 
-            if (dist < this.speed) {
-                this.pathIndex++;
-            } else {
-                this.x += (dx / dist) * this.speed;
-                this.y += (dy / dist) * this.speed;
+        let attractionTarget = null;
+        let minDist = 180; 
+
+        towers.forEach(t => {
+            if (this.shouldBeAttractedTo(t)) {
+                let dist = Math.hypot((t.x + 50) - this.x, (t.y + 50) - this.y);
+                if (dist < minDist) {
+                    minDist = dist;
+                    attractionTarget = t;
+                }
             }
-        } else {
-            this.escaped = true;  
+        });
+
+        if (attractionTarget) {
+            targetX = attractionTarget.x + 50;
+            targetY = attractionTarget.y + 50;
+        }
+
+        let dx = targetX - this.x;
+        let dy = targetY - this.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > 1) {
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+
+        if (this.y > canvas.height) {
+            this.escaped = true;
         }
     }
 
+    shouldBeAttractedTo(t) {
+        if (this.type === 'thief' && (t.type === 'car' || t.type === 'home')) return true;
+        if (this.type === 'virus' && t.type === 'medical') return true;
+        if ((this.type === 'flood' || this.type === 'fire') && (t.type === 'car' || t.type === 'home')) return true;
+        return false;
+    }
 
     draw() {
 
@@ -348,15 +373,17 @@ class Bullet {
 
 
 /* ========================
-   👑 Boss
+   👑 Boss 
 ======================== */
-
 class Boss extends Risk {
-    constructor(y) {
-        super(y);
-        this.health = 40;
-        this.speed = 0.7;
-        this.damage = 3;
+    constructor(x, wave) {
+        super(x, wave);
+        this.offsetX = (Math.random() - 0.5) * 10;
+        this.offsetY = (Math.random() - 0.5) * 10;
+        this.health = 50 + (wave * 30); 
+        this.maxHealth = this.health;
+        this.speed = 0.6; 
+        this.damage = 5 + Math.floor(wave / 5); 
         this.label = "👑";
     }
 }
@@ -434,7 +461,7 @@ canvas.addEventListener("click", (e) => {
     if (isOccupied) return;
 
     let cost = 0;
-    if (selectedType === "home") cost = 30;
+    if (selectedType === "home") cost = 50;
     else if (selectedType === "car") cost = 40;
     else if (selectedType === "medical") cost = 60;
 
@@ -452,44 +479,48 @@ canvas.addEventListener("click", (e) => {
 ======================== */
 
 function handleWave() {
-
     if (!waveInProgress) return;
+    totalEnemiesThisWave = wave * 5;
+    let bossCountNeeded = (wave % 5 === 0) ? Math.floor(wave / 5) : 0;
+    
+    let enemiesRemainingToSpawn = totalEnemiesThisWave - enemiesSpawned;
+    let isBossTime = (bossCountNeeded > 0) && (enemiesRemainingToSpawn <= bossCountNeeded);
 
-    let spawnRate = 150;
-    if (frames % spawnRate === 0 && enemiesSpawned < enemiesPerWave) {
-        if (wave % 5 === 0 && enemiesSpawned === enemiesPerWave - 1) {
-            enemies.push(new Boss(Math.floor(Math.random() * 5) * cellSize));
+    let currentSpawnRate = Math.max(40, 120 - (wave * 5));
+
+    if (frames % currentSpawnRate === 0 && enemiesSpawned < totalEnemiesThisWave) {
+        
+        let randomCol = Math.floor(Math.random() * 5);
+        let startX = randomCol * cellSize;
+
+        if (isBossTime) {
+            if (bossWarningTimer <= 0) bossWarningTimer = 120;
+            enemies.push(new Boss(startX, wave)); // 注意：Boss 类构造函数如果是 (x, wave)
         } else {
-            enemies.push(new Risk(Math.floor(Math.random() * 5) * cellSize, wave));
+            enemies.push(new Risk(startX, wave));
         }
+        
         enemiesSpawned++;
         rewardGiven = false;
     }
-    if (enemiesSpawned >= enemiesPerWave && enemies.length === 0) {
 
+    if (enemiesSpawned >= totalEnemiesThisWave && enemies.length === 0) {
         waveInProgress = false;
         rewardGiven = true;
 
-        gold += 60; 
-        floatingTexts.push(
-            new FloatingText("+60 Gold!", canvas.width / 2, canvas.height / 2, "#FFD700")
-        );
+        if (gameState === "playing") {
+            let bonus = 10;
+            gold += bonus; 
+            floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
+        }
 
         setTimeout(() => {
-            wave++;
-            enemiesPerWave += 2;
-            enemiesSpawned = 0;
-            waveInProgress = true;
-
-            floatingTexts.push(
-                new FloatingText(
-                    "Wave " + wave,
-                    canvas.width / 2 - 40,
-                    100,
-                    "white"
-                )
-            );
-
+            if (gameState === "playing") {
+                wave++;
+                enemiesSpawned = 0; 
+                waveInProgress = true;
+                floatingTexts.push(new FloatingText("Wave " + wave, canvas.width / 2 - 40, 100, "white"));
+            }
         }, 2000);
     }
 }
@@ -553,69 +584,46 @@ function handleLogic() {
     for (let i = enemies.length - 1; i >= 0; i--) {
     let en = enemies[i];
     en.blocked = false; 
+
     towers.forEach(tower => {
-            let dist = Math.hypot(
-            (en.x + 15) - (tower.x + 50), 
-            (en.y + 15) - (tower.y + 50)
-        );
-            if (dist < 60) { 
-                en.blocked = true; 
-                en.attackTimer++;
-                if (en.attackTimer >= en.attackSpeed) {
-                    tower.health -= en.damage;
-                    en.attackTimer = 0;
-                }
-            }
-        });
-
-        en.update(); 
-        en.draw();
-
-        if (en.escaped) {
-            baseHealth -= 10;
-
-            floatingTexts.push(
-                new FloatingText("-10 HP", en.x, en.y, "red")
-            );
-
-            enemies.splice(i, 1);
-
-            if (baseHealth <= 0) {
-                baseHealth = 0;
-                gameState = "gameOver";
-            }
-
-            return;
-        }
-
-        if (en.health <= 0 && !en.isDying && !en.escaped) {
-            en.isDying = true;
-            gold += 20;
-            floatingTexts.push(new FloatingText("+$20", en.x, en.y, "#FFD700"));
-            
-            for(let j = 0; j < 10; j++) {
-                particles.push(new Particle(en.x + 50, en.y + 50, '#c0392b'));
+        let dist = Math.hypot((en.x + 15) - (tower.x + 50), (en.y + 15) - (tower.y + 50));
+        if (dist < 60) { 
+            en.blocked = true; 
+            en.attackTimer++;
+            if (en.attackTimer >= en.attackSpeed) {
+                tower.health -= en.damage;
+                en.attackTimer = 0;
             }
         }
+    });
 
-        if (en.isDying) {
-            en.size -= 2; 
-            if (en.size <= 0) {
-                enemies.splice(i, 1); 
-            }
-            return; 
-        }
+    en.update(); 
+    en.draw();
 
-        if (en.y > canvas.height) { 
-            baseHealth -= 10; 
-            enemies.splice(i, 1); 
-            
-            if (baseHealth <= 0) {
-                baseHealth = 0;          
-                gameState = "gameOver";
-            }
+    if (en.health <= 0 && !en.isDying) {
+        en.isDying = true;
+        gold += 5;
+        floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
+        for(let j = 0; j < 10; j++) particles.push(new Particle(en.x + 50, en.y + 50, '#c0392b'));
+    }
+
+    if (en.isDying) {
+        en.size -= 2; 
+        if (en.size <= 0) enemies.splice(i, 1);
+        continue;
+    }
+
+    if (en.y > canvas.height) { 
+        baseHealth -= 10; 
+        floatingTexts.push(new FloatingText("-10 HP", en.x, en.y, "red"));
+        enemies.splice(i, 1); 
+        
+        if (baseHealth <= 0) {
+            baseHealth = 0;          
+            gameState = "gameOver";
         }
     }
+}
     /* ========= Stage 3 ========= */
     bullets.forEach((b, i) => {
 
@@ -760,6 +768,25 @@ function animate() {
 
     drawGrid();      
     drawHoverEffect();
+
+    if (bossWarningTimer > 0) {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        
+        let alpha = 0.6 + Math.sin(frames * 0.2) * 0.4;
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+        
+        ctx.font = "bold 60px Arial";
+        
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 10;
+        
+        ctx.fillText("BOSS COMING!", canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+        
+        bossWarningTimer--; // 倒计时
+    }
 
     if (gameState === "gameOver") {
 
