@@ -72,16 +72,13 @@ async function loadInventory() {
 
         container.innerHTML = '';
         items.forEach(item => {
-        console.log("Rendering item:", item);
-        const div = document.createElement('div');
+            const div = document.createElement('div');
             div.className = 'inventory-item-inner';
-            div.style.border = "1px solid #ddd";
-            div.style.padding = "10px";
-            div.style.margin = "5px 0";
             
+            // Use the exact names from your SQL: id, item_name, quantity
             div.innerHTML = `
-                <h4 style="color:var(--primary-blue); margin:0;">${item.item_name || 'Unknown'}</h4>
-                <p style="font-size:0.8rem; margin:5px 0;">Quantity: ${item.quantity}</p>
+                <h4 style="color:var(--primary-blue)">${item.item_name || 'Item'}</h4>
+                <p style="font-size:0.8rem">Owned: ${item.quantity ?? 0}</p>
                 <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
             container.appendChild(div);
