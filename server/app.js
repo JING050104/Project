@@ -100,15 +100,13 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
             ); //
             return res.json({ success: true, type: 'points' }); //
         } else {
-            // 处理道具奖励 (例如: "XP Boost")
             await db.query(`
-                // Inside your /api/spin-reward route:
-                INSERT INTO user_inventory (user_id, item_name, quantity, status) 
-                VALUES ($1, $2, 1, 'active') 
-                ON CONFLICT (user_id, item_name) 
-                DO UPDATE SET quantity = user_inventory.quantity + 1`, 
-                [userId, reward]
-            );
+            INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
+            VALUES ($1, $2, $3, 1, 'unused') 
+            ON CONFLICT (user_id, voucher_id) 
+            DO UPDATE SET quantity = user_inventory.quantity + 1`, 
+            [userId, voucherId, voucherName] // 把名字也传进去
+        );
             return res.json({ success: true, type: 'item' }); //
         }
     } catch (err) {
@@ -126,7 +124,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
         const query = `
             SELECT 
                 i.id, 
-                COALESCE(v.name, i.item_name, '未知物品') as item_name, 
+                COALESCE(v.name, i.item_name, 'Unknown Item') as item_name, 
                 i.quantity, 
                 i.status 
             FROM user_inventory i
@@ -135,10 +133,9 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
         `;
         const result = await db.query(query, [userId]);
         
-        // FIX: Send result.rows, not the whole result object
         res.json(result.rows || []); 
     } catch (err) {
-        console.error("查询库存错误:", err);
+        console.error("Inventory Fetch Error:", err);
         res.status(500).json([]);
     }
 });
@@ -170,13 +167,12 @@ app.post("/api/activate-item", ensureAuthenticated, async (req, res) => {
  * E. 保存 Risk Finder 游戏得分 (新增)
  */
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id; // 从 Passport 会话中获取用户 ID
-    const { score } = req.body; // 获取前端发送的 totalScore
+    const userId = req.user.id;
+    const { score } = req.body; 
 
     console.log(`--- Game Score Received: User ${userId} earned ${score} points ---`);
 
     try {
-        // 使用 INSERT ... ON DUPLICATE KEY UPDATE 确保积分累加
         await db.query(`
             INSERT INTO user_points (user_id, total_points) 
             VALUES ($1, $2)
@@ -186,7 +182,6 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         );
         res.json({ success: true, message: "Score successfully recorded!" });
     } catch (err) {
-        // 如果报错，这里会在 Render Logs 里显示具体的红色错误
         console.error("Database Error during game score save:", err.message);
         res.status(500).json({ success: false, error: "Failed to sync score." });
     }
@@ -209,11 +204,11 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
         await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]);
         
         await db.query(`
-            INSERT INTO user_inventory (user_id, voucher_id, quantity, status) 
-            VALUES ($1, $2, 1, 'unused') 
+            INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
+            VALUES ($1, $2, $3, 1, 'unused') 
             ON CONFLICT (user_id, voucher_id) 
             DO UPDATE SET quantity = user_inventory.quantity + 1`, 
-            [userId, voucherId]
+            [userId, voucherId, voucherName] 
         );
 
         res.json({ success: true, message: `Successfully redeemed ${voucherName}!` });
