@@ -102,8 +102,9 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         } else {
             // 处理道具奖励 (例如: "XP Boost")
             await db.query(`
-                INSERT INTO user_inventory (user_id, item_name, quantity) 
-                VALUES ($1, $2, 1) 
+                // Inside your /api/spin-reward route:
+                INSERT INTO user_inventory (user_id, item_name, quantity, status) 
+                VALUES ($1, $2, 1, 'active') 
                 ON CONFLICT (user_id, item_name) 
                 DO UPDATE SET quantity = user_inventory.quantity + 1`, 
                 [userId, reward]
@@ -132,8 +133,10 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             LEFT JOIN vouchers v ON i.voucher_id = v.id
             WHERE i.user_id = $1
         `;
-        const { rows } = await db.query(query, [userId]);
-        res.json(rows || []);
+        const result = await db.query(query, [userId]);
+        
+        // FIX: Send result.rows, not the whole result object
+        res.json(result.rows || []); 
     } catch (err) {
         console.error("查询库存错误:", err);
         res.status(500).json([]);
