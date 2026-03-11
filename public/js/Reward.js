@@ -72,17 +72,22 @@ async function loadInventory() {
 
         container.innerHTML = '';
         items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'inventory-item-inner';
-            
-            // Use the exact names from your SQL: id, item_name, quantity
-            div.innerHTML = `
-                <h4 style="color:var(--primary-blue)">${item.item_name}</h4>
-                <p style="font-size:0.8rem">Quantity: ${item.quantity}</p> 
-                <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
-            `;
-            container.appendChild(div);
-        });
+        console.log("Current item data:", item); 
+
+        // 兼容处理：尝试读取大写或小写
+        const name = item.item_name || item.ITEM_NAME || 'Unknown';
+        const qty = item.quantity ?? item.QUANTITY ?? 0;
+        const itemId = item.id || item.ID;
+
+        const div = document.createElement('div');
+        div.className = 'inventory-item-inner';
+        div.innerHTML = `
+            <h4 style="color:var(--primary-blue)">${name}</h4>
+            <p style="font-size:0.8rem">Quantity: ${qty}</p> 
+            <button class="submit-btn" onclick="activateItem(${itemId})">Activate</button>
+        `;
+        container.appendChild(div);
+    });
     } catch (err) { 
         console.error("Load Inventory Failed:", err);
     }

@@ -1201,3 +1201,83 @@ button:disabled {
     padding: 4px 6px;
     border-radius: 10px;
 }
+
+/* --- 新增：Features 板块样式 --- */
+.features-grid {
+    padding: 100px 40px;
+    background: #fff;
+    text-align: center;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 50px auto 0;
+}
+
+.feature-card {
+    padding: 40px;
+    background: #f8fafc;
+    border-radius: 24px;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    border-color: var(--primary-blue);
+}
+
+.feature-card .icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* --- 新增：步骤说明样式 --- */
+.how-it-works {
+    display: flex;
+    justify-content: space-around;
+    padding: 80px 40px;
+    background: var(--primary-blue);
+    color: white;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.step {
+    flex: 1;
+    min-width: 250px;
+    text-align: center;
+}
+
+.step-num {
+    font-size: 3rem;
+    font-weight: 900;
+    opacity: 0.3;
+    display: block;
+}
+
+.step h4 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+}
+
+#ctaBtn {
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(74, 144, 226, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 144, 226, 0); }
+}

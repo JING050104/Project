@@ -116,10 +116,10 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     try {
         const query = `
             SELECT 
-                i.id, 
-                COALESCE(v.name, i.item_name, 'Unknown Item') as item_name, 
-                i.quantity, 
-                i.status 
+                i.id as "id", 
+                COALESCE(v.name, i.item_name, 'Unknown Item') as "item_name", 
+                i.quantity as "quantity", 
+                i.status as "status" 
             FROM user_inventory i
             LEFT JOIN vouchers v ON i.voucher_id = v.id
             WHERE i.user_id = $1
