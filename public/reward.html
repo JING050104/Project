@@ -17,7 +17,7 @@
         </div>
 
         <div class="login-card inventory-box">
-            <h3>My Inventory</h3>
+            <h3>My Voucher</h3>
             <div id="inventory-container">
                 </div>
         </div>
@@ -28,7 +28,21 @@
                 </div>
         </div>
     </main>
-
+    <div id="voucher-detail-modal" class="modal-overlay">
+    <div class="login-card voucher-detail-card">
+        <span class="close-modal" onclick="closeVoucherModal()">&times;</span>
+        <div id="modal-content">
+            <h2 id="modal-title">Voucher Name</h2>
+            <div class="modal-badge" id="modal-status">Unused</div>
+            <p class="modal-description" id="modal-description">
+                Loading description...
+            </p>
+            <div class="modal-actions">
+                <button id="modal-action-btn" class="submit-btn">Activate Now</button>
+            </div>
+        </div>
+    </div>
+    </div>
     <script src="js/Reward.js"></script>
 </body>
 </html>

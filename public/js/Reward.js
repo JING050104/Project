@@ -50,10 +50,8 @@ async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
         if (!res.ok) throw new Error("Server Error");
-        
         let data = await res.json();
         let items = (Array.isArray(data) && Array.isArray(data[0])) ? data[0] : data;
-        
         if (items && items.rows) items = items.rows;
 
         const container = document.getElementById('inventory-container');
@@ -67,17 +65,41 @@ async function loadInventory() {
         container.innerHTML = '';
         items.forEach(item => {
             const div = document.createElement('div');
+            div.onclick = () => openVoucherModal(item);
             div.className = 'inventory-item-inner';
             div.innerHTML = `
                 <h4 style="color:var(--primary-blue)">${item.item_name || 'Item'}</h4>
                 <p style="font-size:0.8rem">Quantity: ${item.quantity ?? 0}</p> 
-                <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
+                <div style="margin-top: 10px; font-size: 0.7rem; color: var(--primary-blue); font-weight: bold;">
+                    View Details
+                </div>
             `;
             container.appendChild(div);
         });
     } catch (err) { 
         console.error("Load Inventory Failed:", err);
     }
+}
+
+function openVoucherModal(item) {
+    document.getElementById('modal-title').innerText = item.item_name;
+    document.getElementById('modal-status').innerText = item.status === 'unused' ? 'Ready to Use' : 'Active';
+    const dbDescription = item.description || 'This is a special reward from CoverageQuest. Use it to claim your benefit!';
+    
+    document.getElementById('modal-description').innerText = dbDescription;
+    
+    const btn = document.getElementById('modal-action-btn');
+    btn.onclick = (e) => {
+        e.stopPropagation(); 
+        activateItem(item.id);
+        closeVoucherModal();
+    };
+
+    document.getElementById('voucher-detail-modal').style.display = 'flex';
+}
+
+function closeVoucherModal() {
+    document.getElementById('voucher-detail-modal').style.display = 'none';
 }
 
 function renderVouchers() {
