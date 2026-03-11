@@ -52,15 +52,14 @@ async function loadInventory() {
         if (!res.ok) throw new Error("Server Error");
         
         let data = await res.json();
-        
         let items = (Array.isArray(data) && Array.isArray(data[0])) ? data[0] : data;
         
-        if (items.rows) items = items.rows;
+        if (items && items.rows) items = items.rows;
 
         const container = document.getElementById('inventory-container');
-        if (!container || !Array.isArray(items)) return;
+        if (!container) return;
 
-        if (items.length === 0) {
+        if (!Array.isArray(items) || items.length === 0) {
             container.innerHTML = "<p class='placeholder-text'>No items in inventory.</p>";
             return;
         }

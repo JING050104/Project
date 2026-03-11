@@ -125,7 +125,9 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 
     try {
         const result = await db.query(query, [req.user.id]);
-        res.json(result.rows || []); 
+        const inventoryData = result.rows ? result.rows : (Array.isArray(result) ? result : []);
+        console.log("Sending Inventory to Frontend:", inventoryData); 
+        res.json(inventoryData); 
     } catch (err) {
         console.error("Inventory Fetch Error:", err);
         res.status(500).json([]);
