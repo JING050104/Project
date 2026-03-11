@@ -101,13 +101,13 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
             return res.json({ success: true, type: 'points' }); //
         } else {
             await db.query(`
-            INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-            VALUES ($1, $2, $3, 1, 'unused') 
-            ON CONFLICT (user_id, voucher_id) 
-            DO UPDATE SET quantity = user_inventory.quantity + 1`, 
-            [userId, voucherId, voucherName] // 把名字也传进去
-        );
-            return res.json({ success: true, type: 'item' }); //
+                INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
+                VALUES ($1, NULL, $2, 1, 'active') 
+                ON CONFLICT (user_id, item_name) 
+                DO UPDATE SET quantity = user_inventory.quantity + 1`, 
+                [userId, reward] 
+            );
+            return res.json({ success: true, type: 'item' });
         }
     } catch (err) {
         console.error("Database Error during spin reward:", err.sqlMessage || err.message); //
@@ -132,8 +132,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             WHERE i.user_id = $1
         `;
         const result = await db.query(query, [userId]);
-        
-        res.json(result.rows || []); 
+        res.json(result.rows || []); // Correctly sending result.rows
     } catch (err) {
         console.error("Inventory Fetch Error:", err);
         res.status(500).json([]);
