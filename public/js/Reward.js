@@ -46,24 +46,19 @@ async function activateItem(inventoryId) {
     }
 }
 
-// 渲染背包道具
 async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
         if (!res.ok) throw new Error("Server Error");
         
-        let items = await res.json();
+        let data = await res.json();
         
-        // 兼容性处理：如果后端返回的是 { rows: [...] } 格式
+        let items = (Array.isArray(data) && Array.isArray(data[0])) ? data[0] : data;
+        
         if (items.rows) items = items.rows;
 
         const container = document.getElementById('inventory-container');
-        if (!container) return;
-
-        if (!Array.isArray(items)) {
-            container.innerHTML = "<p>Data format error.</p>";
-            return;
-        }
+        if (!container || !Array.isArray(items)) return;
 
         if (items.length === 0) {
             container.innerHTML = "<p class='placeholder-text'>No items in inventory.</p>";
@@ -71,30 +66,21 @@ async function loadInventory() {
         }
 
         container.innerHTML = '';
-        // Reward.js 中的循环部分
-items.forEach(item => {
-    // 兼容大小写属性名
-    const name = item.item_name || item.ITEM_NAME;
-    const qty = item.quantity ?? item.QUANTITY ?? 0;
-    const itemId = item.id || item.ID;
-
-    const div = document.createElement('div');
-    div.className = 'inventory-item-inner';
-    div.innerHTML = `
-        <h4 style="color:var(--primary-blue)">${name}</h4>
-        <p style="font-size:0.8rem">Quantity: ${qty}</p> 
-        <button class="submit-btn" onclick="activateItem(${itemId})">Activate</button>
-    `;
-    container.appendChild(div);
-});
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'inventory-item-inner';
+            div.innerHTML = `
+                <h4 style="color:var(--primary-blue)">${item.item_name || 'Item'}</h4>
+                <p style="font-size:0.8rem">Quantity: ${item.quantity ?? 0}</p> 
+                <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
+            `;
+            container.appendChild(div);
+        });
     } catch (err) { 
         console.error("Load Inventory Failed:", err);
     }
 }
 
-/**
- * 动态渲染礼券卡片
- */
 function renderVouchers() {
     if (!container) return;
     

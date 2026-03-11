@@ -112,22 +112,20 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
  * C. 获取用户背包道具
  */
 app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id; 
+    const query = `
+        SELECT 
+            i.id as "id", 
+            COALESCE(v.name, i.item_name) as "item_name", 
+            i.quantity as "quantity", 
+            i.status as "status" 
+        FROM user_inventory i
+        LEFT JOIN vouchers v ON i.voucher_id = v.id
+        WHERE i.user_id = $1
+    `;
+
     try {
-        const query = `
-            SELECT 
-                i.id as "id", 
-                COALESCE(v.name, i.item_name) as "item_name", 
-                i.quantity as "quantity", 
-                i.status as "status" 
-            FROM user_inventory i
-            LEFT JOIN vouchers v ON i.voucher_id = v.id
-            WHERE i.user_id = $1
-        `;
-        const result = await db.query(query, [userId]);
-        
-        const data = result.rows || (Array.isArray(result) ? result : []);
-        res.json(data); 
+        const result = await db.query(query, [req.user.id]);
+        res.json(result.rows || []); 
     } catch (err) {
         console.error("Inventory Fetch Error:", err);
         res.status(500).json([]);
