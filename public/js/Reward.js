@@ -77,8 +77,8 @@ async function loadInventory() {
             
             // Use the exact names from your SQL: id, item_name, quantity
             div.innerHTML = `
-                <h4 style="color:var(--primary-blue)">${item.item_name || 'Item'}</h4>
-                <p style="font-size:0.8rem">Owned: ${item.quantity ?? 0}</p>
+                <h4 style="color:var(--primary-blue)">${item.item_name}</h4>
+                <p style="font-size:0.8rem">Quantity: ${item.quantity}</p> 
                 <button class="submit-btn" onclick="activateItem(${item.id})">Activate</button>
             `;
             container.appendChild(div);

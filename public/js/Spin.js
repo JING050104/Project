@@ -12,9 +12,9 @@ class SpinWheel {
         this.rewards = config.rewards || [
             "Try Again", // 0-59 deg
             "100 pts",   // 60-119 deg
-            "XP Boost",  // 120-179 deg
+            "20 pts",  // 120-179 deg
             "10 pts",    // 180-239 deg
-            "Free Life", // 240-299 deg
+            "5 pts", // 240-299 deg
             "50 pts"     // 300-359 deg
         ];
 

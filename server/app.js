@@ -100,14 +100,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
             ); //
             return res.json({ success: true, type: 'points' }); //
         } else {
-            await db.query(`
-                INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-                VALUES ($1, NULL, $2, 1, 'active') 
-                ON CONFLICT (user_id, item_name) 
-                DO UPDATE SET quantity = user_inventory.quantity + 1`, 
-                [userId, reward] 
-            );
-            return res.json({ success: true, type: 'item' });
+            return res.json({ success: false, error: "Invalid reward type." });
         }
     } catch (err) {
         console.error("Database Error during spin reward:", err.sqlMessage || err.message); //
