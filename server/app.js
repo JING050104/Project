@@ -117,7 +117,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
         const query = `
             SELECT 
                 i.id as "id", 
-                COALESCE(v.name, i.item_name, 'Unknown Item') as "item_name", 
+                COALESCE(v.name, i.item_name) as "item_name", 
                 i.quantity as "quantity", 
                 i.status as "status" 
             FROM user_inventory i
@@ -126,15 +126,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
         `;
         const result = await db.query(query, [userId]);
         
-        // 关键修复：确保即使 result 是空的，也返回数组，且优先取 rows
-        let data = [];
-        if (result && result.rows) {
-            data = result.rows;
-        } else if (Array.isArray(result)) {
-            data = result;
-        }
-
-        console.log(`Sending inventory for User ${userId}:`, data);
+        const data = result.rows || (Array.isArray(result) ? result : []);
         res.json(data); 
     } catch (err) {
         console.error("Inventory Fetch Error:", err);

@@ -71,23 +71,22 @@ async function loadInventory() {
         }
 
         container.innerHTML = '';
-        items.forEach(item => {
-        console.log("Current item data:", item); 
+        // Reward.js 中的循环部分
+items.forEach(item => {
+    // 兼容大小写属性名
+    const name = item.item_name || item.ITEM_NAME;
+    const qty = item.quantity ?? item.QUANTITY ?? 0;
+    const itemId = item.id || item.ID;
 
-        // 兼容处理：尝试读取大写或小写
-        const name = item.item_name || item.ITEM_NAME || 'Unknown';
-        const qty = item.quantity ?? item.QUANTITY ?? 0;
-        const itemId = item.id || item.ID;
-
-        const div = document.createElement('div');
-        div.className = 'inventory-item-inner';
-        div.innerHTML = `
-            <h4 style="color:var(--primary-blue)">${name}</h4>
-            <p style="font-size:0.8rem">Quantity: ${qty}</p> 
-            <button class="submit-btn" onclick="activateItem(${itemId})">Activate</button>
-        `;
-        container.appendChild(div);
-    });
+    const div = document.createElement('div');
+    div.className = 'inventory-item-inner';
+    div.innerHTML = `
+        <h4 style="color:var(--primary-blue)">${name}</h4>
+        <p style="font-size:0.8rem">Quantity: ${qty}</p> 
+        <button class="submit-btn" onclick="activateItem(${itemId})">Activate</button>
+    `;
+    container.appendChild(div);
+});
     } catch (err) { 
         console.error("Load Inventory Failed:", err);
     }
