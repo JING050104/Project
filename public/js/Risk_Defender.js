@@ -509,7 +509,7 @@ function handleWave() {
         rewardGiven = true;
 
         if (gameState === "playing") {
-            let bonus = 10;
+            let bonus = 30;
             gold += bonus; 
             floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
         }
