@@ -757,7 +757,9 @@ input {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
     gap: 12px !important;
     width: 100% !important;
+    height: 100% !important;
     margin-top: 15px !important;
+    padding: 20px 10px;
 }
 
 .inventory-item-inner {
