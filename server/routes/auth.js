@@ -95,7 +95,6 @@ router.post('/send-reg-code', async (req, res) => {
         } else {
             res.status(500).json({ success: false, message: "Failed to send email" });
         }
-        res.json({success:true,message:"Code sent"});
 
     } catch(err) {
 
@@ -241,12 +240,12 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(404).json({ success: false, message: "Email not found" });
         }
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 10 * 60000); // 10 minutes
 
         await db.execute(
             "UPDATE users SET reset_code = $1, reset_expires = $2 WHERE email = $3",
-            [code, expires, users[0].email]
+            [verifyCode, expires, users[0].email] // 这里也要改
         );
 
         const emailSent = await sendBrevoEmail(
@@ -266,7 +265,6 @@ router.post('/forgot-password', async (req, res) => {
                 } else {
                     res.status(500).json({ success: false, message: "Failed to send email" });
                 }
-                res.json({success:true,message:"Code sent"});
 
     } catch (err) {
     console.error("FULL ERROR:", err);
@@ -303,6 +301,10 @@ router.post('/update-profile', async (req, res) => {
 
         const { username, email, currentPassword, newPassword } = req.body;
         const user = req.user;
+
+        if (!currentPassword || typeof currentPassword !== 'string') {
+            return res.status(400).json({ message: "Please provide your current password to verify identity." });
+        }
 
         // 1. Verify password
         const isMatch = await bcrypt.compare(currentPassword, user.password);
