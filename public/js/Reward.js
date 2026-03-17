@@ -95,16 +95,16 @@ function openVoucherModal(item) {
 
     if (item.status === 'active') {
         statusBadge.innerText = 'Activated';
-        statusBadge.style.backgroundColor = '#10b981';
+        statusBadge.className = 'modal-badge status-active';
         desc.style.display = 'none';
         btn.style.display = 'none';
         
         codeContainer.style.display = 'block';
         codeText.innerText = item.redeem_code || 'N/A';
-        
+
     } else {
         statusBadge.innerText = 'Ready to Use';
-        statusBadge.style.backgroundColor = '#4a90e2';
+        statusBadge.className = 'modal-badge status-unused';
         desc.style.display = 'block';
         desc.innerText = item.description || 'Activate this voucher to reveal your unique redemption code.';
         btn.style.display = 'block';
