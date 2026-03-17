@@ -747,15 +747,16 @@ input {
 
 #inventory-container {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
-    gap: 12px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 15px !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
     margin-top: 15px !important;
     padding: 20px 10px;
 }
 
 .inventory-item-inner {
+    width: 100%;
     background: #ffffff !important;
     border: none !important;
     border-radius: 20px !important;
@@ -1266,6 +1267,10 @@ button:disabled {
 
 @media (max-width: 768px) {
 
+    #inventory-container {
+        grid-template-columns:repeat(2, 1fr) !important; 
+    }
+
     .middle-row-container {
         grid-template-columns: 1fr !important;
     }
@@ -1308,6 +1313,7 @@ button:disabled {
     .main-layout {
         flex-direction: column !important;
         align-items: center;
+        flex-direction: column !important;
     }
 
     #wrapper {
