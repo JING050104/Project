@@ -118,6 +118,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             COALESCE(v.name, i.item_name) as "item_name", 
             i.quantity as "quantity", 
             i.status as "status" ,
+            i.redeem_code as "redeem_code",
             v.description AS "description"
         FROM user_inventory i
         LEFT JOIN vouchers v ON i.voucher_id = v.id
