@@ -8,6 +8,11 @@ let resetEmailStorage = "";
 if (forgotLink) {
     forgotLink.onclick = (e) => {
         e.preventDefault();
+        const currentUserEmail = document.getElementById('editEmail').value;
+        
+        document.getElementById("resetEmail").value = currentUserEmail;
+        document.getElementById("confirmEmailDisplay").textContent = currentUserEmail;
+
         resetModal.style.display = "flex";
     };
 }
@@ -134,37 +139,48 @@ function enableInput(inputId) {
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const newUsername = document.getElementById('editUsername').value;
+    const newEmail = document.getElementById('editEmail').value;
+    const currentPass = document.getElementById('currPass').value;
     const newPass = document.getElementById('NewPassword').value;
     const confirmPass = document.getElementById('regConfirmPassword').value;
-    if (newPass && newPass !== confirmPass) {
-        alert("New passwords do not match!");
-        return;
+
+    // 逻辑校验
+    if (newPass) {
+        if (!currentPass) return alert("Please enter current password to verify.");
+        if (newPass !== confirmPass) return alert("New passwords do not match!");
     }
 
     const updateData = {
-        username: document.getElementById('editUsername').value,
-        email: document.getElementById('editEmail').value,
-        currentPassword: document.getElementById('currPass').value,
-        newPassword: newPass
+        username: newUsername,
+        email: newEmail,
+        currentPassword: currentPass || null,
+        newPassword: newPass || null
     };
 
     try {
-        const res = await fetch('/auth/update-profile', {
+        const response = await fetch('/auth/update-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updateData)
         });
 
-        const result = await res.json();
+        const result = await response.json();
 
-        if (res.ok) {
-            alert("Profile updated successfully!");
-            location.reload();
+        if (response.ok) {
+            // --- 你的弹窗逻辑 ---
+            if (newPass.trim() !== "") {
+                alert("Password updated successfully!");
+            } else {
+                alert("Profile and Email changed!");
+            }
+            location.reload(); 
         } else {
-            alert("Error: " + (result.message || "Failed to update"));
+            alert('Error: ' + result.message);
         }
-    } catch (err) {
-        alert("Network error. Please try again.");
+    } catch (error) {
+        console.error('Update failed:', error);
+        alert("Server error, please try again.");
     }
 });
 
