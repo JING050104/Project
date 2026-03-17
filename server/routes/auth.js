@@ -249,20 +249,24 @@ router.post('/forgot-password', async (req, res) => {
             [code, expires, users[0].email]
         );
 
-        await sgMail.send({
-            to: email,
-            from: "CoverageQuest <leewanjing040501@gmail.com>",
-            subject: "CoverageQuest Verification Code",
-            text: `Your verification code is: ${verifyCode}`,
-            html: `
+        const emailSent = await sendBrevoEmail(
+            email,
+            "CoverageQuest Verification Code",
+            `Your verification code is: ${verifyCode}`, 
+            `
                 <h2>CoverageQuest</h2>
                 <p>Your verification code:</p>
                 <h1>${verifyCode}</h1>
-                <p>This code expires in 10 minutes.</p>
+                <p>This code expires in 15 minutes.</p>
             `
-        });
+        );
 
-        return res.json({ success: true, message: "Code sent!" });
+        if (emailSent) {
+                    res.json({ success: true, message: "Code sent" });
+                } else {
+                    res.status(500).json({ success: false, message: "Failed to send email" });
+                }
+                res.json({success:true,message:"Code sent"});
 
     } catch (err) {
     console.error("FULL ERROR:", err);
