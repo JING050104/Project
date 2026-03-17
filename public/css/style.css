@@ -789,12 +789,6 @@ input {
     width: 100% !important;
 }
 
-@media (max-width: 768px) {
-    .middle-row-container {
-        grid-template-columns: 1fr !important;
-    }
-}
-
 .dashboard-grid .dash-card.clickable-card {
     display: flex !important;
     flex-direction: column !important;
@@ -1271,6 +1265,10 @@ button:disabled {
 }
 
 @media (max-width: 768px) {
+
+    .middle-row-container {
+        grid-template-columns: 1fr !important;
+    }
 
     .dashboard-header {
         padding: 0 15px !important;
