@@ -114,30 +114,25 @@ router.post('/verify-code', async (req, res) => {
     const { email, code } = req.body;
 
     try {
-
         const [user] = await db.execute(
             "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()",
             [email, code]
         );
 
-        if (!user || user.length === 0) {
-            return res.json({
-                success:false,
-                message:"Invalid or expired code"
-            });
+        if (user.length === 0) {
+            return res.status(400).json({ success: false, message: "Invalid or expired code." });
         }
 
-        return res.json({
-            success:true,
-            message:"Code verified"
-        });
+        await db.execute(
+            "UPDATE users SET is_verified = 1, reset_code = NULL, reset_expires = NULL WHERE email = $1",
+            [email]
+        );
 
-    } catch(err){
-        console.error("VERIFY CODE ERROR:", err);
-        res.status(500).json({
-            success:false,
-            message:"Server error"
-        });
+        res.json({ success: true, message: "Email verified successfully! You can now login." });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error." });
     }
 });
 
@@ -170,27 +165,17 @@ router.post('/complete-registration', async (req, res) => {
 });
 
 // LOGIN ROUTE
-router.post("/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-        if (err) {
-            console.error("Login Error:", err);
-            return res.status(500).json({ success: false, message: "Server error during login." });
-        }
-        
-        // 核心修复：如果验证失败，返回 JSON 错误信息，而不是 redirect
-        if (!user) {
-            return res.status(401).json({ 
-                success: false, 
-                message: info ? info.message : "Invalid credentials." 
-            });
-        }
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', async (err, user, info) => {
+        if (err) return next(err);
+        if (!user) return res.status(400).json({ success: false, message: info.message });
 
-        req.logIn(user, (err) => {
+        req.logIn(user, async (err) => {
             if (err) return next(err);
-            req.session.save((err) => {
-                if (err) return next(err);
-                return res.json({ success: true, message: "Login successful" });
-            });
+
+            await db.execute("UPDATE users SET is_verified = 1 WHERE id = $1", [user.id]);
+            
+            return res.json({ success: true });
         });
     })(req, res, next);
 });

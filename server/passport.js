@@ -26,11 +26,14 @@ module.exports = function(passport) {
       { usernameField: "identifier", passwordField: "password" }, 
       async (identifier, password, done) => {
         try {
-          // 核心修复：确保 identifier 同时匹配 email 和 username，且显式转换类型
           const [rows] = await db.execute(
-              "SELECT * FROM users WHERE (email = $1::text OR username = $2::text)", 
-              [identifier, identifier]
+              "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
+              [identifier]
           );
+
+          if (rows.length === 0) {
+              return done(null, false, { message: "Account not verified or user not found." });
+          }
           
           const user = rows[0];
           if (!user) return done(null, false, { message: "Account not found." });
