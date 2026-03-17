@@ -373,21 +373,14 @@ input {
 
 .settings-form-wrapper form.active {
     display: flex !important;
-    flex-direction: row !important; /* Forces side-by-side */
+    flex-direction: column !important; /* Forces side-by-side */
     flex-wrap: wrap;
-    gap: 50px;
+    gap: 30px;
 }
 
 .profile-section-left, .profile-section-right {
     flex: 1;
-    min-width: 350px;
-}
-
-@media (min-width: 900px) {
-    .profile-section-left {
-        border-right: 1px solid #eef2f6;
-        padding-right: 50px;
-    }
+    min-width: 0;
 }
 
 .form-footer {
@@ -486,16 +479,16 @@ input {
 .toggle-eye {
     position: absolute;
     right: 12px;
-    top: 38px; /* Adjust this based on your label height */
+    top: 35px;
     cursor: pointer;
     font-size: 1.2rem;
     z-index: 5;
     color: #7f8c8d;
 }
 
-/* Ensure text doesn't go under the eye */
 .input-group input, .password-container input {
-    padding-right: 40px !important;
+    width: 100% !important;
+    box-sizing: border-box; 
 }
 
 .dash-card {
@@ -1090,41 +1083,6 @@ body.flash-red {
     border-radius: 8px;
 }
 
-@media (max-width: 768px) {
-
-    .dashboard-header {
-        height: 60px;
-        padding: 0 15px;
-    }
-
-    .logo {
-        font-size: 18px;
-    }
-
-    .game-hud {
-        margin-bottom: 10px;
-        padding: 8px 30px;
-        flex-shrink: 0;   
-    }
-
-    .controls {
-        margin-bottom: 10px;
-        padding: 10px 20px;
-        flex-shrink: 0;    
-    }
-
-    .controls button {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-
-    .game-info {
-        font-size: 12px;
-        text-align: center;
-    }
-
-}
-
 .no-scroll-page .game-screen {
     flex: 1;
     display: flex;
@@ -1298,4 +1256,55 @@ button:disabled {
 
 #voucher-detail-modal .login-card {
     animation: modalPop 0.3s ease-out;
+}
+
+@media (min-width: 900px) {
+    .settings-form-wrapper form.active {
+        flex-direction: row !important;
+    }
+    
+    .profile-section-left {
+        flex: 1;
+        min-width: 0 !important;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .dashboard-header {
+        padding: 0 15px !important;
+        height: 65px !important;
+    }
+    
+    #userNameHeader {
+        display: none;
+    }
+    
+    .logo {
+        font-size: 18px;
+    }
+
+    .game-hud {
+        margin-bottom: 10px;
+        padding: 8px 30px;
+        flex-shrink: 0;   
+    }
+
+    .controls {
+        margin-bottom: 10px;
+        padding: 10px 20px;
+        flex-shrink: 0;    
+    }
+
+    .controls button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .game-info {
+        font-size: 12px;
+        text-align: center;
+    }
+
 }
