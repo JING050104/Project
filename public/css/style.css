@@ -736,6 +736,7 @@ input {
 }
 
 .inventory-box.login-card {
+    margin-top: 15px;
     max-width: 100% !important; 
     width: 100% !important;
     margin: 0 !important;
@@ -1327,6 +1328,12 @@ button:disabled {
 
 #voucher-detail-modal .login-card {
     animation: modalPop 0.3s ease-out;
+}
+
+#voucher-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
 }
 
 @media (min-width: 900px) {
