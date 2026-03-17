@@ -3,8 +3,28 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const db = require("../db");
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const axios = require("axios"); 
+
+async function sendBrevoEmail(toEmail, subject, textContent, htmlContent) {
+    try {
+        await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: { name: "CoverageQuest", email: "leewanjing040501@gmail.com" },
+            to: [{ email: toEmail }],
+            subject: subject,
+            textContent: textContent,
+            htmlContent: htmlContent  
+        }, {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
+        return true;
+    } catch (error) {
+        console.error("Brevo API Error:", error.response ? error.response.data : error.message);
+        return false;
+    }
+}
 
 // 1. 
 router.post('/send-reg-code', async (req, res) => {
@@ -58,19 +78,23 @@ router.post('/send-reg-code', async (req, res) => {
                 code_attempts = users.code_attempts + 1
         `,[email,verifyCode,expires]);
 
-        await sgMail.send({
-            to: email,
-            from: "CoverageQuest <leewanjing040501@gmail.com>",
-            subject: "CoverageQuest Verification Code",
-            text: `Your verification code is: ${verifyCode}`,
-            html: `
+        const emailSent = await sendBrevoEmail(
+            email,
+            "CoverageQuest Verification Code",
+            `Your verification code is: ${verifyCode}`, 
+            `
                 <h2>CoverageQuest</h2>
                 <p>Your verification code:</p>
                 <h1>${verifyCode}</h1>
-                <p>This code expires in 10 minutes.</p>
+                <p>This code expires in 15 minutes.</p>
             `
-        });
+        );
 
+        if (emailSent) {
+            res.json({ success: true, message: "Code sent" });
+        } else {
+            res.status(500).json({ success: false, message: "Failed to send email" });
+        }
         res.json({success:true,message:"Code sent"});
 
     } catch(err) {

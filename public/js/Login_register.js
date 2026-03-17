@@ -1,7 +1,6 @@
 let tempEmail = "";
 let resetEmailStorage = "";
-let tempCode = "";
-
+let tempResetCode = "";
 loginForm.addEventListener("submit", async e => {
     e.preventDefault();
 
@@ -24,44 +23,37 @@ loginForm.addEventListener("submit", async e => {
 });
 
 registerForm.addEventListener("submit", async e => {
-
     e.preventDefault();
 
     const emailInput = document.getElementById("regEmail").value;
     const btn = registerForm.querySelector('button[type="submit"]');
 
-    btn.textContent = "Sending...";
+    btn.textContent = "Sending Verification Code...";
     btn.disabled = true;
 
     try {
-
-        const res = await fetch("/auth/send-reg-code",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({ email: emailInput })
+        const res = await fetch("/auth/send-reg-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailInput })
         });
 
         const data = await res.json();
 
-        if(data.success){
-
+        if (data.success) {
             tempEmail = emailInput;
-
             document.getElementById("codeSection").style.display = "block";
             btn.style.display = "none";
-
-        }else{
-
+        } else {
             alert(data.message);
-
+            btn.textContent = "Sign Up";
+            btn.disabled = false;
         }
-
-    }catch(err){
-
-        alert("Server connection failed");
-
+    } catch (err) {
+        alert("Network error: Could not reach the server.");
+        btn.textContent = "Sign Up";
+        btn.disabled = false;
     }
-
 });
 
 document.getElementById("verifyCodeBtn").onclick = async () => {
@@ -130,92 +122,104 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
 
 };
 
-async function sendResetCode(){
+async function sendResetCode() {
+    const emailInput = document.getElementById("resetEmail");
+    const email = emailInput.value;
+    const btn = document.querySelector("#resetStep1 button"); // 假设你的按钮在 step1 里
 
-const email = document.getElementById("resetEmail").value;
+    if (!email) return alert("Please enter your email");
 
-const res = await fetch("/auth/forgot-password",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({ email })
-});
+    // UI 反馈
+    if (btn) {
+        btn.textContent = "Sending...";
+        btn.disabled = true;
+    }
 
-const data = await res.json();
+    try {
+        const res = await fetch("/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
 
-if(data.success){
+        const data = await res.json();
 
-resetEmailStorage = email;
-
-document.getElementById("resetStep1").style.display="none";
-document.getElementById("resetStep2").style.display="block";
-
-}else{
-
-alert(data.message);
-
+        if (data.success) {
+            resetEmailStorage = email;
+            // 切换 UI
+            document.getElementById("resetStep1").style.display = "none";
+            document.getElementById("resetStep2").style.display = "block";
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Connection failed. Please check your internet.");
+    } finally {
+        if (btn) {
+            btn.textContent = "Send Code";
+            btn.disabled = false;
+        }
+    }
 }
 
+async function verifyResetCode() {
+    const codeInput = document.getElementById("resetVerifyCode");
+    const code = codeInput.value;
+
+    if (!code) return alert("Enter verification code");
+
+    try {
+        const res = await fetch("/auth/verify-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: resetEmailStorage,
+                code: code
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            tempResetCode = code; 
+            
+            document.getElementById("resetCodeSection").style.display = "none";
+            document.getElementById("resetPasswordSection").style.display = "block";
+        } else {
+            alert(data.message || "Invalid or expired code");
+        }
+    } catch (err) {
+        alert("Server error during verification.");
+    }
 }
 
-async function verifyResetCode(){
+async function verifyAndReset() {
+    const password = document.getElementById("newPassword").value;
+    const confirm = document.getElementById("ConfirmPassword").value;
 
-const code = document.getElementById("resetVerifyCode").value;
+    if (!password) return alert("Please enter a new password");
+    if (password !== confirm) return alert("Passwords do not match");
 
-if(!code) return alert("Enter verification code");
+    try {
+        const res = await fetch("/auth/reset-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: resetEmailStorage,
+                code: tempResetCode, 
+                newPassword: password
+            })
+        });
 
-const res = await fetch("/auth/verify-code",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-email: resetEmailStorage,
-code: code
-})
-});
+        const data = await res.json();
 
-const data = await res.json();
-
-if(data.success){
-
-document.getElementById("resetCodeSection").style.display="none";
-document.getElementById("resetPasswordSection").style.display="block";
-
-}else{
-
-alert("Invalid code");
-
-}
-
-}
-
-async function verifyAndReset(){
-
-const password = document.getElementById("newPassword").value;
-const confirm = document.getElementById("ConfirmPassword").value;
-const code = document.getElementById("resetVerifyCode").value;
-
-if(password !== confirm) return alert("Passwords do not match");
-
-const res = await fetch("/auth/reset-password",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-email: resetEmailStorage,
-code: code,
-newPassword: password
-})
-});
-
-const data = await res.json();
-
-if(data.success){
-
-alert("Password updated!");
-location.reload();
-
-}else{
-
-alert(data.message);
-
-}
-
+        if (data.success) {
+            alert("Password updated successfully!");
+            location.reload(); 
+        } else {
+            alert(data.message || "Failed to update password.");
+        }
+    } catch (err) {
+        alert("Server error. Please try again later.");
+    }
 }
