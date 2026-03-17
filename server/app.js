@@ -138,23 +138,25 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 /**
  * D. 激活/使用道具
  */
-app.post("/api/activate-item", ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id;
+app.post('/api/activate-item', async (req, res) => {
     const { inventoryId } = req.body;
+    const userId = req.user.id;
 
     try {
+        const newCode = "CQ-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const result = await db.query(
-            "UPDATE user_inventory SET quantity = quantity - 1 WHERE id = $1 AND user_id = $2 AND quantity > 0", 
-            [inventoryId, userId]
+            "UPDATE user_inventory SET status = 'active', redeem_code = $1 WHERE id = $2 AND user_id = $3 AND status = 'unused'",
+            [newCode, inventoryId, userId]
         );
 
         if (result.rowCount === 0) {
-            return res.status(400).json({ error: "Item not found or empty." });
+            return res.status(400).json({ error: "Item already activated or not found." });
         }
 
-        res.json({ success: true, message: `Activated successfully.` });
+        res.json({ success: true, redeemCode: newCode });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Activation failed." });
     }
 });
 
@@ -189,15 +191,15 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { voucherName, cost } = req.body; 
 
+    
     try {
         const [vResult] = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
         const voucherId = vResult[0].id;
-
         const [pResult] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
         if (!pResult[0] || pResult[0].total_points < cost) return res.status(400).json({ error: "Insufficient points." });
 
         await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]);
-        
+        await db.query("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
         await db.query(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
             VALUES ($1, $2, $3, 1, 'unused') 

@@ -34,9 +34,14 @@
         <div id="modal-content">
             <h2 id="modal-title">Voucher Name</h2>
             <div class="modal-badge" id="modal-status">Unused</div>
-            <p class="modal-description" id="modal-description">
-                Loading description...
-            </p>
+            
+            <p class="modal-description" id="modal-description"></p>
+
+            <div id="redeem-code-container" style="display:none; background:#f8fafc; padding:15px; border-radius:8px; border:2px dashed #4a90e2; margin-top:10px; text-align:center;">
+                <p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Your Redeem Code:</p>
+                <span id="redeem-code-text" style="font-size:1.5rem; font-weight:bold; color:#4a90e2; letter-spacing:2px;"></span>
+            </div>
+
             <div class="modal-actions">
                 <button id="modal-action-btn" class="submit-btn">Activate Now</button>
             </div>

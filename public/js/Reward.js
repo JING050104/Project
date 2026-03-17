@@ -35,11 +35,14 @@ async function activateItem(inventoryId) {
             body: JSON.stringify({ inventoryId })
         });
         
+        const data = await response.json();
+        
         if (response.ok) {
-            alert("Voucher activated successfully!");
+            alert(`Activated! Your Redeem Code: ${data.redeemCode}`);
             loadInventory();
+            closeVoucherModal();
         } else {
-            alert("Activation failed.");
+            alert(data.error || "Activation failed.");
         }
     } catch (err) {
         console.error(err);
@@ -82,18 +85,34 @@ async function loadInventory() {
 }
 
 function openVoucherModal(item) {
-    document.getElementById('modal-title').innerText = item.item_name;
-    document.getElementById('modal-status').innerText = item.status === 'unused' ? 'Ready to Use' : 'Active';
-    const dbDescription = item.description || 'This is a special reward from CoverageQuest. Use it to claim your benefit!';
-    
-    document.getElementById('modal-description').innerText = dbDescription;
-    
+    const desc = document.getElementById('modal-description');
+    const codeContainer = document.getElementById('redeem-code-container');
+    const codeText = document.getElementById('redeem-code-text');
     const btn = document.getElementById('modal-action-btn');
-    btn.onclick = (e) => {
-        e.stopPropagation(); 
-        activateItem(item.id);
-        closeVoucherModal();
-    };
+    const statusBadge = document.getElementById('modal-status');
+
+    document.getElementById('modal-title').innerText = item.item_name;
+
+    if (item.status === 'active') {
+        statusBadge.innerText = 'Activated';
+        statusBadge.style.backgroundColor = '#10b981';
+        desc.style.display = 'none';
+        btn.style.display = 'none';
+        
+        codeContainer.style.display = 'block';
+        codeText.innerText = item.redeem_code || 'N/A';
+        
+    } else {
+        statusBadge.innerText = 'Ready to Use';
+        statusBadge.style.backgroundColor = '#4a90e2';
+        desc.style.display = 'block';
+        desc.innerText = item.description || 'Activate this voucher to reveal your unique redemption code.';
+        btn.style.display = 'block';
+        
+        codeContainer.style.display = 'none';
+
+        btn.onclick = () => activateItem(item.id);
+    }
 
     document.getElementById('voucher-detail-modal').style.display = 'flex';
 }
