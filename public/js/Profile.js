@@ -1,8 +1,12 @@
 // --- Modal Control Variables ---
 const resetModal = document.getElementById("resetModal");
+const emailVerifyModal = document.getElementById("emailVerifyModal"); // 确保 HTML 里有这个 ID
 const forgotLink = document.getElementById("forgotPasswordLink");
 const closeResetBtn = document.getElementById("closeResetBtn");
+const closeEmailModal = document.getElementById("closeEmailModal");
+
 let resetEmailStorage = "";
+let originalEmail = ""; 
 
 // --- 1. Open/Close Modal ---
 if (forgotLink) {
@@ -87,31 +91,6 @@ document.getElementById("resetFinishBtn").onclick = async () => {
     }
 };
 
-async function loadUserProfile() {
-    try {
-        const response = await fetch('/auth/user'); 
-        const data = await response.json();
-
-        if (data.user) {
-            const u = data.user;
-            document.getElementById('displayTitle').textContent = u.username;
-            document.getElementById('displayEmail').textContent = u.email;
-            document.getElementById('userNameHeader').textContent = u.username;
-            
-            document.getElementById('editUsername').value = u.username;
-            document.getElementById('editEmail').value = u.email;
-
-            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
-            document.getElementById('userAvatar').src = avatarUrl;
-            document.getElementById('headerAvatar').src = avatarUrl;
-        } else {
-            window.location.href = "/index.html";
-        }
-    } catch (err) {
-        console.error("Failed to load profile", err);
-    }
-}
-
 function updateRequirement(id, isValid) {
     const items = document.querySelectorAll(`#${id}`);
     
@@ -136,6 +115,32 @@ function enableInput(inputId) {
     input.focus();          // Puts the cursor inside
 }
 
+async function loadUserProfile() {
+    try {
+        const response = await fetch('/auth/user'); 
+        const data = await response.json();
+
+        if (data.user) {
+            const u = data.user;
+            originalEmail = u.email;
+            document.getElementById('displayTitle').textContent = u.username;
+            document.getElementById('displayEmail').textContent = u.email;
+            document.getElementById('userNameHeader').textContent = u.username;
+            
+            document.getElementById('editUsername').value = u.username;
+            document.getElementById('editEmail').value = u.email;
+
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
+            document.getElementById('userAvatar').src = avatarUrl;
+            document.getElementById('headerAvatar').src = avatarUrl;
+        } else {
+            window.location.href = "/index.html";
+        }
+    } catch (err) {
+        console.error("Failed to load profile", err);
+    }
+}
+
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -145,19 +150,53 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
     const newPass = document.getElementById('NewPassword').value;
     const confirmPass = document.getElementById('regConfirmPassword').value;
 
-    // 逻辑校验
     if (newPass) {
-        if (!currentPass) return alert("Please enter current password to verify.");
+        if (!currentPass) return alert("Please enter current password to set a new password.");
         if (newPass !== confirmPass) return alert("New passwords do not match!");
     }
 
-    const updateData = {
-        username: newUsername,
-        email: newEmail,
-        currentPassword: currentPass || null,
-        newPassword: newPass || null
-    };
+    if (newEmail !== originalEmail) {
+        try {
+            const res = await fetch("/auth/send-update-email-code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ newEmail: newEmail })
+            });
+            const data = await res.json();
 
+            if (data.success) {
+                document.getElementById("newEmailDisplay").textContent = newEmail;
+                emailVerifyModal.style.display = "flex";
+            } else {
+                alert(data.message || "Failed to send verification code.");
+            }
+        } catch (err) {
+            alert("Server error while sending code.");
+        }
+    } else {
+        submitFinalUpdate({
+            username: newUsername,
+            email: newEmail,
+            currentPassword: currentPass,
+            newPassword: newPass
+        });
+    }
+});
+
+document.getElementById("confirmEmailChangeBtn").onclick = async () => {
+    const code = document.getElementById("emailVerifyCode").value;
+    if (!code) return alert("Please enter the 6-digit code.");
+
+    submitFinalUpdate({
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        currentPassword: document.getElementById('currPass').value,
+        newPassword: document.getElementById('NewPassword').value,
+        emailCode: code
+    });
+};
+
+async function submitFinalUpdate(updateData) {
     try {
         const response = await fetch('/auth/update-profile', {
             method: 'POST',
@@ -168,12 +207,7 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
         const result = await response.json();
 
         if (response.ok) {
-            // --- 你的弹窗逻辑 ---
-            if (newPass.trim() !== "") {
-                alert("Password updated successfully!");
-            } else {
-                alert("Profile and Email changed!");
-            }
+            alert("Profile updated successfully!");
             location.reload(); 
         } else {
             alert('Error: ' + result.message);
@@ -182,7 +216,7 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
         console.error('Update failed:', error);
         alert("Server error, please try again.");
     }
-});
+}
 
 function toggleVisibility(id) {
     const el = document.getElementById(id);
