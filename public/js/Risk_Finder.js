@@ -196,9 +196,10 @@ function endGame() {
     document.getElementById('game-over-modal').style.display = 'flex';
 
     const dataToSend = {
-    score: totalScore, 
-    reached_level: currentIndex,
-    gameType: 'RiskFinder'
+        score: totalScore, 
+        reached_level: currentIndex, 
+        gameType: 'RiskFinder',
+        time_left: timeLeft
     };
 
     console.log("Saving final score...", dataToSend);

@@ -197,9 +197,9 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         );
 
         await db.query(`
-            INSERT INTO scores (user_id, username, game_type, score, reached_level) 
-            VALUES ($1, $2, $3, $4, $5)`,
-            [userId, username, gameType, score, reached_level]
+            INSERT INTO scores (user_id, username, game_type, score, reached_level, time_left) 
+            VALUES ($1, $2, $3, $4, $5, $6)`,
+            [userId, username, gameType, score, reached_level, time_left || 0]
         );
 
         const description = `Finished ${gameType}: Level ${reached_level}`;
@@ -209,12 +209,11 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
             [userId, score, 'GAME_EARN', description]
         );
 
-        await db.query('COMMIT'); 
-        res.json({ success: true, message: "All records updated successfully!" });
+        await db.query('COMMIT');
+        res.json({ success: true, message: "Score saved with time bonus!" });
     } catch (err) {
         await db.query('ROLLBACK');
-        console.error("Transaction Error:", err.message);
-        res.status(500).json({ success: false, error: "Failed to sync data." });
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -223,16 +222,19 @@ app.get("/api/leaderboard", async (req, res) => {
 
     try {
         const result = await db.query(`
-            SELECT DISTINCT ON (username) username, score, reached_level 
+            SELECT DISTINCT ON (username) username, score, reached_level, time_left
             FROM scores 
             WHERE game_type = $1 
-            ORDER BY username, score DESC 
-            LIMIT 10`, 
-            [gameType]
-        );
-        
-        const sortedRows = result.rows.sort((a, b) => b.score - a.score);
-        res.json(sortedRows);
+            ORDER BY username, score DESC, reached_level DESC, time_left DESC, created_at ASC
+        `, [gameType]);
+
+        const sortedData = result.rows.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            if (b.reached_level !== a.reached_level) return b.reached_level - a.reached_level;
+            return b.time_left - a.time_left; // 剩余时间多的在前
+        });
+
+        res.json(sortedData);
     } catch (err) {
         res.status(500).json({ error: "Leaderboard error" });
     }
