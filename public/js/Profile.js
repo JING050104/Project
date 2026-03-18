@@ -53,7 +53,7 @@ if (closeEmailModal) {
     };
 }
 
-// --- 2. Send Reset Code (Step 1 -> Step 2) ---
+// --- 2. Send Reset Code ---
 document.getElementById("resetSendBtn").onclick = async () => {
     const email = document.getElementById("resetEmail").value;
     if (!email) return alert("Please enter your email");
@@ -73,25 +73,19 @@ document.getElementById("resetSendBtn").onclick = async () => {
             const s2 = document.getElementById("resetStep2");
 
             if (s1 && s2) {
-                s1.style.display = "none";
-                s1.classList.add("step-hidden");
-
-                s2.style.display = "block"; 
-                s2.style.setProperty("display", "block", "important"); // 强制覆盖 CSS
-                s2.classList.remove("step-hidden");
-                s2.classList.remove("hidden"); 
-
-                console.log("状态切换成功: Step 1 隐藏, Step 2 显示");
-                alert("Code sent!");
-            } else {
-                console.error("错误: 找不到 ID 为 resetStep1 或 resetStep2 的元素");
-                alert("页面结构错误，请检查 HTML ID");
+                s1.setAttribute('style', 'display: none !important');
+                s2.setAttribute('style', 'display: block !important');
+                
+                if(document.getElementById("confirmEmailDisplay")) {
+                    document.getElementById("confirmEmailDisplay").textContent = email;
+                }
             }
+            alert("Code sent!");
         } else {
             alert(data.message);
         }
     } catch (err) {
-        console.error("发送验证码出错:", err);
+        console.error("Step transition error:", err);
         alert("Server error.");
     }
 };
