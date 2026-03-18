@@ -167,17 +167,17 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
     e.preventDefault();
     
     const newUsername = document.getElementById('editUsername').value;
-    const newEmail = document.getElementById('editEmail').value;
     const currentPass = document.getElementById('currPass').value;
     const newPass = document.getElementById('NewPassword').value;
     const confirmPass = document.getElementById('regConfirmPassword').value;
+    const newEmail = document.getElementById('editEmail').value.trim();
+    if (!newEmail) return alert("Email cannot be empty");
 
     if (newPass) {
         if (!currentPass) return alert("Please enter current password to set a new password.");
         if (newPass !== confirmPass) return alert("New passwords do not match!");
     }
 
-    // 如果修改了 Email，走验证流程
     if (newEmail !== originalEmail) {
         try {
             const res = await fetch("/auth/send-update-email-code", {
