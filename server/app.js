@@ -83,17 +83,18 @@ app.get('/api/get-vouchers', async (req, res) => {
  * B. 大转盘奖励同步
  */
 app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
-    const userId = req.user.id; //
-    const { reward } = req.body; //
+    const userId = req.user.id;
+    const { reward } = req.body;
 
-    console.log(`--- Spin Reward Sync: User ${userId} won ${reward} ---`); //
+    console.log(`[Spin Debug] User ${userId} spinning, reward: ${reward}`);
 
     try {
-        if (reward.includes("pts")) {
+        if (reward && reward.includes("pts")) {
             const points = parseInt(reward);
 
             await db.query('BEGIN');
 
+            // 1. 更新总分
             await db.query(`
                 INSERT INTO user_points (user_id, total_points) 
                 VALUES ($1, $2)
@@ -101,23 +102,28 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
                 DO UPDATE SET total_points = user_points.total_points + $3`, 
                 [userId, points, points]
             );
+            console.log("[Spin Debug] user_points updated");
 
+            // 2. 写入流水（注意检查这里的字段名是否与数据库完全一致！）
             await db.query(`
                 INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
                 VALUES ($1, $2, $3, $4)`,
-                [userId, points, 'DAILY_SPIN', `Daily Spin Reward: ${reward}`]
+                [userId, points, 'DAILY_SPIN', `Spin Win: ${reward}`]
             );
+            console.log("[Spin Debug] point_transactions inserted");
 
             await db.query('COMMIT');
+            return res.json({ success: true, type: 'points' });
 
-            return res.json({ success: true, type: 'points', message: "Points and transaction recorded!" });
         } else {
-            return res.json({ success: false, error: "Invalid reward type." });
+            console.log("[Spin Debug] No points in reward, skipping DB write.");
+            return res.json({ success: false, error: "No points earned" });
         }
     } catch (err) {
         await db.query('ROLLBACK');
-        console.error("Database Error during spin reward:", err.message);
-        return res.status(500).json({ success: false, error: "Database sync failed." });
+        // 这里会打印出具体的 SQL 报错，比如 "column points_change does not exist"
+        console.error("[Spin Debug] CRITICAL ERROR:", err.message); 
+        return res.status(500).json({ success: false, error: err.message });
     }
 });
 
