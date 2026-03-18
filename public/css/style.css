@@ -1425,7 +1425,7 @@ button:disabled {
 
 .leaderboard-card-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1200px;
     background: #fff;
     border-radius: 20px;
     box-shadow: var(--card-shadow);
