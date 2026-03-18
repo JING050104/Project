@@ -10,12 +10,19 @@ module.exports = function(passport) {
   });
 
   // 2. Deserialize (加上 ::int 转换 ID 类型)
+
   passport.deserializeUser(async (id, done) => {
     try {
-      const [rows] = await db.execute("SELECT * FROM users WHERE id = $1::int", [id]);
-      if (!rows || rows.length === 0) return done(null, false);
-      done(null, rows[0]);
+      const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+      const user = result.rows ? result.rows[0] : result[0]; // 兼容处理
+      
+      if (!user) {
+        console.log("Deserialize: User not found in DB");
+        return done(null, false);
+      }
+      done(null, user);
     } catch (err) {
+      console.error("Deserialize Error:", err);
       done(err, null);
     }
   });
@@ -26,7 +33,7 @@ module.exports = function(passport) {
       { usernameField: "identifier", passwordField: "password" }, 
       async (identifier, password, done) => {
         try {
-          const [rows] = await db.execute(
+          const [rows] = await db.query(
               "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
               [identifier]
           );
@@ -61,19 +68,19 @@ module.exports = function(passport) {
     async (accessToken, refreshToken, profile, done) => {
       try {
         // 1. Check Google ID (加上 ::text)
-        const [existingUser] = await db.execute("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
+        const [existingUser] = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
         if (existingUser.length > 0) return done(null, existingUser[0]);
 
         // 2. Check Email (加上 ::text)
-        const [emailUser] = await db.execute("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
+        const [emailUser] = await db.query("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
         if (emailUser.length > 0) {
-          await db.execute("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
+          await db.query("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
           emailUser[0].google_id = profile.id; 
           return done(null, emailUser[0]);
         }
 
         // 3. Create New User
-        const [result] = await db.execute(
+        const [result] = await db.query(
           "INSERT INTO users (username, email, google_id, password) VALUES ($1::text, $2::text, $3::text, $4::text) RETURNING id",
           [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
         );

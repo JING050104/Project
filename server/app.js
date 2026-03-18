@@ -27,13 +27,12 @@ app.use(session({
     saveUninitialized: false, 
     proxy: true, 
     cookie: {
-        secure: false, 
+        secure: process.env.NODE_ENV === 'production', 
         httpOnly: true, 
-        sameSite: 'lax',
+        sameSite: 'lax', 
         maxAge: 1000 * 60 * 60 * 24 
     }
 }));
-
 
 // 4. 初始化 Passport (顺序固定)
 app.use(passport.initialize()); //
@@ -68,8 +67,9 @@ app.use("/auth", authRoutes); //
  */
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]); //
-        res.json({ points: rows[0] ? rows[0].total_points : 0 }); //
+        const result = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
+        const totalPoints = result.rows[0] ? result.rows[0].total_points : 0;
+        res.json({ points: totalPoints });
     } catch (err) {
         console.error("SQL Error:", err);
         res.status(500).json({ error: "Failed to fetch points." }); //
@@ -78,8 +78,8 @@ app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
 
 app.get('/api/get-vouchers', async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT id, name, cost FROM vouchers');
-        res.json(rows);
+        const result = await db.query('SELECT id, name, cost FROM vouchers');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: "Database error" });
     }
@@ -189,7 +189,7 @@ app.post('/api/activate-item', async (req, res) => {
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const username = req.user.username || req.user.email;
-    const { score, reached_level, gameType } = req.body; 
+    const { score, reached_level, gameType, time_left } = req.body; 
 
     try {
         await db.query('BEGIN');
