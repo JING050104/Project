@@ -162,15 +162,16 @@ app.post('/api/activate-item', async (req, res) => {
 });
 
 /**
- * E. 保存 Risk Finder 游戏得分 (新增)
+ * E. 保存游戏得分
  */
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
-    const { score } = req.body; 
-
-    console.log(`--- Game Score Received: User ${userId} earned ${score} points ---`);
+    const username = req.user.username || req.user.email;
+    const { score, reached_level, gameType } = req.body; 
 
     try {
+        await db.query('BEGIN');
+
         await db.query(`
             INSERT INTO user_points (user_id, total_points) 
             VALUES ($1, $2)
@@ -178,10 +179,46 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
             DO UPDATE SET total_points = user_points.total_points + $3`, 
             [userId, score, score]
         );
-        res.json({ success: true, message: "Score successfully recorded!" });
+
+        await db.query(`
+            INSERT INTO scores (user_id, username, game_type, score, reached_level) 
+            VALUES ($1, $2, $3, $4, $5)`,
+            [userId, username, gameType, score, reached_level]
+        );
+
+        const description = `Finished ${gameType}: Level ${reached_level}`;
+        await db.query(`
+            INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
+            VALUES ($1, $2, $3, $4)`,
+            [userId, score, 'GAME_EARN', description]
+        );
+
+        await db.query('COMMIT'); 
+        res.json({ success: true, message: "All records updated successfully!" });
     } catch (err) {
-        console.error("Database Error during game score save:", err.message);
-        res.status(500).json({ success: false, error: "Failed to sync score." });
+        await db.query('ROLLBACK');
+        console.error("Transaction Error:", err.message);
+        res.status(500).json({ success: false, error: "Failed to sync data." });
+    }
+});
+
+app.get("/api/leaderboard", async (req, res) => {
+    const { gameType } = req.query;
+
+    try {
+        const result = await db.query(`
+            SELECT DISTINCT ON (username) username, score, reached_level 
+            FROM scores 
+            WHERE game_type = $1 
+            ORDER BY username, score DESC 
+            LIMIT 10`, 
+            [gameType]
+        );
+        
+        const sortedRows = result.rows.sort((a, b) => b.score - a.score);
+        res.json(sortedRows);
+    } catch (err) {
+        res.status(500).json({ error: "Leaderboard error" });
     }
 });
 

@@ -11,6 +11,11 @@ const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
+const dataToSend = {
+    score: score,            
+    reached_level: wave,      
+    gameType: 'RiskDefender'
+};
 
 let lastPlacementTime = 0;
 let towers = [];
@@ -870,11 +875,10 @@ homeBtn.addEventListener("click", () => {
 function saveScoreToDatabase(score) {
     fetch('/api/save-score', { 
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-            score: score,
+            score: score, 
+            reached_level: wave,      
             gameType: 'RiskDefender' 
         })
     })

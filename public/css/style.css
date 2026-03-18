@@ -931,6 +931,12 @@ input {
     background-position: center !important;
 }
 
+.dashboard-grid .dash-card.clickable-card:nth-child(4) {
+    background: url('../risk image/4.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
 /* Container styling */
 .inline-edit-container {
     position: relative;
@@ -1417,4 +1423,99 @@ button:disabled {
         padding: 10px !important;
     }
 
+}
+
+.leaderboard-page-content {
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.leaderboard-card-container {
+    width: 100%;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.leaderboard-visual-header {
+    width: 100%;
+    height: 280px;
+    position: relative;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), 
+                url('../risk image/4.png') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 25px;
+}
+
+.leaderboard-visual-header h1 {
+    color: white;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.leaderboard-visual-header .back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    backdrop-filter: blur(4px);
+    transition: 0.3s;
+}
+
+.leaderboard-visual-header .back-link:hover {
+    background: var(--primary-blue);
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table th {
+    text-align: left;
+    padding: 15px 30px;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.leaderboard-table td {
+    padding: 18px 30px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.rank-1 { color: #f1c40f; font-weight: bold; font-size: 1.3rem; }
+.rank-2 { color: #94a3b8; font-weight: bold; }
+.rank-3 { color: #92400e; font-weight: bold; }
+
+#leaderboardBody td:last-child {
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-align: right;
+}
+
+.leaderboard-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

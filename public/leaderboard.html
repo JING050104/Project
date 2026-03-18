@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Coverage Quest</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-body">
+    <header class="dashboard-header">
+        <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
+    </header>
+
+        <main class="dashboard-content leaderboard-page-content">
+        
+        <div class="leaderboard-card-container">
+            
+            <div class="leaderboard-visual-header">
+                <a href="dashboard.html" class="back-link">← Back</a>
+                <h1>Global Rankings</h1>
+            </div>
+
+            <div class="tab-menu">
+                <button class="tab-btn active" onclick="loadLeaderboard('RiskDefender', this)">Risk Defender</button>
+                <button class="tab-btn" onclick="loadLeaderboard('RiskFinder', this)">Risk Finder</button>
+            </div>
+
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Rank</th>
+                        <th style="width: 50%;">Player</th>
+                        <th style="width: 35%;">High Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/leaderboard.js"></script>
+
+</body>
+</html>
