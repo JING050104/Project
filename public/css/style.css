@@ -1286,6 +1286,10 @@ button:disabled {
     display: block;
 }
 
+.step-hidden {
+    display: none !important;
+}
+
 /* --- 新增：步骤说明样式 --- */
 .how-it-works {
     display: flex;
@@ -1357,7 +1361,7 @@ button:disabled {
     .profile-card-wide {
         padding: 30px 20px !important;
     }
-    
+
     .profile-section-left {
         border-bottom: 1px solid #e0e0e0;
         padding-bottom: 20px;
