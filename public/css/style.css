@@ -1440,7 +1440,7 @@ button:disabled {
     height: 280px;
     position: relative;
     background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), 
-                url('../risk image/4.png') center/cover no-repeat;
+                url('../risk-image/4.png') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
