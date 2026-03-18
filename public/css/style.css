@@ -822,18 +822,6 @@ input {
     border-color: var(--primary-blue);
 }
 
-.dashboard-grid .dash-card::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 80px;
-    height: 80px;
-    background: rgba(74, 144, 226, 0.05);
-    border-radius: 50%;
-    z-index: 0;
-}
-
 .level-badge {
     background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
     color: white;
