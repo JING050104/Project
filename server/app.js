@@ -1,10 +1,12 @@
 require('dotenv').config();
 const express = require("express");
 const session = require("express-session");
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 const passport = require("passport");
 const path = require("path");
-const db = require("./db"); //
-const authRoutes = require('./routes/auth'); //
+const db = require("./db"); 
+const authRoutes = require('./routes/auth'); 
 const ensureAuthenticated = require("./middleware/auth"); //
 const app = express();
 
@@ -16,18 +18,22 @@ app.use(express.json()); //
 app.use(express.urlencoded({ extended: true })); //
 
 app.use(session({
+    store: new pgSession({
+        pool : db.pool,              
+        tableName : 'session'         
+    }),
     key: 'fyp_session_cookie',
-    secret: "fyp_secret", 
+    secret: process.env.SESSION_SECRET || "fyp_secret", 
     resave: false, 
     saveUninitialized: false, 
     proxy: true, 
-        secure: false, 
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true, 
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 
     }
-    ));
-
+}));
 
 // 4. 初始化 Passport (顺序固定)
 app.use(passport.initialize()); //
