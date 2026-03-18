@@ -1531,18 +1531,14 @@ button:disabled {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Profile 页面专属布局补丁 --- */
-
-/* 1. 解决顶部空一大段的问题：强制覆盖默认的 margin */
 .dashboard-content {
     margin-top: 60px !important; 
     padding-top: 0 !important;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* 确保从顶部开始排列 */
+    align-items: flex-start; 
 }
 
-/* 2. 宽卡片：覆盖原本 login-card 的 650px 限制 */
 .profile-card-wide {
     max-width: 1050px !important;
     width: 95% !important;
@@ -1551,7 +1547,6 @@ button:disabled {
     margin: 80px auto 40px !important;
 }
 
-/* 3. 左右分栏：这是实现“不分上下”的关键容器 */
 .form-content-flex {
     display: flex;
     gap: 50px;
@@ -1559,14 +1554,12 @@ button:disabled {
     margin-top: 20px;
 }
 
-/* 让左边资料和右边密码等宽 */
 .profile-section-left, 
 .profile-section-right {
     flex: 1;
     min-width: 0;
 }
 
-/* 4. 辅助样式：移除 HTML 里的内联 style */
 .section-divider {
     margin: 25px 0;
     border: 0;
@@ -1587,5 +1580,5 @@ button:disabled {
 }
 
 #editEmail {
-    min-width: 280px;          /* 或直接写死宽度 */
+    min-width: 280px;
 }
