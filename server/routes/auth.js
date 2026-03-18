@@ -170,9 +170,12 @@ router.post('/login', (req, res, next) => {
         if (err) return next(err);
         if (!user) return res.status(400).json({ success: false, message: info.message });
 
-        req.logIn(user, (err) => {
+        req.logIn(user, async (err) => {
             if (err) return next(err);
-            return res.json({ success: true, redirect: "/dashboard.html" });
+
+            await db.execute("UPDATE users SET is_verified = 1 WHERE id = $1", [user.id]);
+            
+            return res.json({ success: true });
         });
     })(req, res, next);
 });
