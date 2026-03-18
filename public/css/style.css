@@ -630,6 +630,7 @@ input {
 
 .main-layout {
     display: flex;
+    flex-direction: row;
     align-items: stretch; 
     justify-content: center;
     gap: 30px;
@@ -654,6 +655,7 @@ input {
     width: 100%;             /* Fills the 70% width of #wrapper */
     height: auto;            /* Keeps image proportional */
     display: block;
+    object-fit: contain;
 }
 
 .sidebar {
@@ -662,6 +664,8 @@ input {
     flex-direction: column;
     height: 100%;
     gap: 25px;
+    max-width: 360px;
+    min-width: 280px;
 }
 
 .feedback-marker {
@@ -1376,7 +1380,7 @@ button:disabled {
     display: flex;
     width: 100%;
     gap: 0;     
-}
+    }
 
     #inventory-container {
         grid-template-columns: 1fr !important;
@@ -1385,7 +1389,6 @@ button:disabled {
     .dashboard-grid {
         grid-template-columns: 1fr !important;
     }
-}
 
     .middle-row-container {
         grid-template-columns: 1fr !important;
@@ -1436,6 +1439,7 @@ button:disabled {
         margin-bottom: 0 !important;
         padding: 10px !important;
     }
+}
 
 .leaderboard-page-content {
     padding: 30px 20px;
