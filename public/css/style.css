@@ -1578,7 +1578,3 @@ button:disabled {
     margin-top: -10px;
     margin-bottom: 15px;
 }
-
-#editEmail {
-    min-width: 280px;
-}
