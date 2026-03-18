@@ -1353,7 +1353,6 @@ button:disabled {
 
 @media (max-width: 768px) {
 
-
     .form-content-flex {
         flex-direction: column;
         gap: 20px;
