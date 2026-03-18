@@ -627,9 +627,10 @@ input {
     justify-content: center;
     gap: 30px;
     padding: 20px;
-    width: 100%;             /* Use full container width */
-    max-width: 1200px;       /* Prevents it from becoming giant on huge monitors */
+    width: 100%;             
+    max-width: 1200px;       
     margin: 0 auto;
+    flex-direction: row; 
 }
 
 #wrapper {
@@ -909,27 +910,27 @@ input {
 
 /* Level 1  */
 .dashboard-grid .dash-card.clickable-card:nth-child(1) {
-    background: url('../risk image/1.png') !important;
+    background: url('../risk-image/1.png') !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
 /* Level 2 */
 .dashboard-grid .dash-card.clickable-card:nth-child(2) {
-    background: url('../risk image/2.png') !important;
+    background: url('../risk-image/2.png') !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
 /* Rewards */
 .dashboard-grid .dash-card.clickable-card:nth-child(3) {
-    background: url('../risk image/3.jpg') !important;
+    background: url('../risk-image/3.jpg') !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
 .dashboard-grid .dash-card.clickable-card:nth-child(4) {
-    background: url('../risk image/4.png') !important;
+    background: url('../risk-image/4.png') !important;
     background-size: cover !important;
     background-position: center !important;
 }
