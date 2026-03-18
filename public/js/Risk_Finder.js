@@ -67,17 +67,19 @@ homeBtn.addEventListener("click", () => {
 });
 
 pauseBtn.addEventListener("click", () => {
-
     isPaused = !isPaused;
 
     if (isPaused) {
         pauseBtn.textContent = "▶";
-        document.getElementById("wrapper").style.pointerEvents = "none";
+        wrapper.style.pointerEvents = "none";
+        imgElement.style.filter = "blur(15px)"; 
+        msgElement.innerText = "GAME PAUSED";
     } else {
         pauseBtn.textContent = "⏸";
-        document.getElementById("wrapper").style.pointerEvents = "auto";
+        wrapper.style.pointerEvents = "auto";
+        imgElement.style.filter = "none";
+        msgElement.innerText = "";
     }
-
 });
 
 function endGameByTime() {
@@ -123,6 +125,7 @@ function loadLevel() {
 }
 
 imgElement.onclick = function(e) {
+    if (isPaused || isGameOver) return; 
     const rect = imgElement.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
