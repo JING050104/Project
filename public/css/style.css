@@ -235,23 +235,33 @@ input {
 }
 
 .dashboard-header {
-    height: 80px;           /* Keep your fixed height */
-    flex-shrink: 0;         /* CRITICAL: Prevents the header from squashing */
+    height: 80px;           
+    flex-shrink: 0;        
     width: 100%;
     display: flex; 
-    align-items: center; 
+    align-items: center;   
     justify-content: space-between;
     padding: 0 40px; 
     background-color: #fff; 
     box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-    position: relative;     /* Changed from 'fixed' to 'relative' */
+    position: relative;     
     z-index: 1000;
 }
 
 .profile-info {
     display: flex;
-    align-items: center;
+    align-items: center; /* 确保文字、头像、按钮在一条水平线上 */
     gap: 15px;
+    height: 100%;       /* 让它撑满 Header 的高度 */
+}
+
+.profile-trigger img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-blue);
+    display: block;      /* 消除图片底部的微小间隙 */
 }
 
 #userName {
@@ -389,14 +399,8 @@ input {
     padding-top: 30px;
     border-top: 1px solid #f1f5f9;
 }
+
 /* --- PROFILE TRIGGER & AVATAR --- */
-.profile-trigger img {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--primary-blue);
-}
 
 .avatar-wrapper {
     position: relative;
