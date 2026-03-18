@@ -707,7 +707,7 @@ input {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
     gap: 25px;
     border-radius: 16px; 
 }
