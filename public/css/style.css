@@ -1549,6 +1549,7 @@ button:disabled {
     width: 95% !important;
     padding: 40px 60px !important;
     margin: 0 auto !important;
+    margin: 80px auto 40px !important;
 }
 
 /* 3. 左右分栏：这是实现“不分上下”的关键容器 */
