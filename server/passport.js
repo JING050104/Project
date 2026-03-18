@@ -1,7 +1,7 @@
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const bcrypt = require("bcryptjs");
-const db = require("./db"); 
+const db = require("./db");
 
 module.exports = function(passport) {
   // 1. Serialize
@@ -9,88 +9,84 @@ module.exports = function(passport) {
     done(null, user.id);
   });
 
-  // 2. Deserialize (加上 ::int 转换 ID 类型)
-
+  // 2. Deserialize
   passport.deserializeUser(async (id, done) => {
     try {
-        const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
-        const user = result.rows[0];
-        done(null, user || false);
+      const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+      const user = result.rows[0];
+      if (!user) {
+        console.log("Deserialize: User not found in DB");
+        return done(null, false);
+      }
+      done(null, user);
     } catch (err) {
-        done(err, null);
+      console.error("Deserialize Error:", err);
+      done(err, null);
     }
-});
+  });
 
-  // Local Strategy
+  // --- Local Strategy ---
   passport.use(
     new LocalStrategy(
-      { usernameField: "identifier", passwordField: "password" }, 
+      { usernameField: "identifier", passwordField: "password" },
       async (identifier, password, done) => {
         try {
-          const result = await db.query( 
-          "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
-          [identifier]
+          const result = await db.query(
+            "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
+            [identifier]
           );
 
-          if (rows.length === 0) {
-              return done(null, false, { message: "Account not verified or user not found." });
-          }
-          
-          const user = result.rows[0];
+          const user = result.rows[0]; 
+
           if (!user) {
-              return done(null, false, { message: "User not found." });
+            return done(null, false, { message: "Account not verified or user not found." });
           }
-          // 检查是否验证过邮箱
-          if (user.is_verified === 0) return done(null, false, { message: "Please verify your email first." });
 
           const isMatch = await bcrypt.compare(password, user.password);
           if (isMatch) return done(null, user);
           else return done(null, false, { message: "Incorrect password." });
         } catch (err) {
-          console.error("Passport Auth Error:", err); // 在 Render Logs 查看具体错误
+          console.error("Passport Auth Error:", err);
           return done(err);
         }
       }
     )
   );
 
-  // Google Strategy
+  // --- Google Strategy ---
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "https://project-shbe.onrender.com/auth/google/callback"
-      },
+    },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // 1. Check Google ID (加上 ::text)
-        const [existingUser] = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
-        if (existingUser.length > 0) return done(null, existingUser[0]);
+        const email = profile.emails[0].value;
 
-        // 2. Check Email (加上 ::text)
-        const [emailUser] = await db.query("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
-        if (emailUser.length > 0) {
-          await db.query("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
-          emailUser[0].google_id = profile.id; 
-          return done(null, emailUser[0]);
+        const idCheck = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
+        if (idCheck.rows.length > 0) return done(null, idCheck.rows[0]);
+
+        const emailCheck = await db.query("SELECT * FROM users WHERE email = $1::text", [email]);
+        if (emailCheck.rows.length > 0) {
+          await db.query(
+            "UPDATE users SET google_id = $1::text, is_verified = 1 WHERE email = $2::text",
+            [profile.id, email]
+          );
+          const updatedUser = emailCheck.rows[0];
+          updatedUser.google_id = profile.id;
+          updatedUser.is_verified = 1;
+          return done(null, updatedUser);
         }
 
-        // 3. Create New User
-        const [result] = await db.query(
-          "INSERT INTO users (username, email, google_id, password) VALUES ($1::text, $2::text, $3::text, $4::text) RETURNING id",
-          [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
+        const insertResult = await db.query(
+          "INSERT INTO users (username, email, google_id, password, is_verified) VALUES ($1::text, $2::text, $3::text, $4::text, 1) RETURNING *",
+          [profile.displayName, email, profile.id, "GOOGLE_AUTH"]
         );
 
-        const newUserId = result[0]?.id; 
-
-        if (!newUserId) {
-            throw new Error("Failed to retrieve new user ID from database");
+        const newUser = insertResult.rows[0];
+        if (!newUser) {
+          throw new Error("Failed to create new user via Google Auth");
         }
-
-        const newUser = {
-          id: newUserId, 
-          username: profile.displayName,
-          email: profile.emails[0].value
-        };
 
         return done(null, newUser);
       } catch (err) {
