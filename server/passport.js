@@ -13,19 +13,13 @@ module.exports = function(passport) {
 
   passport.deserializeUser(async (id, done) => {
     try {
-      const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
-      const user = result.rows ? result.rows[0] : result[0]; // 兼容处理
-      
-      if (!user) {
-        console.log("Deserialize: User not found in DB");
-        return done(null, false);
-      }
-      done(null, user);
+        const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+        const user = result.rows[0];
+        done(null, user || false);
     } catch (err) {
-      console.error("Deserialize Error:", err);
-      done(err, null);
+        done(err, null);
     }
-  });
+});
 
   // Local Strategy
   passport.use(
@@ -33,18 +27,19 @@ module.exports = function(passport) {
       { usernameField: "identifier", passwordField: "password" }, 
       async (identifier, password, done) => {
         try {
-          const [rows] = await db.query(
-              "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
-              [identifier]
+          const result = await db.query( 
+          "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
+          [identifier]
           );
 
           if (rows.length === 0) {
               return done(null, false, { message: "Account not verified or user not found." });
           }
           
-          const user = rows[0];
-          if (!user) return done(null, false, { message: "Account not found." });
-          
+          const user = result.rows[0];
+          if (!user) {
+              return done(null, false, { message: "User not found." });
+          }
           // 检查是否验证过邮箱
           if (user.is_verified === 0) return done(null, false, { message: "Please verify your email first." });
 
