@@ -54,45 +54,46 @@ module.exports = function(passport) {
   );
 
   // --- Google Strategy ---
-  passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://project-shbe.onrender.com/auth/google/callback"
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails[0].value;
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "https://project-shbe.onrender.com/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      const email = profile.emails[0].value;
 
-        const idCheck = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
-        if (idCheck.rows.length > 0) return done(null, idCheck.rows[0]);
+      // 1. 检查 Google ID (去掉 [] 解构)
+      const idCheck = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
+      if (idCheck.rows.length > 0) return done(null, idCheck.rows[0]);
 
-        const emailCheck = await db.query("SELECT * FROM users WHERE email = $1::text", [email]);
-        if (emailCheck.rows.length > 0) {
-          await db.query(
-            "UPDATE users SET google_id = $1::text, is_verified = 1 WHERE email = $2::text",
-            [profile.id, email]
-          );
-          const updatedUser = emailCheck.rows[0];
-          updatedUser.google_id = profile.id;
-          updatedUser.is_verified = 1;
-          return done(null, updatedUser);
-        }
-
-        const insertResult = await db.query(
-          "INSERT INTO users (username, email, google_id, password, is_verified) VALUES ($1::text, $2::text, $3::text, $4::text, 1) RETURNING *",
-          [profile.displayName, email, profile.id, "GOOGLE_AUTH"]
+      // 2. 检查 Email (去掉 [] 解构)
+      const emailCheck = await db.query("SELECT * FROM users WHERE email = $1::text", [email]);
+      if (emailCheck.rows.length > 0) {
+        await db.query(
+          "UPDATE users SET google_id = $1::text, is_verified = 1 WHERE email = $2::text",
+          [profile.id, email]
         );
-
-        const newUser = insertResult.rows[0];
-        if (!newUser) {
-          throw new Error("Failed to create new user via Google Auth");
-        }
-
-        return done(null, newUser);
-      } catch (err) {
-        console.error("Google Auth Error:", err);
-        return done(err, null);
+        const updatedUser = emailCheck.rows[0];
+        updatedUser.google_id = profile.id;
+        updatedUser.is_verified = 1;
+        return done(null, updatedUser);
       }
+
+      // 3. 插入新用户 (去掉 [] 解构)
+      const insertResult = await db.query(
+        "INSERT INTO users (username, email, google_id, password, is_verified) VALUES ($1::text, $2::text, $3::text, $4::text, 1) RETURNING *",
+        [profile.displayName, email, profile.id, "GOOGLE_AUTH"]
+      );
+
+      const newUser = insertResult.rows[0];
+      if (!newUser) throw new Error("Failed to create new user");
+
+      return done(null, newUser);
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      return done(err, null);
     }
-  ));
+  }
+));
 };
