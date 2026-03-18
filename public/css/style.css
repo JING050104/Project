@@ -388,10 +388,21 @@ input {
     gap: 30px;
 }
 
-.profile-section-left, .profile-section-right {
+.profile-section-left {
     flex: 1;
-    min-width: 0;
+    border-right: 1px solid #e0e0e0; 
+    padding-right: 40px; 
+    margin-right: 40px; 
 }
+
+.profile-section-right {
+    flex: 1;
+}
+
+#profileUpdateForm {
+        flex-direction: row; 
+        align-items: flex-start;
+    }
 
 .form-footer {
     width: 100%;
@@ -1340,19 +1351,19 @@ button:disabled {
     gap: 20px;
 }
 
-@media (min-width: 900px) {
-    .settings-form-wrapper form.active {
-        flex-direction: row !important;
+@media (max-width: 768px) {
+
+    .profile-section-left {
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 20px;
+        margin-bottom: 10px;
     }
     
-    .profile-section-left {
-        flex: 1;
-        min-width: 0 !important;
-        width: 100%;
-    }
+    #profileUpdateForm {
+    display: flex;
+    flex-direction: column; 
+    gap: 20px;
 }
-
-@media (max-width: 768px) {
 
     #inventory-container {
         grid-template-columns: 1fr !important;
