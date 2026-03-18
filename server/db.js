@@ -1,3 +1,4 @@
+// db.js 修正版
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -11,10 +12,10 @@ module.exports = {
   pool: pool,
   query: (sql, params) => {
     const pgSql = sql.replace(/\?/g, ($, i) => `$${i + 1}`);
-    return pool.query(pgSql, params); // 直接返回原始 res，不要加 []
+    return pool.query(pgSql, params).then(res => [res.rows]);
   },
   execute: (sql, params) => {
     const pgSql = sql.replace(/\?/g, ($, i) => `$${i + 1}`);
-    return pool.query(pgSql, params);
+    return pool.query(pgSql, params).then(res => [res.rows]);
   }
 };

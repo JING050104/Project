@@ -9,56 +9,16 @@ module.exports = function(passport) {
     done(null, user.id);
   });
 
-  // 2. Deserialize 
-// server/passport.js
-
-// --- 反序列化修正 ---
-passport.deserializeUser(async (id, done) => {
-  try {
-    const result = await db.query("SELECT * FROM users WHERE id = $1::int", [id]);
-    const user = result.rows[0]; // 从 rows 数组中取第一行
-    if (!user) return done(null, false);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
-
-// --- Google Strategy 修正 (报错的第 68 行就在这里) ---
-async (accessToken, refreshToken, profile, done) => {
-  try {
-    // 1. 检查 Google ID (去掉左边的中括号)
-    const idResult = await db.execute("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
-    if (idResult.rows.length > 0) return done(null, idResult.rows[0]);
-
-    // 2. 检查 Email (去掉左边的中括号)
-    const email = profile.emails[0].value;
-    const emailResult = await db.execute("SELECT * FROM users WHERE email = $1::text", [email]);
-    
-    if (emailResult.rows.length > 0) {
-      await db.execute("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, email]);
-      const user = emailResult.rows[0];
-      user.google_id = profile.id;
-      return done(null, user);
+  // 2. Deserialize (加上 ::int 转换 ID 类型)
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const [rows] = await db.execute("SELECT * FROM users WHERE id = $1::int", [id]);
+      if (!rows || rows.length === 0) return done(null, false);
+      done(null, rows[0]);
+    } catch (err) {
+      done(err, null);
     }
-
-    // 3. 创建新用户 (去掉左边的中括号)
-    const insertResult = await db.execute(
-      "INSERT INTO users (username, email, google_id, password) VALUES ($1, $2, $3, $4) RETURNING id",
-      [profile.displayName, email, profile.id, "GOOGLE_AUTH"]
-    );
-    
-    const newUser = {
-      id: insertResult.rows[0].id,
-      username: profile.displayName,
-      email: email
-    };
-    done(null, newUser);
-  } catch (err) {
-    console.error("Google Auth Error:", err);
-    done(err, null);
-  }
-}
+  });
 
   // Local Strategy
   passport.use(
@@ -75,11 +35,9 @@ async (accessToken, refreshToken, profile, done) => {
               return done(null, false, { message: "Account not verified or user not found." });
           }
           
-          const result = await db.execute("SELECT * FROM users WHERE ...", [identifier]);
-          const user = result.rows[0];
-          if (!user) {
-              return done(null, false, { message: "User not found." });
-          }
+          const user = rows[0];
+          if (!user) return done(null, false, { message: "Account not found." });
+          
           // 检查是否验证过邮箱
           if (user.is_verified === 0) return done(null, false, { message: "Please verify your email first." });
 
@@ -93,4 +51,50 @@ async (accessToken, refreshToken, profile, done) => {
       }
     )
   );
+
+  // Google Strategy
+  passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://project-shbe.onrender.com/auth/google/callback"
+      },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // 1. Check Google ID (加上 ::text)
+        const [existingUser] = await db.execute("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
+        if (existingUser.length > 0) return done(null, existingUser[0]);
+
+        // 2. Check Email (加上 ::text)
+        const [emailUser] = await db.execute("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
+        if (emailUser.length > 0) {
+          await db.execute("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
+          emailUser[0].google_id = profile.id; 
+          return done(null, emailUser[0]);
+        }
+
+        // 3. Create New User
+        const [result] = await db.execute(
+          "INSERT INTO users (username, email, google_id, password) VALUES ($1::text, $2::text, $3::text, $4::text) RETURNING id",
+          [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
+        );
+
+        const newUserId = result[0]?.id; 
+
+        if (!newUserId) {
+            throw new Error("Failed to retrieve new user ID from database");
+        }
+
+        const newUser = {
+          id: newUserId, 
+          username: profile.displayName,
+          email: profile.emails[0].value
+        };
+
+        return done(null, newUser);
+      } catch (err) {
+        console.error("Google Auth Error:", err);
+        return done(err, null);
+      }
+    }
+  ));
 };
