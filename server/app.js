@@ -195,10 +195,12 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         await db.query('BEGIN');
 
         await db.query(`
-            INSERT INTO user_points (user_id, total_points) 
-            VALUES ($1, $2)
+            INSERT INTO user_points (user_id, total_points, last_updated) 
+            VALUES ($1, $2, NOW())
             ON CONFLICT (user_id) 
-            DO UPDATE SET total_points = user_points.total_points + $3`, 
+            DO UPDATE SET 
+                total_points = user_points.total_points + $3,
+                last_updated = NOW()`, 
             [userId, score, score]
         );
 
