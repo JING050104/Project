@@ -43,7 +43,7 @@ body.no-scroll-page {
 }
 
 .logo { 
-    font-size: 26px; 
+    font-size: 30px; 
     font-weight: 800; 
     text-decoration: none; 
     letter-spacing: -1px;
@@ -1373,10 +1373,6 @@ button:disabled {
     
     #userNameHeader {
         display: none;
-    }
-    
-    .logo {
-        font-size: 18px;
     }
 
     .game-hud {
