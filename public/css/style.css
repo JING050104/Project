@@ -226,6 +226,7 @@ input {
     max-width: 1200px;
     background-color: var(--bg-light);
     width: 100%;
+    margin: 0 auto;   
 }
 
 .dash-card:hover {
@@ -375,8 +376,8 @@ input {
 /* ---  PROFILE LAYOUT --- */
 
 .dashboard-content .login-card {
-    max-width: 1200px; 
-    width: 100%;         
+    max-width: 1100px; 
+    width: 90%;         
     margin: 40px auto;
     padding: 50px 60px;
     background: #ffffff;
@@ -724,6 +725,7 @@ input {
     display: flex !important;
     flex-direction: column !important;
     gap: 30px !important; 
+    margin: 0 auto;   
 }
 
 .top-full-card.login-card {
