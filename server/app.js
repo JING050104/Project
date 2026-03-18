@@ -8,6 +8,7 @@ const path = require("path");
 const authRoutes = require('./routes/auth'); 
 const ensureAuthenticated = require("./middleware/m_auth"); 
 const app = express();
+app.set('trust proxy', 1);
 
 // 1. 初始化 Passport 配置 (必须在路由之前)
 require("./passport")(passport); //
