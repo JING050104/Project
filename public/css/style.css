@@ -871,6 +871,12 @@ input {
     margin: 10px 0 20px 0;
 }
 
+.status-expired {
+    background: #e2e8f0 !important; 
+    color: #64748b !important;   
+    text-decoration: line-through; 
+}
+
 .status-unused {
     background: #e0e7ff;
     color: #4338ca;

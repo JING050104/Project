@@ -148,6 +148,17 @@ function renderVouchers() {
  */
 
 async function redeemVoucher(voucherName, cost) {
+    const inventoryRes = await fetch('/api/get-inventory');
+    const inventoryData = await inventoryRes.json();
+    
+    let items = (Array.isArray(inventoryData) && Array.isArray(inventoryData[0])) ? inventoryData[0] : inventoryData;
+    if (items && items.rows) items = items.rows;
+
+    const hasVoucher = items.some(item => item.item_name === voucherName);
+    if (hasVoucher) {
+        alert(`You already have a ${voucherName} in your inventory! Use it before redeeming another.`);
+        return;
+    }
     if (!confirm(`Are you sure you want to spend ${cost} points for ${voucherName}?`)) return;
 
     try {

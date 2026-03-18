@@ -157,14 +157,18 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
  */
 app.post('/api/activate-item', async (req, res) => {
     const { inventoryId } = req.body;
-    const userId = req.user.id;
-
+    const activatedAt = new Date(); 
+    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000);
     try {
         const newCode = "CQ-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
         const result = await db.query(
-            "UPDATE user_inventory SET status = 'active', redeem_code = $1 WHERE id = $2 AND user_id = $3 AND status = 'unused'",
-            [newCode, inventoryId, userId]
+            `UPDATE user_inventory 
+            SET status = 'active', 
+                redeem_code = $1, 
+                expired_at = $2 
+            WHERE id = $3 AND user_id = $4 AND status = 'unused'`,
+            [newCode, expiredAt, inventoryId, userId]
         );
 
         if (result.rowCount === 0) {
@@ -244,7 +248,15 @@ app.get("/api/leaderboard", async (req, res) => {
 app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { voucherName, cost } = req.body; 
+    
+    const existing = await db.query(
+    "SELECT id FROM user_inventory WHERE user_id = $1 AND item_name = $2 AND (status = 'unused' OR status = 'active')",
+    [userId, voucherName]
+    );
 
+    if (existing.rows.length > 0) {
+        return res.status(400).json({ error: "You already have an unused or active version of this voucher." });
+    }
     
     try {
         const [vResult] = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
