@@ -389,15 +389,19 @@ input {
 }
 
 .profile-section-left {
-    flex: 1;
-    border-right: 1px solid #e0e0e0; 
-    padding-right: 40px; 
-    margin-right: 40px; 
-}
+        border-right: 1px solid #e0e0e0; 
+        
+        padding-right: 40px; 
+        margin-right: 40px;  
+        
+        box-sizing: border-box;
+    }
 
-.profile-section-right {
-    flex: 1;
-}
+    .profile-section-right {
+        flex: 1;
+        box-sizing: border-box;
+    }
+
 
 #profileUpdateForm {
         flex-direction: row; 
@@ -1358,11 +1362,11 @@ button:disabled {
         padding-bottom: 20px;
         margin-bottom: 10px;
     }
-    
+
     #profileUpdateForm {
     display: flex;
-    flex-direction: column; 
-    gap: 20px;
+    width: 100%;
+    gap: 0;     
 }
 
     #inventory-container {
