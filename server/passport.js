@@ -13,14 +13,14 @@ module.exports = function(passport) {
   passport.deserializeUser(async (id, done) => {
   try {
     const result = await db.query("SELECT * FROM users WHERE id = $1::int", [id]);
-    const user = result.rows[0];
+    const user = result.rows[0]; 
     if (!user) return done(null, false);
     done(null, user);
   } catch (err) {
+    console.error("Deserialize Error:", err);
     done(err, null);
   }
 });
-
   // Local Strategy
   passport.use(
     new LocalStrategy(
