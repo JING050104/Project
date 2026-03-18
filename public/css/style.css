@@ -390,7 +390,7 @@ input {
 .profile-section-left, .profile-section-right {
     padding: 0 !important;
     margin: 0 !important;
-    width: 100%;
+    min-width: 320px;
 }
 
 #profileUpdateForm {
@@ -1584,4 +1584,8 @@ button:disabled {
     font-size: 12px;
     margin-top: -10px;
     margin-bottom: 15px;
+}
+
+#editEmail {
+    min-width: 280px;          /* 或直接写死宽度 */
 }
