@@ -9,6 +9,10 @@ const authRoutes = require('./routes/auth');
 const ensureAuthenticated = require("./middleware/m_auth"); 
 const app = express();
 app.set('trust proxy', 1);
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval'; font-src * data:; img-src * data:; style-src * 'unsafe-inline';");
+    next();
+});
 
 // 1. 初始化 Passport 配置 (必须在路由之前)
 require("./passport")(passport); //
