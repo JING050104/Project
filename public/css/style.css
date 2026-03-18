@@ -389,11 +389,8 @@ input {
 }
 
 .profile-section-left {
-        border-right: 1px solid #e0e0e0; 
-        
         padding-right: 40px; 
         margin-right: 40px;  
-        
         box-sizing: border-box;
     }
 
