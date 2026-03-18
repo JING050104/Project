@@ -14,8 +14,6 @@
 
 body {
     background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%); /* 更有质感的微渐变背景 */
-    color: #2d3436;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body.no-scroll-page {
