@@ -196,7 +196,7 @@ function endGame() {
 
     const dataToSend = {
     score: totalScore, 
-    reached_level: currentIndex + 1,
+    reached_level: currentIndex,
     gameType: 'RiskFinder'
     };
 
