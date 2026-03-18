@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true })); //
 app.use(session({
     store: new pgSession({
         pool : db,                
-        tableName : 'session'     
+        tableName :'session'     
     }),
     key: 'fyp_session_cookie',
     secret: "fyp_secret", 
