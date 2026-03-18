@@ -90,21 +90,34 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 
     try {
         if (reward.includes("pts")) {
-            const points = parseInt(reward); //
+            const points = parseInt(reward);
+
+            await db.query('BEGIN');
+
             await db.query(`
                 INSERT INTO user_points (user_id, total_points) 
                 VALUES ($1, $2)
                 ON CONFLICT (user_id) 
                 DO UPDATE SET total_points = user_points.total_points + $3`, 
                 [userId, points, points]
-            ); //
-            return res.json({ success: true, type: 'points' }); //
+            );
+
+            await db.query(`
+                INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
+                VALUES ($1, $2, $3, $4)`,
+                [userId, points, 'DAILY_SPIN', `Daily Spin Reward: ${reward}`]
+            );
+
+            await db.query('COMMIT');
+
+            return res.json({ success: true, type: 'points', message: "Points and transaction recorded!" });
         } else {
             return res.json({ success: false, error: "Invalid reward type." });
         }
     } catch (err) {
-        console.error("Database Error during spin reward:", err.sqlMessage || err.message); //
-        return res.status(500).json({ success: false, error: "Database sync failed." }); //
+        await db.query('ROLLBACK');
+        console.error("Database Error during spin reward:", err.message);
+        return res.status(500).json({ success: false, error: "Database sync failed." });
     }
 });
 
