@@ -81,41 +81,49 @@
                 </div>
             </div>
         </main>
-    </div> <div id="resetModal" class="modal-overlay">
-        <div class="login-card modal-small">
-            <span class="close-modal" id="closeResetBtn">&times;</span>
+    </div> 
+    <div id="resetModal" class="modal-overlay">
+    <div class="login-card modal-small">
+        <span class="close-modal" id="closeResetBtn">&times;</span>
+        
+        <div id="resetStep1">
+            <h2>Reset Password</h2>
+            <p>We will send a code to: <strong id="confirmEmailDisplay"></strong></p> 
+            <input type="hidden" id="resetEmail"> 
+            <button id="resetSendBtn" class="submit-btn">Send Code</button>
+        </div>
+        
+        <div id="resetStep2" class="step-hidden">
+            <h2>Enter Code & New Password</h2>
+            <p>Check your email for the 6-digit code.</p>
             
-            <div id="resetStep1">
-                <h2>Reset Password</h2>
-                <p>We will send a code to: <strong id="confirmEmailDisplay"></strong></p> 
-                <input type="hidden" id="resetEmail"> 
-                <button id="resetSendBtn" class="submit-btn">Send Code</button>
-            </div>
-            
-            <div id="resetStep2" class="step-hidden">
-                <h2>Enter Code</h2>
-                <p>Enter the 6-digit code sent to your email.</p>
+            <div class="input-group">
+                <label>Verification Code</label>
                 <input type="text" id="resetVerifyCode" class="large-code-input" placeholder="6-digit Code" maxlength="6">
-                
-                <div class="password-container">
-                    <input type="password" id="ModalNewPassword" placeholder="New Password">
-                </div>
-
-                <div id="regPasswordRequirements" class="requirements-box">
-                    <div id="reg-req-length" class="req-item">× 8+ Characters</div>
-                    <div id="reg-req-upper" class="req-item">× Capital Letter (A-Z)</div>
-                    <div id="reg-req-lower" class="req-item">× Small Letter (a-z)</div>
-                    <div id="reg-req-num" class="req-item">× Numeric (0-9)</div>
-                    <div id="reg-req-special" class="req-item">× Special Character (@#$%)</div>
-                </div>
-
-                <div class="password-container">
-                    <input type="password" id="ModalConfirmPassword" placeholder="Confirm Password">
-                </div>
-                <button id="resetFinishBtn" class="submit-btn">Update Password</button>
             </div>
+
+            <div class="password-container">
+                <label>New Password</label>
+                <input type="password" id="ModalNewPassword" placeholder="New Password">
+            </div>
+
+            <div id="regPasswordRequirements" class="requirements-box">
+                <div id="reg-req-length" class="req-item">× 8+ Characters</div>
+                <div id="reg-req-upper" class="req-item">× Capital Letter</div>
+                <div id="reg-req-lower" class="req-item">× Small Letter</div>
+                <div id="reg-req-num" class="req-item">× Numeric</div>
+                <div id="reg-req-special" class="req-item">× Special Character</div>
+            </div>
+
+            <div class="password-container">
+                <label>Confirm Password</label>
+                <input type="password" id="ModalConfirmPassword" placeholder="Confirm Password">
+            </div>
+
+            <button id="resetFinishBtn" class="submit-btn">Update Password</button>
         </div>
     </div>
+</div>
 
     <div id="emailVerifyModal" class="modal-overlay">
         <div class="login-card modal-small">
