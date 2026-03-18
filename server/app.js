@@ -1,12 +1,11 @@
 require('dotenv').config();
 const express = require("express");
 const session = require("express-session");
-const pgSession = require('connect-pg-simple')(session);
-const db = require("./db");
 const passport = require("passport");
 const path = require("path");
-const authRoutes = require('./routes/auth'); 
-const ensureAuthenticated = require("./middleware/auth"); 
+const db = require("./db"); //
+const authRoutes = require('./routes/auth'); //
+const ensureAuthenticated = require("./middleware/auth"); //
 const app = express();
 
 // 1. 初始化 Passport 配置 (必须在路由之前)
@@ -17,22 +16,18 @@ app.use(express.json()); //
 app.use(express.urlencoded({ extended: true })); //
 
 app.use(session({
-    store: new pgSession({
-        pool : db,                
-        tableName : 'session'     
-    }),
     key: 'fyp_session_cookie',
     secret: "fyp_secret", 
     resave: false, 
     saveUninitialized: false, 
     proxy: true, 
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', 
+        secure: false, 
         httpOnly: true, 
-        sameSite: 'lax', 
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 
     }
-}));
+    ));
+
 
 // 4. 初始化 Passport (顺序固定)
 app.use(passport.initialize()); //
@@ -67,9 +62,8 @@ app.use("/auth", authRoutes); //
  */
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const result = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
-        const totalPoints = result.rows[0] ? result.rows[0].total_points : 0;
-        res.json({ points: totalPoints });
+        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]); //
+        res.json({ points: rows[0] ? rows[0].total_points : 0 }); //
     } catch (err) {
         console.error("SQL Error:", err);
         res.status(500).json({ error: "Failed to fetch points." }); //
@@ -78,8 +72,8 @@ app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
 
 app.get('/api/get-vouchers', async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, cost FROM vouchers');
-        res.json(result.rows);
+        const [rows] = await db.execute('SELECT id, name, cost FROM vouchers');
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: "Database error" });
     }
@@ -189,7 +183,7 @@ app.post('/api/activate-item', async (req, res) => {
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const username = req.user.username || req.user.email;
-    const { score, reached_level, gameType, time_left } = req.body; 
+    const { score, reached_level, gameType } = req.body; 
 
     try {
         await db.query('BEGIN');
@@ -203,9 +197,9 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         );
 
         await db.query(`
-            INSERT INTO scores (user_id, username, game_type, score, reached_level, time_left) 
-            VALUES ($1, $2, $3, $4, $5, $6)`,
-            [userId, username, gameType, score, reached_level, time_left || 0]
+            INSERT INTO scores (user_id, username, game_type, score, reached_level) 
+            VALUES ($1, $2, $3, $4, $5)`,
+            [userId, username, gameType, score, reached_level]
         );
 
         const description = `Finished ${gameType}: Level ${reached_level}`;
@@ -215,11 +209,12 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
             [userId, score, 'GAME_EARN', description]
         );
 
-        await db.query('COMMIT');
-        res.json({ success: true, message: "Score saved with time bonus!" });
+        await db.query('COMMIT'); 
+        res.json({ success: true, message: "All records updated successfully!" });
     } catch (err) {
         await db.query('ROLLBACK');
-        res.status(500).json({ error: err.message });
+        console.error("Transaction Error:", err.message);
+        res.status(500).json({ success: false, error: "Failed to sync data." });
     }
 });
 
@@ -228,19 +223,16 @@ app.get("/api/leaderboard", async (req, res) => {
 
     try {
         const result = await db.query(`
-            SELECT DISTINCT ON (username) username, score, reached_level, time_left
+            SELECT DISTINCT ON (username) username, score, reached_level 
             FROM scores 
             WHERE game_type = $1 
-            ORDER BY username, score DESC, reached_level DESC, time_left DESC, created_at ASC
-        `, [gameType]);
-
-        const sortedData = result.rows.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            if (b.reached_level !== a.reached_level) return b.reached_level - a.reached_level;
-            return b.time_left - a.time_left; // 剩余时间多的在前
-        });
-
-        res.json(sortedData);
+            ORDER BY username, score DESC 
+            LIMIT 10`, 
+            [gameType]
+        );
+        
+        const sortedRows = result.rows.sort((a, b) => b.score - a.score);
+        res.json(sortedRows);
     } catch (err) {
         res.status(500).json({ error: "Leaderboard error" });
     }
