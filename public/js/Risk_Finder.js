@@ -8,11 +8,6 @@ let totalScore = 0;
 let timeLeft = 60;
 let isPaused = false;
 let countdown;
-const dataToSend = {
-    score: totalScore, 
-    reached_level: currentIndex + 1,
-    gameType: 'RiskFinder'
-};
 
 // 2. DOM ELEMENTS
 const imgElement = document.getElementById('risk-image');
@@ -199,14 +194,16 @@ function endGame() {
     document.getElementById('final-score').innerText = totalScore;
     document.getElementById('game-over-modal').style.display = 'flex';
 
+    const dataToSend = {
+    score: totalScore, 
+    reached_level: currentIndex + 1,
+    gameType: 'RiskFinder'
+    };
+
     fetch('/api/save-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            score: totalScore, 
-            reached_level: currentIndex + 1, // 记录看到了第几张图
-            gameType: 'RiskFinder' 
-        })
+        body: JSON.stringify(dataToSend) 
     })
     .then(res => res.json())
     .then(data => {
