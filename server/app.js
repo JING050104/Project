@@ -226,19 +226,26 @@ app.get("/api/leaderboard", async (req, res) => {
     const { gameType } = req.query;
 
     try {
-        const result = await db.query(`
-            SELECT DISTINCT ON (username) username, score, reached_level 
-            FROM scores 
-            WHERE game_type = $1 
-            ORDER BY username, score DESC 
-            LIMIT 10`, 
-            [gameType]
-        );
+        const queryText = `
+            SELECT username, score, reached_level, time_left
+            FROM (
+                SELECT DISTINCT ON (username) username, score, reached_level, time_left
+                FROM scores 
+                WHERE game_type = $1 
+                ORDER BY username, score DESC
+            ) AS user_high_scores
+            ORDER BY score DESC 
+            LIMIT 10
+        `;
+
+        const result = await db.query(queryText, [gameType]);
+
+        const rows = result.rows || [];
         
-        const sortedRows = result.rows.sort((a, b) => b.score - a.score);
-        res.json(sortedRows);
+        res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: "Leaderboard error" });
+        console.error("Leaderboard API Error:", err);
+        res.status(500).json({ error: "Leaderboard error", details: err.message });
     }
 });
 
