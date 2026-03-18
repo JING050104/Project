@@ -6,13 +6,8 @@ const db = require("./db");
 const passport = require("passport");
 const path = require("path");
 const authRoutes = require('./routes/auth'); 
-const ensureAuthenticated = require("./middleware/m_auth"); 
+const ensureAuthenticated = require("./middleware/auth"); 
 const app = express();
-app.set('trust proxy', 1);
-app.use((req, res, next) => {
-    res.setHeader("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval'; font-src * data:; img-src * data:; style-src * 'unsafe-inline';");
-    next();
-});
 
 // 1. 初始化 Passport 配置 (必须在路由之前)
 require("./passport")(passport); //
@@ -200,12 +195,10 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         await db.query('BEGIN');
 
         await db.query(`
-            INSERT INTO user_points (user_id, total_points, last_updated) 
-            VALUES ($1, $2, NOW())
+            INSERT INTO user_points (user_id, total_points) 
+            VALUES ($1, $2)
             ON CONFLICT (user_id) 
-            DO UPDATE SET 
-                total_points = user_points.total_points + $3,
-                last_updated = NOW()`, 
+            DO UPDATE SET total_points = user_points.total_points + $3`, 
             [userId, score, score]
         );
 
