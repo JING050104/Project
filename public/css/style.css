@@ -1363,6 +1363,10 @@ button:disabled {
         margin-bottom: 10px;
     }
 
+    #userName {
+        display: none !important;
+    }
+
     #profileUpdateForm {
     display: flex;
     width: 100%;
@@ -1380,10 +1384,6 @@ button:disabled {
 
     .middle-row-container {
         grid-template-columns: 1fr !important;
-    }
-    
-    #userNameHeader {
-        display: none;
     }
 
     .game-hud {
