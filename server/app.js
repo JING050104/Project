@@ -27,11 +27,11 @@ app.use(session({
     saveUninitialized: false, 
     proxy: true, 
     cookie: {
-        secure: false, 
-        httpOnly: true, 
-        sameSite: 'lax',
-        maxAge: 1000 * 60 * 60 * 24 
-    }
+    secure: process.env.NODE_ENV === "production", 
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24
+}
 }));
 
 
