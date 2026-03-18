@@ -25,14 +25,15 @@ app.use(session({
     secret: "fyp_secret", 
     resave: false, 
     saveUninitialized: false, 
-    proxy: true,
+    proxy: true, 
     cookie: {
-        secure: process.env.NODE_ENV === 'production', 
+        secure: false, 
         httpOnly: true, 
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 
     }
 }));
+
 
 // 4. 初始化 Passport (顺序固定)
 app.use(passport.initialize()); //
@@ -67,9 +68,8 @@ app.use("/auth", authRoutes); //
  */
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const result = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
-        const totalPoints = result.rows[0] ? result.rows[0].total_points : 0;
-        res.json({ points: totalPoints });
+        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]); //
+        res.json({ points: rows[0] ? rows[0].total_points : 0 }); //
     } catch (err) {
         console.error("SQL Error:", err);
         res.status(500).json({ error: "Failed to fetch points." }); //
@@ -78,8 +78,8 @@ app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
 
 app.get('/api/get-vouchers', async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, cost FROM vouchers');
-        res.json(result.rows);
+        const [rows] = await db.execute('SELECT id, name, cost FROM vouchers');
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: "Database error" });
     }
@@ -189,7 +189,7 @@ app.post('/api/activate-item', async (req, res) => {
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const username = req.user.username || req.user.email;
-    const { score, reached_level, gameType, time_left } = req.body; 
+    const { score, reached_level, gameType } = req.body; 
 
     try {
         await db.query('BEGIN');
@@ -253,17 +253,12 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { voucherName, cost } = req.body; 
 
+    
     try {
-        const vResult = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
-        if (vResult.rows.length === 0) return res.status(404).json({ error: "Voucher not found." });
-        const voucherId = vResult.rows[0].id;
-
-        const pResult = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
-        const userPoints = pResult.rows[0] ? pResult.rows[0].total_points : 0;
-        
-        if (userPoints < cost) return res.status(400).json({ error: "Insufficient points." });
-
-        await db.query('BEGIN'); 
+        const [vResult] = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
+        const voucherId = vResult[0].id;
+        const [pResult] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
+        if (!pResult[0] || pResult[0].total_points < cost) return res.status(400).json({ error: "Insufficient points." });
 
         await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]);
         await db.query("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
@@ -275,10 +270,8 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             [userId, voucherId, voucherName] 
         );
 
-        await db.query('COMMIT');
         res.json({ success: true, message: `Successfully redeemed ${voucherName}!` });
     } catch (err) {
-        await db.query('ROLLBACK');
         console.error("Redeem Error:", err);
         res.status(500).json({ error: "Server error during redemption." });
     }
@@ -289,7 +282,7 @@ setInterval(async () => {
 
     try {
 
-        await db.query(`
+        await db.execute(`
             DELETE FROM users
             WHERE is_verified = 0
             AND reset_expires < NOW()

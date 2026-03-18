@@ -10,16 +10,15 @@ module.exports = function(passport) {
   });
 
   // 2. Deserialize (加上 ::int 转换 ID 类型)
-
   passport.deserializeUser(async (id, done) => {
     try {
-        const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
-        const user = result.rows[0];
-        done(null, user || false);
+      const [rows] = await db.execute("SELECT * FROM users WHERE id = $1::int", [id]);
+      if (!rows || rows.length === 0) return done(null, false);
+      done(null, rows[0]);
     } catch (err) {
-        done(err, null);
+      done(err, null);
     }
-});
+  });
 
   // Local Strategy
   passport.use(
@@ -27,19 +26,18 @@ module.exports = function(passport) {
       { usernameField: "identifier", passwordField: "password" }, 
       async (identifier, password, done) => {
         try {
-          const result = await db.query( 
-          "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
-          [identifier]
+          const [rows] = await db.execute(
+              "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
+              [identifier]
           );
 
           if (rows.length === 0) {
               return done(null, false, { message: "Account not verified or user not found." });
           }
           
-          const user = result.rows[0];
-          if (!user) {
-              return done(null, false, { message: "User not found." });
-          }
+          const user = rows[0];
+          if (!user) return done(null, false, { message: "Account not found." });
+          
           // 检查是否验证过邮箱
           if (user.is_verified === 0) return done(null, false, { message: "Please verify your email first." });
 
@@ -63,19 +61,19 @@ module.exports = function(passport) {
     async (accessToken, refreshToken, profile, done) => {
       try {
         // 1. Check Google ID (加上 ::text)
-        const [existingUser] = await db.query("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
+        const [existingUser] = await db.execute("SELECT * FROM users WHERE google_id = $1::text", [profile.id]);
         if (existingUser.length > 0) return done(null, existingUser[0]);
 
         // 2. Check Email (加上 ::text)
-        const [emailUser] = await db.query("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
+        const [emailUser] = await db.execute("SELECT * FROM users WHERE email = $1::text", [profile.emails[0].value]);
         if (emailUser.length > 0) {
-          await db.query("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
+          await db.execute("UPDATE users SET google_id = $1::text WHERE email = $2::text", [profile.id, profile.emails[0].value]);
           emailUser[0].google_id = profile.id; 
           return done(null, emailUser[0]);
         }
 
         // 3. Create New User
-        const [result] = await db.query(
+        const [result] = await db.execute(
           "INSERT INTO users (username, email, google_id, password) VALUES ($1::text, $2::text, $3::text, $4::text) RETURNING id",
           [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
         );
