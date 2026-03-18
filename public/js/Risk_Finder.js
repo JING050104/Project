@@ -8,6 +8,7 @@ let totalScore = 0;
 let timeLeft = 60;
 let isPaused = false;
 let countdown;
+let isGameOver = false;
 
 // 2. DOM ELEMENTS
 const imgElement = document.getElementById('risk-image');
@@ -80,10 +81,8 @@ pauseBtn.addEventListener("click", () => {
 });
 
 function endGameByTime() {
-    document.getElementById("final-score").textContent =
-        document.getElementById("score-count").textContent;
-
-    document.getElementById("game-over-modal").style.display = "flex";
+    clearInterval(countdown);
+    endGame();
 }
 
 document.body.classList.add("flash-red");
@@ -191,6 +190,8 @@ function goToNextLevel() {
 }
 
 function endGame() {
+    if (isGameOver) return;
+    isGameOver = true;
     document.getElementById('final-score').innerText = totalScore;
     document.getElementById('game-over-modal').style.display = 'flex';
 
@@ -199,6 +200,8 @@ function endGame() {
     reached_level: currentIndex,
     gameType: 'RiskFinder'
     };
+
+    console.log("Saving final score...", dataToSend);
 
     fetch('/api/save-score', {
         method: 'POST',
