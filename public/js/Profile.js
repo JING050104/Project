@@ -65,16 +65,33 @@ document.getElementById("resetSendBtn").onclick = async () => {
             body: JSON.stringify({ email })
         });
         const data = await res.json();
+        
         if (data.success) {
             resetEmailStorage = email;
-            // 核心切换：隐藏 Step 1，显示 Step 2
-            resetStep1.style.display = "none";
-            resetStep2.style.display = "block";
-            alert("Code sent!");
+
+            const s1 = document.getElementById("resetStep1");
+            const s2 = document.getElementById("resetStep2");
+
+            if (s1 && s2) {
+                s1.style.display = "none";
+                s1.classList.add("step-hidden");
+
+                s2.style.display = "block"; 
+                s2.style.setProperty("display", "block", "important"); // 强制覆盖 CSS
+                s2.classList.remove("step-hidden");
+                s2.classList.remove("hidden"); 
+
+                console.log("状态切换成功: Step 1 隐藏, Step 2 显示");
+                alert("Code sent!");
+            } else {
+                console.error("错误: 找不到 ID 为 resetStep1 或 resetStep2 的元素");
+                alert("页面结构错误，请检查 HTML ID");
+            }
         } else {
             alert(data.message);
         }
     } catch (err) {
+        console.error("发送验证码出错:", err);
         alert("Server error.");
     }
 };
