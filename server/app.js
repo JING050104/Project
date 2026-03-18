@@ -94,7 +94,6 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 
             await db.query('BEGIN');
 
-            // 1. 更新总分
             await db.query(`
                 INSERT INTO user_points (user_id, total_points) 
                 VALUES ($1, $2)
@@ -104,7 +103,6 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
             );
             console.log("[Spin Debug] user_points updated");
 
-            // 2. 写入流水（注意检查这里的字段名是否与数据库完全一致！）
             await db.query(`
                 INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
                 VALUES ($1, $2, $3, $4)`,
@@ -121,7 +119,6 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         }
     } catch (err) {
         await db.query('ROLLBACK');
-        // 这里会打印出具体的 SQL 报错，比如 "column points_change does not exist"
         console.error("[Spin Debug] CRITICAL ERROR:", err.message); 
         return res.status(500).json({ success: false, error: err.message });
     }
