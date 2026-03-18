@@ -1349,6 +1349,15 @@ button:disabled {
 
 @media (max-width: 768px) {
 
+
+    .form-content-flex {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .profile-card-wide {
+        padding: 30px 20px !important;
+    }
+    
     .profile-section-left {
         border-bottom: 1px solid #e0e0e0;
         padding-bottom: 20px;
@@ -1517,4 +1526,58 @@ button:disabled {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Profile 页面专属布局补丁 --- */
+
+/* 1. 解决顶部空一大段的问题：强制覆盖默认的 margin */
+.dashboard-content {
+    margin-top: 60px !important; 
+    padding-top: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 确保从顶部开始排列 */
+}
+
+/* 2. 宽卡片：覆盖原本 login-card 的 650px 限制 */
+.profile-card-wide {
+    max-width: 1050px !important;
+    width: 95% !important;
+    padding: 40px 60px !important;
+    margin: 0 auto !important;
+}
+
+/* 3. 左右分栏：这是实现“不分上下”的关键容器 */
+.form-content-flex {
+    display: flex;
+    gap: 50px;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+/* 让左边资料和右边密码等宽 */
+.profile-section-left, 
+.profile-section-right {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 4. 辅助样式：移除 HTML 里的内联 style */
+.section-divider {
+    margin: 25px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+
+.group-title {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.forgot-link-container {
+    text-align: right;
+    font-size: 12px;
+    margin-top: -10px;
+    margin-bottom: 15px;
 }
