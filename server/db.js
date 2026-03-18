@@ -7,14 +7,15 @@ const pool = new Pool({
   }
 });
 
+// db.js 建议改为：
 module.exports = {
   pool: pool,
   query: (sql, params) => {
     const pgSql = sql.replace(/\?/g, ($, i) => `$${i + 1}`);
-    return pool.query(pgSql, params).then(res => [res.rows]);
+    return pool.query(pgSql, params); // 直接返回 pool 的 Promise
   },
   execute: (sql, params) => {
     const pgSql = sql.replace(/\?/g, ($, i) => `$${i + 1}`);
-    return pool.query(pgSql, params).then(res => [res.rows]);
+    return pool.query(pgSql, params);
   }
 };

@@ -13,14 +13,14 @@ module.exports = function(passport) {
   passport.deserializeUser(async (id, done) => {
   try {
     const result = await db.query("SELECT * FROM users WHERE id = $1::int", [id]);
-    const user = result.rows[0]; 
+    const user = result.rows[0]; // 直接取 rows[0]
     if (!user) return done(null, false);
     done(null, user);
   } catch (err) {
-    console.error("Deserialize Error:", err);
     done(err, null);
   }
 });
+
   // Local Strategy
   passport.use(
     new LocalStrategy(
@@ -36,9 +36,11 @@ module.exports = function(passport) {
               return done(null, false, { message: "Account not verified or user not found." });
           }
           
-          const user = rows[0];
-          if (!user) return done(null, false, { message: "Account not found." });
-          
+          const result = await db.execute("SELECT * FROM users WHERE ...", [identifier]);
+          const user = result.rows[0];
+          if (!user) {
+              return done(null, false, { message: "User not found." });
+          }
           // 检查是否验证过邮箱
           if (user.is_verified === 0) return done(null, false, { message: "Please verify your email first." });
 
