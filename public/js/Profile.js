@@ -155,6 +155,37 @@ async function loadUserProfile() {
 }
 
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); 
+
+    const updatedData = {
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value
+    };
+
+    try {
+        const response = await fetch('/api/update-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert('Profile updated successfully!');
+            document.getElementById('editUsername').readOnly = true;
+            document.getElementById('editEmail').readOnly = true;
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Database save failed:', error);
+    }
+});
+
+document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const newUsername = document.getElementById('editUsername').value;
@@ -241,37 +272,6 @@ function toggleVisibility(id) {
 function handleLogout() {
     window.location.href = "/auth/logout";
 }
-
-document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); 
-
-    const updatedData = {
-        username: document.getElementById('editUsername').value,
-        email: document.getElementById('editEmail').value
-    };
-
-    try {
-        const response = await fetch('/api/update-profile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(updatedData)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            alert('Profile updated successfully!');
-            document.getElementById('editUsername').readOnly = true;
-            document.getElementById('editEmail').readOnly = true;
-        } else {
-            alert('Error: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Database save failed:', error);
-    }
-});
 
 function enableEdit(inputId) {
     const input = document.getElementById(inputId);
