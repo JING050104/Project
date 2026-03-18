@@ -123,21 +123,34 @@ async function loadUserProfile() {
         if (data.user) {
             const u = data.user;
             originalEmail = u.email;
-            document.getElementById('displayTitle').textContent = u.username;
-            document.getElementById('displayEmail').textContent = u.email;
-            document.getElementById('userNameHeader').textContent = u.username;
-            
-            document.getElementById('editUsername').value = u.username;
-            document.getElementById('editEmail').value = u.email;
+
+            const displayTitle = document.getElementById('displayTitle');
+            if (displayTitle) displayTitle.textContent = u.username;
+
+            const displayEmail = document.getElementById('displayEmail');
+            if (displayEmail) displayEmail.textContent = u.email;
+
+            const editUsername = document.getElementById('editUsername');
+            if (editUsername) editUsername.value = u.username;
+
+            const editEmail = document.getElementById('editEmail');
+            if (editEmail) editEmail.value = u.email;
 
             const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
-            document.getElementById('userAvatar').src = avatarUrl;
-            document.getElementById('headerAvatar').src = avatarUrl;
+            const userAvatar = document.getElementById('userAvatar');
+            if (userAvatar) userAvatar.src = avatarUrl;
+
+            const confirmEmailDisplay = document.getElementById('confirmEmailDisplay');
+            if (confirmEmailDisplay) confirmEmailDisplay.textContent = u.email;
+            
+            const resetEmailInput = document.getElementById('resetEmail');
+            if (resetEmailInput) resetEmailInput.value = u.email;
+
         } else {
             window.location.href = "/index.html";
         }
     } catch (err) {
-        console.error("Failed to load profile", err);
+        console.error("Load user profile error:", err);
     }
 }
 
