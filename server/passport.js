@@ -10,13 +10,14 @@ module.exports = function(passport) {
   });
 
   // 2. Deserialize 
-  passport.deserializeUser(async (id, done) => {
+ passport.deserializeUser(async (id, done) => {
   try {
     const result = await db.query("SELECT * FROM users WHERE id = $1::int", [id]);
-    const user = result.rows[0]; // 直接取 rows[0]
+    const user = result.rows[0];
     if (!user) return done(null, false);
     done(null, user);
   } catch (err) {
+    console.error("Deserialize Error:", err);
     done(err, null);
   }
 });
