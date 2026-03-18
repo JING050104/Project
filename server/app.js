@@ -8,6 +8,7 @@ const path = require("path");
 const authRoutes = require('./routes/auth'); 
 const ensureAuthenticated = require("./middleware/auth"); 
 const app = express();
+app.set('trust proxy', 1);
 
 // 1. 初始化 Passport 配置 (必须在路由之前)
 require("./passport")(passport); //
@@ -68,9 +69,10 @@ app.use("/auth", authRoutes); //
  */
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]); //
-        res.json({ points: rows[0] ? rows[0].total_points : 0 }); //
-    } catch (err) {
+        const result = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
+        const points = result.rows[0] ? result.rows[0].total_points : 0;
+        res.json({ points });
+        } catch (err) {
         console.error("SQL Error:", err);
         res.status(500).json({ error: "Failed to fetch points." }); //
     }

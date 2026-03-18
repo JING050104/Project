@@ -9,16 +9,17 @@ module.exports = function(passport) {
     done(null, user.id);
   });
 
-  // 2. Deserialize (加上 ::int 转换 ID 类型)
+  // 2. Deserialize 
   passport.deserializeUser(async (id, done) => {
-    try {
-      const [rows] = await db.execute("SELECT * FROM users WHERE id = $1::int", [id]);
-      if (!rows || rows.length === 0) return done(null, false);
-      done(null, rows[0]);
-    } catch (err) {
-      done(err, null);
-    }
-  });
+  try {
+    const result = await db.query("SELECT * FROM users WHERE id = $1::int", [id]);
+    const user = result.rows[0];
+    if (!user) return done(null, false);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
 
   // Local Strategy
   passport.use(
