@@ -1,14 +1,10 @@
-
-
 async function loadLeaderboard(gameType, element) {
-    // 切换 Tab 样式
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(btn => btn.classList.remove('active'));
     
     if (element) {
         element.classList.add('active');
     } else {
-        // 初始加载时匹配对应的按钮
         const defaultBtn = Array.from(tabs).find(b => b.textContent.replace(' ', '') === gameType);
         if (defaultBtn) defaultBtn.classList.add('active');
     }
@@ -28,28 +24,30 @@ async function loadLeaderboard(gameType, element) {
         tbody.innerHTML = data.map((entry, index) => {
             const rank = index + 1;
             const unit = gameType === 'RiskDefender' ? 'Waves' : 'Photos';
-                return `
-                    <tr>
-                        <td>${rankEmoji}</td>
-                        <td>${entry.username}</td>
-                        <td>
-                            <strong>${entry.score.toLocaleString()} pts</strong> 
-                            <small style="color:#888; margin-left:10px;">(${entry.reached_level} ${unit})</small>
-                        </td>
-                    </tr>
-                `;
+            
             let rankDisplay = rank;
             let rankClass = '';
-
             if (rank === 1) { rankDisplay = '🥇'; rankClass = 'rank-1'; }
             else if (rank === 2) { rankDisplay = '🥈'; rankClass = 'rank-2'; }
             else if (rank === 3) { rankDisplay = '🥉'; rankClass = 'rank-3'; }
 
+            const timeBonus = (gameType === 'RiskFinder' && entry.time_left > 0) 
+                ? `<div style="font-size: 11px; color: #22c55e;">⏱ Remaining: ${entry.time_left}s</div>` 
+                : '';
+
             return `
                 <tr class="fade-in">
-                    <td class="${rankClass}">${rankDisplay}</td>
-                    <td>${entry.username || 'Anonymous'}</td>
-                    <td class="score-cell">${entry.score.toLocaleString()}</td>
+                    <td class="${rankClass}" style="text-align:center; font-size: 20px;">${rankDisplay}</td>
+                    <td>
+                        <div style="font-weight: bold;">${entry.username || 'Anonymous'}</div>
+                    </td>
+                    <td>
+                        <div class="score-cell" style="font-weight: bold; color: #2563eb;">
+                            ${entry.score.toLocaleString()} pts
+                        </div>
+                        <small style="color:#64748b;">(${entry.reached_level} ${unit})</small>
+                        ${timeBonus} 
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -60,7 +58,6 @@ async function loadLeaderboard(gameType, element) {
     }
 }
 
-// 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', () => {
     loadLeaderboard('RiskDefender');
 });
