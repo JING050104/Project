@@ -154,7 +154,6 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 
 // D. 激活道具（已修正 userId）
 app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
-    console.log(">>> 正在执行激活逻辑，当前设置的天数是 7 天");
     
     const userId = req.user.id;
     const { inventoryId } = req.body;
