@@ -254,7 +254,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
         const existing = await db.execute(
             `SELECT id FROM user_inventory 
              WHERE user_id = $1 AND item_name = $2 
-             AND (status = 'unused' OR OR (status = 'active' AND (expired_at > NOW())))`,
+             AND (status = 'unused' OR (status = 'active' AND (expired_at > NOW())))`,
             [userId, voucherName]
         );
 
