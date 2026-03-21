@@ -749,7 +749,7 @@ input {
 #voucher-container, #inventory-container {
     gap: 20px;
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
     width: 100% !important;
     height: auto !important;
     margin-top: 15px !important;
