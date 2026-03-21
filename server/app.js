@@ -144,9 +144,11 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             i.id as "id", 
             COALESCE(v.name, i.item_name) as "item_name", 
             i.quantity as "quantity", 
-            i.status as "status" ,
+            i.status as "status",
             i.redeem_code as "redeem_code",
-            v.description AS "description"
+            v.description AS "description",
+            i.expired_at as "expired_at",           -- ← 加上這一行
+            i.activated_at as "activated_at"        -- 可選：如果有這個欄位也可以加上
         FROM user_inventory i
         LEFT JOIN vouchers v ON i.voucher_id = v.id
         WHERE i.user_id = $1
@@ -154,7 +156,8 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 
     try {
         const result = await db.query(query, [req.user.id]);
-        const inventoryData = result.rows ? result.rows : (Array.isArray(result) ? result : []);
+        const inventoryData = result.rows || [];
+        
         console.log("Sending Inventory to Frontend:", inventoryData); 
         res.json(inventoryData); 
     } catch (err) {
