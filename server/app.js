@@ -272,39 +272,87 @@ app.get("/api/leaderboard", async (req, res) => {
 });
 
 /**
- * F. 兑换礼券 (扣除积分)
+ * F. 兌換禮券 (扣除積分)
  */
 app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
-    const { voucherName, cost } = req.body; 
-    
-    const existing = await db.query(
-    "SELECT id FROM user_inventory WHERE user_id = $1 AND item_name = $2 AND (status = 'unused' OR status = 'active')",
-    [userId, voucherName]
-    );
+    const { voucherName, cost } = req.body;
 
-    if (existing.rows.length > 0) {
-        return res.status(400).json({ error: "You already have an unused or active version of this voucher." });
+    if (!voucherName || !cost) {
+        return res.status(400).json({ error: "Missing voucherName or cost" });
     }
-    
-    try {
-        const [vResult] = await db.query("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
-        const voucherId = vResult[0].id;
-        const [pResult] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
-        if (!pResult[0] || pResult[0].total_points < cost) return res.status(400).json({ error: "Insufficient points." });
 
-        await db.query("UPDATE user_points SET total_points = total_points - $1 WHERE user_id = $2", [cost, userId]);
-        await db.query("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
-        await db.query(`
-            INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-            VALUES ($1, $2, $3, 1, 'unused') 
-            ON CONFLICT (user_id, voucher_id) 
-            DO UPDATE SET quantity = user_inventory.quantity + 1`, 
-            [userId, voucherId, voucherName] 
+    try {
+        await db.query('BEGIN');
+
+        const existing = await db.query(
+            `SELECT id FROM user_inventory 
+             WHERE user_id = $1 
+               AND item_name = $2 
+               AND (status = 'unused' OR status = 'active')`,
+            [userId, voucherName]
         );
 
-        res.json({ success: true, message: `Successfully redeemed ${voucherName}!` });
+        if (existing.rows.length > 0) {
+            await db.query('ROLLBACK');
+            return res.status(400).json({ 
+                error: `You already have a ${voucherName} in your inventory!` 
+            });
+        }
+
+        const [pResult] = await db.query(
+            `SELECT total_points FROM user_points WHERE user_id = $1`,
+            [userId]
+        );
+
+        if (!pResult || pResult.total_points < cost) {
+            await db.query('ROLLBACK');
+            return res.status(400).json({ error: "Insufficient points." });
+        }
+
+        await db.query(`
+            UPDATE user_points 
+            SET total_points = total_points - $1,
+                last_updated = NOW() AT TIME ZONE 'Asia/Kuala_Lumpur'
+            WHERE user_id = $2`,
+            [cost, userId]
+        );
+
+        const [vResult] = await db.query(
+            "SELECT id FROM vouchers WHERE name = $1", 
+            [voucherName]
+        );
+
+        if (!vResult) {
+            await db.query('ROLLBACK');
+            return res.status(404).json({ error: "Voucher not found" });
+        }
+
+        const voucherId = vResult.id;
+
+        await db.query(
+            "UPDATE vouchers SET stock = stock - 1 WHERE id = $1",
+            [voucherId]
+        );
+
+        await db.query(`
+            INSERT INTO user_inventory 
+                (user_id, voucher_id, item_name, quantity, status) 
+            VALUES ($1, $2, $3, 1, 'unused') 
+            ON CONFLICT (user_id, voucher_id) 
+            DO UPDATE SET quantity = user_inventory.quantity + 1`,
+            [userId, voucherId, voucherName]
+        );
+
+        await db.query('COMMIT');
+
+        res.json({ 
+            success: true, 
+            message: `Successfully redeemed ${voucherName}!` 
+        });
+
     } catch (err) {
+        await db.query('ROLLBACK');
         console.error("Redeem Error:", err);
         res.status(500).json({ error: "Server error during redemption." });
     }
