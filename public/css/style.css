@@ -699,10 +699,12 @@ input {
 }
 
 .dashboard-grid {
-    display: grid;
+    display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+    width: 100% !important;
     gap: 25px;
     border-radius: 16px; 
+    justify-content: center;
 }
 
 .dashboard-content {
@@ -788,13 +790,6 @@ input {
     font-size: 0.9rem !important;
     padding: 10px 0 !important;
     box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
-}
-
-.dashboard-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
-    width: 100% !important;
-    justify-content: center;
 }
 
 .dashboard-grid .dash-card.clickable-card {
