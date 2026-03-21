@@ -87,9 +87,9 @@ function renderInventoryByTab(tabType) {
             item.status === 'unused' && 
             (!item.expire_date || new Date(item.expire_date) > now)
         );
-    } else if (tabType === 'activate') {
+    } else if (tabType === 'activated') {
         filtered = allInventory.filter(item => 
-            item.status === 'activate' || item.status === 'used'
+            item.status === 'activated' || item.status === 'used'
         );
     } else if (tabType === 'expired') {
         filtered = allInventory.filter(item => 
