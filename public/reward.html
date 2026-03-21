@@ -71,7 +71,31 @@
         </div>
         <div class="v-button-wrapper"></div>
     </div>
-</template>
+    </template>
+
+    <template id="voucher-item-template">
+    <div class="login-card voucher-card">
+        <h4 class="v-name"></h4>
+        <p class="description v-desc"></p>
+        <div class="status-container">
+            <span class="v-status-badge"></span>
+        </div>
+        
+        <div class="v-button-wrapper">
+            <button class="submit-btn v-redeem-btn">Redeem Now</button>
+            
+            <button class="submit-btn v-owned-btn" disabled 
+                style="background: #cbd5e1; cursor: not-allowed; display: none; width:100%; border:none;">
+                Already Owned
+            </button>
+            
+            <button class="submit-btn v-low-points-btn" disabled 
+                style="background: #cbd5e1; cursor: not-allowed; display: none; width:100%; border:none;">
+                Not Enough Points
+            </button>
+        </div>
+    </div>
+    </template> 
 
 </body>
 </html>

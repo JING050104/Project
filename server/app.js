@@ -162,7 +162,7 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
     }
 
     const activatedAt = new Date();
-    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000); // 1小時後
+    const expiredAt = new Date(activatedAt.getTime() + 24 * 60 * 60 * 1000)
 
     try {
         const newCode = "CQ-" + Math.random().toString(36).substring(2, 8).toUpperCase();

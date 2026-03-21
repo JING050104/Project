@@ -33,39 +33,40 @@ async function initRewards() {
 
 function renderAvailableVouchers(voucherList) {
     const container = document.getElementById('voucher-container');
-    const template = document.getElementById('voucher-template'); // 使用你提供的 template
+    const template = document.getElementById('voucher-item-template');
     if (!container || !template) return;
 
-    container.innerHTML = ''; 
+    container.innerHTML = '';
+    const now = new Date();
 
     voucherList.forEach(v => {
         const clone = template.content.cloneNode(true);
         
         clone.querySelector('.v-name').innerText = v.name;
         clone.querySelector('.v-desc').innerText = v.description || 'No description';
-        
-        const statusBadge = clone.querySelector('.v-status-badge');
-        statusBadge.innerText = `${v.cost} Points`;
-        statusBadge.className = 'v-status-badge status-unused'; // 借用你之前的蓝色样式
+        clone.querySelector('.v-status-badge').innerText = `${v.cost} Points`;
 
-        const isOwned = inventoryItems.some(item => 
-            item.item_name === v.name && (item.status === 'unused' || item.status === 'active')
-        );
+        const isOwned = inventoryItems.some(item => {
+            const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
+            return item.item_name === v.name && 
+                   (item.status === 'unused' || item.status === 'active' || item.status === 'activated') && 
+                   (!expiryDate || expiryDate > now);
+        });
+        const canAfford = currentPoints >= v.cost;
 
-        const btnWrapper = clone.querySelector('.v-button-wrapper');
+        const redeemBtn = clone.querySelector('.v-redeem-btn');
+        const ownedBtn = clone.querySelector('.v-owned-btn');
+        const lowPointsBtn = clone.querySelector('.v-low-points-btn');
 
         if (isOwned) {
-            btnWrapper.innerHTML = `
-                <button class="submit-btn" disabled 
-                    style="background: #cbd5e1; cursor: not-allowed; margin-top:10px; width:100%;">
-                    Already Owned
-                </button>`;
+            ownedBtn.style.display = 'block';
+            redeemBtn.style.display = 'none';
+        } else if (!canAfford) {
+            lowPointsBtn.style.display = 'block';
+            redeemBtn.style.display = 'none';
         } else {
-            btnWrapper.innerHTML = `
-                <button class="submit-btn" onclick="redeemVoucher('${v.name}', ${v.cost})" 
-                    style="margin-top:10px; width:100%;">
-                    Redeem Now
-                </button>`;
+            redeemBtn.style.display = 'block';
+            redeemBtn.onclick = () => redeemVoucher(v.name, v.cost);
         }
 
         container.appendChild(clone);
