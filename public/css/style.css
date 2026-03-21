@@ -746,10 +746,10 @@ input {
     flex-direction: column !important;
 }
 
-#inventory-container {
+#voucher-container, #inventory-container {
+    gap: 20px;
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
-    gap: 15px !important;
+    grid-template-columns: repeat(3, 1fr);
     width: 100% !important;
     height: auto !important;
     margin-top: 15px !important;
@@ -1344,18 +1344,17 @@ button:disabled {
     animation: modalPop 0.3s ease-out;
 }
 
-#voucher-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
-}
-
 @media (max-width: 768px) {
+
+    #voucher-container, #inventory-container {
+        grid-template-columns: 1fr;
+    }
 
     .form-content-flex {
         flex-direction: column;
         gap: 20px;
     }
+
     .profile-card-wide {
         padding: 30px 20px !important;
     }
@@ -1374,10 +1373,6 @@ button:disabled {
     display: flex;
     width: 100%;
     gap: 0;     
-    }
-
-    #inventory-container {
-        grid-template-columns: 1fr !important;
     }
 
     .dashboard-grid {
@@ -1605,12 +1600,16 @@ button:disabled {
 
 .voucher-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 30px;
     border: 1px solid #e2e8f0;
     padding: 18px 20px;
-    margin-bottom: 16px;
+    margin-bottom: 0; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.06);
     transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    height: 100%; 
 }
 
 .voucher-card:hover {
