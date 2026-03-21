@@ -21,18 +21,20 @@ app.use(session({
     store: new pgSession({
         pool: db.pool,
         tableName: 'session',
-        ttl: 24 * 60 * 60,           
+        ttl: 24 * 60 * 60,                    
+        pruneSessionInterval: false,          
     }),
     key: 'fyp_session_cookie',
     secret: process.env.SESSION_SECRET || "fyp_secret",
     resave: false,
     saveUninitialized: false,
+    rolling: true,                            
     proxy: true,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000 
+        maxAge: 24 * 60 * 60 * 1000           
     }
 }));
 
@@ -308,27 +310,20 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000; 
 setInterval(async () => {
     try {
-        const sessionResult = await db.execute(`
-            DELETE FROM session 
-            WHERE expire_timestamp < NOW()
-        `);
+        const [sessionResult, userResult] = await Promise.all([
+            db.execute(`DELETE FROM session WHERE expire_timestamp < NOW()`),
+            db.execute(`DELETE FROM users WHERE is_verified = 0 AND reset_expires < NOW()`)
+        ]);
 
-        const userResult = await db.execute(`
-            DELETE FROM users
-            WHERE is_verified = 0
-            AND reset_expires < NOW()
-        `);
-
-        console.log(`[Cleanup] ${sessionResult.rowCount || 0} expired sessions deleted | ${userResult.rowCount || 0} unverified users deleted`);
-        
+        console.log(`[Cleanup] ${sessionResult.rowCount || 0} expired sessions | ${userResult.rowCount || 0} unverified users`);
     } catch (err) {
         console.error("[Cleanup Error]:", err.message);
     }
-}, 30 * 60 * 1000); 
+}, 30 * 60 * 1000);
 
+const PORT = process.env.PORT || 3000; 
 // --- 8. 启动服务器 ---
 // 优先使用云端分配的端口，如果本地运行则默认使用 3000
 app.listen(PORT, "0.0.0.0", () => {
