@@ -207,8 +207,8 @@ router.post('/forgot-password', async (req, res) => {
         const emailSent = await sendBrevoEmail(
             email,
             "CoverageQuest Verification Code",
-            `Your verification code is: ${verifyCode}`,
-            `<h2>CoverageQuest</h2><p>Your verification code:</p><h1>${verifyCode}</h1><p>This code expires in 15 minutes.</p>`
+            `Your reset code is: ${verifyCode}`,
+            `<h2>CoverageQuest</h2><p>Your reset code:</p><h1>${verifyCode}</h1><p>This code expires in 15 minutes.</p>`
         );
 
         if (emailSent) {
