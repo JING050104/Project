@@ -129,7 +129,7 @@ function renderInventoryByTab(tab) {
     let html = '';
     filtered.forEach(item => {
     const isExpired = item.expire_date && new Date(item.expire_date) < now;
-    const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Activated' : 'Ready');
+    const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Active' : item.status);
 
     html += `
         <div class="voucher-card ${isExpired ? 'expired' : ''}">
@@ -139,7 +139,7 @@ function renderInventoryByTab(tab) {
                 ${statusText}
                 ${item.redeem_code ? `<br><span class="redeem-code">${item.redeem_code}</span>` : ''}
             </div>
-            ${!isExpired && (item.status === 'unused' || item.status === 'ready') ? 
+            ${!isExpired && (item.status === 'unused') ? 
                 `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>` : ''}
         </div>
     `;
