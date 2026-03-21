@@ -164,28 +164,37 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 /**
  * D. 激活/使用道具
  */
-app.post('/api/activate-item', async (req, res) => {
+app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id;           // ← 重要！加上這一行
     const { inventoryId } = req.body;
+
     const activatedAt = new Date(); 
-    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000);
+    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000); // 1小時後過期
+
     try {
         const newCode = "CQ-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
         const result = await db.query(
             `UPDATE user_inventory 
-            SET status = 'active', 
-                redeem_code = $1, 
-                expired_at = $2 
-            WHERE id = $3 AND user_id = $4 AND status = 'unused'`,
-            [newCode, expiredAt, inventoryId, userId]
+            SET status = 'active', redeem_code = $1, expired_at = $2, activated_at = $3
+            WHERE id = $4 AND user_id = $5 AND status = 'unused'`,
+            [newCode, expiredAt, activatedAt, inventoryId, userId]
         );
 
         if (result.rowCount === 0) {
-            return res.status(400).json({ error: "Item already activated or not found." });
+            return res.status(400).json({ 
+                error: "Item already activated, not found, or does not belong to you." 
+            });
         }
 
-        res.json({ success: true, redeemCode: newCode });
+        res.json({ 
+            success: true, 
+            redeemCode: newCode,
+            expiredAt: expiredAt 
+        });
+
     } catch (err) {
+        console.error("Activation Error:", err);
         res.status(500).json({ error: "Activation failed." });
     }
 });

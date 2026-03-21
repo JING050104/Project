@@ -90,15 +90,28 @@ function openVoucherModal(item) {
     const codeText = document.getElementById('redeem-code-text');
     const btn = document.getElementById('modal-action-btn');
     const statusBadge = document.getElementById('modal-status');
+    const modalTitle = document.getElementById('modal-title');
 
-    document.getElementById('modal-title').innerText = item.item_name;
+    modalTitle.innerText = item.item_name || 'Voucher';
 
-    if (item.status === 'active') {
+    const now = new Date();
+    const expiredTime = item.expired_at ? new Date(item.expired_at) : null;
+    const isExpired = expiredTime && now > expiredTime;
+
+    if (isExpired) {
+        statusBadge.innerText = 'Expired';
+        statusBadge.className = 'modal-badge status-expired';
+        desc.innerText = 'This voucher has expired and can no longer be used.';
+        desc.style.display = 'block';
+        codeContainer.style.display = 'none';
+        btn.style.display = 'none';
+
+    } else if (item.status === 'active') {
         statusBadge.innerText = 'Activated';
         statusBadge.className = 'modal-badge status-active';
         desc.style.display = 'none';
         btn.style.display = 'none';
-        
+
         codeContainer.style.display = 'block';
         codeText.innerText = item.redeem_code || 'N/A';
 
@@ -108,7 +121,6 @@ function openVoucherModal(item) {
         desc.style.display = 'block';
         desc.innerText = item.description || 'Activate this voucher to reveal your unique redemption code.';
         btn.style.display = 'block';
-        
         codeContainer.style.display = 'none';
 
         btn.onclick = () => activateItem(item.id);
