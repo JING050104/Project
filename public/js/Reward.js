@@ -94,11 +94,20 @@ function openVoucherModal(item) {
 
     modalTitle.innerText = item.item_name || 'Voucher';
 
-    const now = new Date();
-    const expiredTime = item.expired_at ? new Date(item.expired_at) : null;
-    const isExpired = expiredTime && now > expiredTime;
+    // === 加強版過期判斷 ===
+    let isExpired = false;
+    if (item.expired_at) {
+        const expiredTime = new Date(item.expired_at);
+        const now = new Date();
+        
+        // 處理後端可能傳來的字串時間
+        if (!isNaN(expiredTime.getTime())) {
+            isExpired = now > expiredTime;
+        }
+    }
 
     if (isExpired) {
+        // 已過期
         statusBadge.innerText = 'Expired';
         statusBadge.className = 'modal-badge status-expired';
         desc.innerText = 'This voucher has expired and can no longer be used.';
@@ -107,6 +116,7 @@ function openVoucherModal(item) {
         btn.style.display = 'none';
 
     } else if (item.status === 'active') {
+        // 已激活且未過期
         statusBadge.innerText = 'Activated';
         statusBadge.className = 'modal-badge status-active';
         desc.style.display = 'none';
@@ -116,6 +126,7 @@ function openVoucherModal(item) {
         codeText.innerText = item.redeem_code || 'N/A';
 
     } else {
+        // 未激活
         statusBadge.innerText = 'Ready to Use';
         statusBadge.className = 'modal-badge status-unused';
         desc.style.display = 'block';
