@@ -297,9 +297,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
         // 加入背包
         await db.execute(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-            VALUES ($1, $2, $3, 1, 'unused') 
-            ON CONFLICT (user_id, voucher_id) 
-            DO UPDATE SET quantity = user_inventory.quantity + 1`,
+            VALUES ($1, $2, $3, 1, 'unused')`,
             [userId, voucherId, voucherName]
         );
 

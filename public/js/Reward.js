@@ -264,37 +264,26 @@ function renderVouchers() {
  */
 
 async function redeemVoucher(voucherName, cost) {
-    const inventoryRes = await fetch('/api/get-inventory');
-    const inventoryData = await inventoryRes.json();
-    
-    let items = (Array.isArray(inventoryData) && Array.isArray(inventoryData[0])) ? inventoryData[0] : inventoryData;
-    if (items && items.rows) items = items.rows;
-
-    const hasVoucher = items.some(item => item.item_name === voucherName);
-    if (hasVoucher) {
-        alert(`You already have a ${voucherName} in your inventory! Use it before redeeming another.`);
-        return;
-    }
-    if (!confirm(`Are you sure you want to spend ${cost} points for ${voucherName}?`)) return;
+    if (!confirm(`Confirm spending ${cost} points for ${voucherName}?`)) return;
 
     try {
         const response = await fetch('/api/redeem-voucher', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ voucherName: voucherName, cost: cost })
+            body: JSON.stringify({ voucherName, cost })
         });
 
         const result = await response.json();
 
         if (response.ok) {
-            alert(`Success! You have redeemed ${voucherName}.`);
-            initRewards(); 
+            alert(result.message || "Success!");
+            await initRewards(); 
         } else {
             alert(`Error: ${result.error}`);
         }
     } catch (err) {
         console.error("Redeem request failed:", err);
-        alert("Server connection error. Please try again later.");
+        alert("Server connection error.");
     }
 }
 
