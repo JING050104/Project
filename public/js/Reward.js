@@ -86,17 +86,9 @@ async function loadInventory() {
 
 function openVoucherModal(item) {
     console.log("=== openVoucherModal called ===");
-    console.log("Full item object:", item);
-    console.log("expired_at raw value:", item.expired_at);
-    console.log("Type of expired_at:", typeof item.expired_at);
+    console.log("Full item:", item);
+    console.log("expired_at raw:", item.expired_at);
 
-    if (item.expired_at) {
-        const parsed = new Date(item.expired_at);
-        console.log("Parsed date:", parsed);
-        console.log("Is valid date?", !isNaN(parsed.getTime()));
-        console.log("Is expired?", new Date() > parsed);
-    }
-    
     const desc = document.getElementById('modal-description');
     const codeContainer = document.getElementById('redeem-code-container');
     const codeText = document.getElementById('redeem-code-text');
@@ -106,20 +98,28 @@ function openVoucherModal(item) {
 
     modalTitle.innerText = item.item_name || 'Voucher';
 
-    // === 加強版過期判斷 ===
+    // === 加強版過期判斷（處理帶時區的時間）===
     let isExpired = false;
+
     if (item.expired_at) {
-        const expiredTime = new Date(item.expired_at);
-        const now = new Date();
-        
-        // 處理後端可能傳來的字串時間
-        if (!isNaN(expiredTime.getTime())) {
-            isExpired = now > expiredTime;
+        // 方法1：直接用 new Date()（大多數情況有效）
+        let expiredDate = new Date(item.expired_at);
+
+        // 方法2：如果上面解析失敗，嘗試移除時區後再解析
+        if (isNaN(expiredDate.getTime())) {
+            const cleanTime = item.expired_at.toString().split('+')[0].split('.')[0]; // 去掉時區和小數點
+            expiredDate = new Date(cleanTime);
         }
+
+        const now = new Date();
+        isExpired = !isNaN(expiredDate.getTime()) && now > expiredDate;
+
+        console.log("Parsed expiredDate:", expiredDate);
+        console.log("Current time:", now);
+        console.log("Is expired?", isExpired);
     }
 
     if (isExpired) {
-        // 已過期
         statusBadge.innerText = 'Expired';
         statusBadge.className = 'modal-badge status-expired';
         desc.innerText = 'This voucher has expired and can no longer be used.';
@@ -128,7 +128,6 @@ function openVoucherModal(item) {
         btn.style.display = 'none';
 
     } else if (item.status === 'active') {
-        // 已激活且未過期
         statusBadge.innerText = 'Activated';
         statusBadge.className = 'modal-badge status-active';
         desc.style.display = 'none';
@@ -138,7 +137,6 @@ function openVoucherModal(item) {
         codeText.innerText = item.redeem_code || 'N/A';
 
     } else {
-        // 未激活
         statusBadge.innerText = 'Ready to Use';
         statusBadge.className = 'modal-badge status-unused';
         desc.style.display = 'block';
