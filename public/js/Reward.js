@@ -19,7 +19,8 @@ async function initRewards() {
         document.getElementById('display-points').innerText = currentPoints;
         
         vouchers = vouchersData; 
-        
+        renderAvailableVouchers(vouchers);
+
         await loadInventory();          
         initTabSwitch();                 
         renderInventoryByTab('ready');
@@ -27,6 +28,24 @@ async function initRewards() {
     } catch (err) {
         console.error("Failed to load rewards:", err);
     }
+}
+
+function renderAvailableVouchers(voucherList) {
+    const container = document.getElementById('voucher-container');
+    if (!container) return;
+    container.innerHTML = ''; 
+
+    voucherList.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'login-card voucher-card';
+        card.innerHTML = `
+            <h4>${v.item_name}</h4>
+            <p class="description">${v.description || 'No description'}</p>
+            <div class="status">Cost: ${v.points_required} Points</div>
+            <button class="submit-btn" onclick="redeemVoucher('${v.item_name}', ${v.points_required})">Redeem</button>
+        `;
+        container.appendChild(card);
+    });
 }
 
 async function activateItem(inventoryId) {
