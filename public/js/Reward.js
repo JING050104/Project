@@ -85,6 +85,18 @@ async function loadInventory() {
 }
 
 function openVoucherModal(item) {
+    console.log("=== openVoucherModal called ===");
+    console.log("Full item object:", item);
+    console.log("expired_at raw value:", item.expired_at);
+    console.log("Type of expired_at:", typeof item.expired_at);
+
+    if (item.expired_at) {
+        const parsed = new Date(item.expired_at);
+        console.log("Parsed date:", parsed);
+        console.log("Is valid date?", !isNaN(parsed.getTime()));
+        console.log("Is expired?", new Date() > parsed);
+    }
+    
     const desc = document.getElementById('modal-description');
     const codeContainer = document.getElementById('redeem-code-container');
     const codeText = document.getElementById('redeem-code-text');
