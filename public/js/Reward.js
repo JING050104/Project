@@ -113,7 +113,7 @@ function renderInventoryByTab(tab) {
             return item.status === 'unused' && (!expiryDate || expiryDate > now);
         }
         if (tab === 'activated') {
-            return item.status === 'active';
+            return item.status === 'active' && (!expiryDate || expiryDate > now);
         }
         if (tab === 'expired') {
             return item.status === 'expired' || (expiryDate && expiryDate < now);
