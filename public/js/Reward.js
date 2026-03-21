@@ -21,9 +21,8 @@ async function initRewards() {
         document.getElementById('display-points').innerText = currentPoints;
         
         vouchers = vouchersData; 
+        await loadInventory();  
         renderAvailableVouchers(vouchers);
-
-        await loadInventory();          
         initTabSwitch();                 
         renderInventoryByTab('ready');
 
@@ -34,19 +33,42 @@ async function initRewards() {
 
 function renderAvailableVouchers(voucherList) {
     const container = document.getElementById('voucher-container');
-    if (!container) return;
+    const template = document.getElementById('voucher-template'); // 使用你提供的 template
+    if (!container || !template) return;
+
     container.innerHTML = ''; 
 
     voucherList.forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'login-card voucher-card';
-        card.innerHTML = `
-            <h4>${v.name}</h4>
-            <p class="description">${v.description || 'No description'}</p>
-            <div class="status">Cost: ${v.cost} Points</div>
-            <button class="submit-btn" onclick="redeemVoucher('${v._name}', ${v.cost})">Redeem</button>
-        `;
-        container.appendChild(card);
+        const clone = template.content.cloneNode(true);
+        
+        clone.querySelector('.v-name').innerText = v.name;
+        clone.querySelector('.v-desc').innerText = v.description || 'No description';
+        
+        const statusBadge = clone.querySelector('.v-status-badge');
+        statusBadge.innerText = `${v.cost} Points`;
+        statusBadge.className = 'v-status-badge status-unused'; // 借用你之前的蓝色样式
+
+        const isOwned = inventoryItems.some(item => 
+            item.item_name === v.name && (item.status === 'unused' || item.status === 'active')
+        );
+
+        const btnWrapper = clone.querySelector('.v-button-wrapper');
+
+        if (isOwned) {
+            btnWrapper.innerHTML = `
+                <button class="submit-btn" disabled 
+                    style="background: #cbd5e1; cursor: not-allowed; margin-top:10px; width:100%;">
+                    Already Owned
+                </button>`;
+        } else {
+            btnWrapper.innerHTML = `
+                <button class="submit-btn" onclick="redeemVoucher('${v.name}', ${v.cost})" 
+                    style="margin-top:10px; width:100%;">
+                    Redeem Now
+                </button>`;
+        }
+
+        container.appendChild(clone);
     });
 }
 
@@ -264,7 +286,8 @@ function renderVouchers() {
  */
 
 async function redeemVoucher(voucherName, cost) {
-    if (!confirm(`Confirm spending ${cost} points for ${voucherName}?`)) return;
+    // 1. 基础确认
+    if (!confirm(`Are you sure you want to spend ${cost} points for ${voucherName}?`)) return;
 
     try {
         const response = await fetch('/api/redeem-voucher', {
@@ -276,14 +299,14 @@ async function redeemVoucher(voucherName, cost) {
         const result = await response.json();
 
         if (response.ok) {
-            alert(result.message || "Success!");
+            alert(`Success! You have redeemed ${voucherName}.`);
             await initRewards(); 
         } else {
-            alert(`Error: ${result.error}`);
+            alert(result.error || "Redemption failed.");
         }
     } catch (err) {
         console.error("Redeem request failed:", err);
-        alert("Server connection error.");
+        alert("Server connection error. Please try again later.");
     }
 }
 
