@@ -1,5 +1,7 @@
 let vouchers = []; 
 let currentPoints = 0;
+let inventoryItems = [];
+let allInventory = [];
 window.activateItem = activateItem;
 window.redeemVoucher = redeemVoucher;
 const container = document.getElementById('voucher-container');
@@ -70,26 +72,29 @@ async function activateItem(inventoryId) {
     }
 }
 
-let allInventory = [];
-
 async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
         if (!res.ok) throw new Error("Failed to load inventory");
 
         const data = await res.json();
-        // 處理可能的資料結構差異
-        let items = Array.isArray(data) ? data : (data.rows || []);
+        
+        let items = data;
+        if (data.rows) items = data.rows;
+        if (Array.isArray(data) && Array.isArray(data[0])) items = data[0];
 
-        allInventory = items;  // 存起來供 tab 切換使用
+        inventoryItems = items; 
+        
+        console.log("Inventory loaded successfully:", inventoryItems);
 
-        // 初次載入顯示 "Ready to Use"
         renderInventoryByTab('ready');
 
     } catch (err) {
         console.error("Load inventory failed:", err);
-        document.getElementById('inventory-container').innerHTML = 
-            '<p style="text-align:center; color:#ef4444;">Failed to load vouchers</p>';
+        const container = document.getElementById('inventory-container');
+        if (container) {
+            container.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load vouchers. Please try again.</p>';
+        }
     }
 }
 
@@ -98,15 +103,17 @@ function renderInventoryByTab(tab) {
     if (!container) return;
     container.innerHTML = '';
 
+    const now = new Date();
+
     const filtered = inventoryItems.filter(item => {
         const now = new Date();
-        const expiryDate = item.expiry_date ? new Date(item.expiry_date) : null;
-
+        const status = item.status; 
+        const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
         if (tab === 'ready') {
             return item.status === 'unused' && (!expiryDate || expiryDate > now);
         }
         if (tab === 'activated') {
-            return item.status === 'activate';
+            return item.status === 'active';
         }
         if (tab === 'expired') {
             return item.status === 'expired' || (expiryDate && expiryDate < now);
@@ -119,7 +126,6 @@ function renderInventoryByTab(tab) {
         return;
     }
 
-    // 渲染卡片（可根據你的原本 voucher 卡片樣式調整）
     let html = '';
     filtered.forEach(item => {
         const isExpired = item.expire_date && new Date(item.expire_date) < now;
