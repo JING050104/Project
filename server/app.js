@@ -1,5 +1,4 @@
 require('dotenv').config();
-require('./passport')(passport);
 const express = require("express");
 const session = require("express-session");
 const pgSession = require('connect-pg-simple')(session);
@@ -10,6 +9,8 @@ const authRoutes = require('./routes/auth');
 const ensureAuthenticated = require("./middleware/auth");
 
 const app = express();
+
+require('./passport')(passport);
 
 // ====================== 中間件 ======================
 app.use(express.json());
