@@ -20,7 +20,7 @@
         <div class="login-card inventory-box">
         <h3>My Voucher</h3>
 
-        <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+        <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 15px;"> 
             <button class="tab-btn active" data-tab="ready">Ready to Use</button>
             <button class="tab-btn" data-tab="activated">Activated</button>
             <button class="tab-btn" data-tab="expired">Expired</button>
@@ -61,5 +61,17 @@
     </div>
     </div>
     <script src="js/Reward.js"></script>
+    <template id="voucher-template">
+    <div class="voucher-card">
+        <h4 class="v-name"></h4>
+        <p class="description v-desc"></p>
+        <div class="status-container">
+            <span class="v-status-badge"></span>
+            <div class="v-code-wrapper"></div>
+        </div>
+        <div class="v-button-wrapper"></div>
+    </div>
+</template>
+
 </body>
 </html>

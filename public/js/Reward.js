@@ -100,24 +100,17 @@ async function loadInventory() {
 
 function renderInventoryByTab(tab) {
     const container = document.getElementById('inventory-container');
-    if (!container) return;
-    container.innerHTML = '';
+    const template = document.getElementById('voucher-template');
+    if (!container || !template) return;
 
+    container.innerHTML = '';
     const now = new Date();
 
     const filtered = inventoryItems.filter(item => {
-        const now = new Date();
-        const status = item.status; 
         const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
-        if (tab === 'ready') {
-            return item.status === 'unused' && (!expiryDate || expiryDate > now);
-        }
-        if (tab === 'activated') {
-            return item.status === 'active' && (!expiryDate || expiryDate > now);
-        }
-        if (tab === 'expired') {
-            return item.status === 'expired' || (expiryDate && expiryDate < now);
-        }
+        if (tab === 'ready') return item.status === 'unused' && (!expiryDate || expiryDate > now);
+        if (tab === 'activated') return item.status === 'active' && (!expiryDate || expiryDate > now);
+        if (tab === 'expired') return item.status === 'expired' || (expiryDate && expiryDate < now);
         return false;
     });
 
@@ -126,35 +119,49 @@ function renderInventoryByTab(tab) {
         return;
     }
 
-    let html = '';
     filtered.forEach(item => {
-    const isExpired = item.expire_date && new Date(item.expire_date) < now;
-    const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Active' : item.status);
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.voucher-card');
+        const statusBadge = clone.querySelector('.v-status-badge');
+        const codeWrapper = clone.querySelector('.v-code-wrapper');
+        const btnWrapper = clone.querySelector('.v-button-wrapper');
 
-    html += `
-        <div class="voucher-card ${isExpired ? 'expired' : ''}">
-            <h4>${item.item_name || 'Voucher'}</h4>
-            <p class="description">${item.description || ''}</p>
-            <div class="status" style="color: #4a90e2;">
-                ${statusText}
-                ${item.redeem_code ? `<br><span class="redeem-code">${item.redeem_code}</span>` : ''}
-            </div>
-            ${!isExpired && (item.status === 'unused') ? 
-                `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>` : ''}
-        </div>
-    `;
-});
+        const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
+        const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
 
-    container.innerHTML = html;
+        clone.querySelector('.v-name').innerText = item.item_name || 'Voucher';
+        clone.querySelector('.v-desc').innerText = item.description || '';
+
+        if (isExpired) {
+            card.classList.add('expired');
+            statusBadge.innerText = 'Expired';
+            statusBadge.className = 'v-status-badge status-expired'; 
+            codeWrapper.innerHTML = ''; 
+        } else {
+            if (item.status === 'active' || item.status === 'activated') {
+                statusBadge.innerText = 'Active';
+                statusBadge.className = 'v-status-badge status-active';
+                
+                if (item.redeem_code) {
+                    codeWrapper.innerHTML = `<span class="redeem-code">${item.redeem_code}</span>`;
+                }
+            } else {
+                statusBadge.innerText = 'Ready'; 
+                statusBadge.className = 'v-status-badge status-unused';
+                
+                btnWrapper.innerHTML = `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>`;
+            }
+        }
+
+        container.appendChild(clone);
+    });
 }
 
 function initTabSwitch() {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // 移除 active
             tabs.forEach(t => t.classList.remove('active'));
-            // 加 active
             tab.classList.add('active');
             
             const tabType = tab.dataset.tab;
@@ -177,16 +184,13 @@ function openVoucherModal(item) {
 
     modalTitle.innerText = item.item_name || 'Voucher';
 
-    // === 加強版過期判斷（處理帶時區的時間）===
     let isExpired = false;
 
     if (item.expired_at) {
-        // 方法1：直接用 new Date()（大多數情況有效）
         let expiredDate = new Date(item.expired_at);
 
-        // 方法2：如果上面解析失敗，嘗試移除時區後再解析
         if (isNaN(expiredDate.getTime())) {
-            const cleanTime = item.expired_at.toString().split('+')[0].split('.')[0]; // 去掉時區和小數點
+            const cleanTime = item.expired_at.toString().split('+')[0].split('.')[0];
             expiredDate = new Date(cleanTime);
         }
 

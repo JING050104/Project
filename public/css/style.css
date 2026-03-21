@@ -863,6 +863,13 @@ input {
     margin: 10px 0 15px 0;
 }
 
+.v-status-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
 .status-expired {
     background: #fee2e2 !important;
     color: #ef4444 !important;
@@ -930,7 +937,6 @@ input {
     align-items: center;
 }
 
-/* This turns the textbox into 'plain text' */
 .ghost-input {
     border: none !important;
     background: transparent !important;
@@ -980,8 +986,16 @@ input {
 .btn-medical { background-color: #27ae60; }
 
 button.active {
-    outline: 3px solid #f1c40f;
-    box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+    color: var(--primary-blue);
+    font-weight: bold;
+    border-bottom: 2px solid var(--primary-blue);
+    transform: scale(1.05);
+}
+
+.tab-btn.active {
+    color: var(--primary-blue);
+    font-weight: bold;
+    border-bottom: 2px solid var(--primary-blue); 
     transform: scale(1.05);
 }
 
@@ -1562,20 +1576,19 @@ button:disabled {
     margin: 0 0 20px 0;
     padding-bottom: 4px;
     border-bottom: 2px solid #e2e8f0;
-    flex-wrap: wrap;           /* 手機小螢幕時自動換行 */
+    flex-wrap: wrap;          
 }
 
 .tab-btn {
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #64748b;
     background: transparent;
-    border: none;
-    border-radius: 8px 8px 0 0;
+    border: none;     
+    outline: none;      
+    padding: 10px 20px;
     cursor: pointer;
-    transition: all 0.25s ease;
-    position: relative;
+    font-size: 1rem;
+    color: #64748b;     
+    position: relative;  
+    transition: color 0.3s ease;
 }
 
 .tab-btn:hover {
@@ -1588,10 +1601,6 @@ button:disabled {
     font-weight: 600;
     background: rgba(74, 144, 226, 0.12);
     border-bottom: 3px solid var(--primary-blue);
-}
-
-.tab-btn:focus {
-    outline: none;
 }
 
 .voucher-card {
