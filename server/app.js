@@ -19,19 +19,20 @@ app.use(express.urlencoded({ extended: true })); //
 
 app.use(session({
     store: new pgSession({
-        pool : db.pool,              
-        tableName : 'session'         
+        pool: db.pool,
+        tableName: 'session',
+        ttl: 24 * 60 * 60,           
     }),
     key: 'fyp_session_cookie',
-    secret: process.env.SESSION_SECRET || "fyp_secret", 
-    resave: false, 
-    saveUninitialized: false, 
-    proxy: true, 
+    secret: process.env.SESSION_SECRET || "fyp_secret",
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
-        httpOnly: true, 
+        httpOnly: true,
         sameSite: 'lax',
-        maxAge: 1000 * 60 * 60 * 24 
+        maxAge: 24 * 60 * 60 * 1000 
     }
 }));
 
