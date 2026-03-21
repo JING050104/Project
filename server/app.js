@@ -21,20 +21,20 @@ app.use(session({
     store: new pgSession({
         pool: db.pool,
         tableName: 'session',
-        ttl: 24 * 60 * 60,                    
-        pruneSessionInterval: false,          
+        ttl: 86400,                   
+        pruneSessionInterval: false,   
     }),
     key: 'fyp_session_cookie',
     secret: process.env.SESSION_SECRET || "fyp_secret",
     resave: false,
     saveUninitialized: false,
-    rolling: true,                            
+    rolling: true,                    
     proxy: true,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000           
+        maxAge: 86400000             
     }
 }));
 
