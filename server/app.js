@@ -278,7 +278,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { voucherName, cost } = req.body;
 
-    if (!voucherName || !cost) {
+    if (!voucherName || cost == null) {
         return res.status(400).json({ error: "Missing voucherName or cost" });
     }
 
@@ -300,12 +300,14 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             });
         }
 
-        const [pResult] = await db.query(
+        const pointRes = await db.query(
             `SELECT total_points FROM user_points WHERE user_id = $1`,
             [userId]
         );
 
-        if (!pResult || pResult.total_points < cost) {
+        const currentPoints = pointRes.rows[0] ? pointRes.rows[0].total_points : 0;
+
+        if (currentPoints < cost) {
             await db.query('ROLLBACK');
             return res.status(400).json({ error: "Insufficient points." });
         }
@@ -318,17 +320,17 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             [cost, userId]
         );
 
-        const [vResult] = await db.query(
+        const voucherRes = await db.query(
             "SELECT id FROM vouchers WHERE name = $1", 
             [voucherName]
         );
 
-        if (!vResult) {
+        if (voucherRes.rows.length === 0) {
             await db.query('ROLLBACK');
             return res.status(404).json({ error: "Voucher not found" });
         }
 
-        const voucherId = vResult.id;
+        const voucherId = voucherRes.rows[0].id;
 
         await db.query(
             "UPDATE vouchers SET stock = stock - 1 WHERE id = $1",
@@ -353,7 +355,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
     } catch (err) {
         await db.query('ROLLBACK');
-        console.error("Redeem Error:", err);
+        console.error("Redeem Error:", err.message);
         res.status(500).json({ error: "Server error during redemption." });
     }
 });
