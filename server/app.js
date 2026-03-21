@@ -70,6 +70,21 @@ app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     }
 });
 
+app.get('/api/get-vouchers', ensureAuthenticated, async (req, res) => {
+    try {
+        const rows = await db.execute(`
+            SELECT id, name, cost, stock, description 
+            FROM vouchers 
+            WHERE stock > 0 
+            ORDER BY cost ASC
+        `);
+        res.json(rows || []);
+    } catch (err) {
+        console.error("Get Vouchers Error:", err.message);
+        res.status(500).json({ error: "Failed to load vouchers" });
+    }
+});
+
 // B. 大轉盤
 app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
