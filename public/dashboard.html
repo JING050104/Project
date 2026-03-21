@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" 
+          content="default-src * 'unsafe-inline' 'unsafe-eval'; 
+                   script-src * 'unsafe-inline' 'unsafe-eval'; 
+                   style-src * 'unsafe-inline'; 
+                   font-src * data:; 
+                   img-src * data: blob:; 
+                   connect-src *;">
   <title>Coverage Quest Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
