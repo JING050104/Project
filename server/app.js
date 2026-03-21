@@ -71,20 +71,25 @@ app.use("/auth", authRoutes); //
  */
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const [rows] = await db.query("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]); //
-        res.json({ points: rows[0] ? rows[0].total_points : 0 }); //
+        const rows = await db.execute("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
+        
+        const points = rows[0] ? rows[0].total_points : 0;
+        res.json({ points: points });
     } catch (err) {
         console.error("SQL Error:", err);
-        res.status(500).json({ error: "Failed to fetch points." }); //
+        res.status(500).json({ error: "Failed to fetch points." });
     }
 });
 
-app.get('/api/get-vouchers', async (req, res) => {
+app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT id, name, cost FROM vouchers');
-        res.json(rows);
+        const rows = await db.execute("SELECT total_points FROM user_points WHERE user_id = $1", [req.user.id]);
+        
+        const points = rows[0] ? rows[0].total_points : 0;
+        res.json({ points: points });
     } catch (err) {
-        res.status(500).json({ error: "Database error" });
+        console.error("SQL Error:", err);
+        res.status(500).json({ error: "Failed to fetch points." });
     }
 });
 
@@ -105,11 +110,11 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 
             await db.query(`
                 INSERT INTO user_points (user_id, total_points, last_updated) 
-                VALUES ($1, $2, NOW())
+                VALUES ($1, $2, NOW() AT TIME ZONE 'Asia/Kuala_Lumpur')
                 ON CONFLICT (user_id) 
                 DO UPDATE SET 
                     total_points = user_points.total_points + $3,
-                    last_updated = NOW()`, 
+                    last_updated = NOW() AT TIME ZONE 'Asia/Kuala_Lumpur'`, 
                 [userId, points, points]
             );
             console.log("[Spin Debug] user_points updated");
@@ -147,22 +152,22 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
             i.status as "status",
             i.redeem_code as "redeem_code",
             v.description AS "description",
-            i.expired_at as "expired_at",           -- ← 加上這一行
-            i.activated_at as "activated_at"        -- 可選：如果有這個欄位也可以加上
+            i.expired_at as "expired_at"
         FROM user_inventory i
         LEFT JOIN vouchers v ON i.voucher_id = v.id
         WHERE i.user_id = $1
+        ORDER BY i.id DESC
     `;
 
     try {
-        const result = await db.query(query, [req.user.id]);
-        const inventoryData = result.rows || [];
-        
+        const inventoryData = await db.execute(query, [req.user.id]);   // 現在直接得到 rows
+
         console.log("Sending Inventory to Frontend:", inventoryData); 
         res.json(inventoryData); 
+
     } catch (err) {
-        console.error("Inventory Fetch Error:", err);
-        res.status(500).json([]);
+        console.error("Inventory Fetch Error:", err.message);
+        res.status(500).json({ error: "Failed to load inventory" });
     }
 });
 
