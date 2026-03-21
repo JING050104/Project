@@ -896,9 +896,9 @@ input {
     text-shadow: 1px 1px 0px #fff;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+@keyframes fadeInContent {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Level 1  */
@@ -1016,8 +1016,13 @@ button.active {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
+
 }
 
+.pulse-red {
+    animation: pulse-red 1s infinite;
+    color: #ff3b3b;
+}
 .google-btn-circle {
     width: 65px;
     height: 65px;
@@ -1516,14 +1521,6 @@ button:disabled {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.dashboard-content {
-    margin-top: 60px !important; 
-    padding-top: 0 !important;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-}
-
 .profile-card-wide {
     max-width: 1050px !important;
     width: 95% !important;
@@ -1562,4 +1559,135 @@ button:disabled {
     font-size: 12px;
     margin-top: -10px;
     margin-bottom: 15px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 20px 0;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e2e8f0;
+    flex-wrap: wrap;           /* 手機小螢幕時自動換行 */
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--primary-blue);
+    background: rgba(74, 144, 226, 0.08);
+}
+
+.tab-btn.active {
+    color: var(--primary-blue);
+    font-weight: 600;
+    background: rgba(74, 144, 226, 0.12);
+    border-bottom: 3px solid var(--primary-blue);
+}
+
+.tab-btn:focus {
+    outline: none;
+}
+
+.voucher-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    transition: all 0.25s ease;
+}
+
+.voucher-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    border-color: var(--primary-blue);
+}
+
+.voucher-card.expired,
+.voucher-card.used {
+    opacity: 0.7;
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.voucher-card h4 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    color: #1e293b;
+}
+
+.voucher-card .description {
+    font-size: 0.92rem;
+    color: #64748b;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.voucher-card .status {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 8px;
+}
+
+.voucher-card .redeem-code {
+    background: #eff6ff;
+    color: var(--primary-blue);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 1rem;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+/* 卡片內的按鈕統一樣式 */
+.voucher-card button {
+    padding: 8px 18px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.voucher-card button.primary {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+}
+
+.voucher-card button.primary:hover {
+    background: var(--primary-hover);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+    font-size: 1.05rem;
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    color: #cbd5e1;
+}
+
+/* 載入中或錯誤狀態 */
+#inventory-container.loading::before {
+    content: "Loading your vouchers...";
+    display: block;
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
 }

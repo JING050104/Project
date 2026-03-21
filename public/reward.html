@@ -18,10 +18,18 @@
         </div>
 
         <div class="login-card inventory-box">
-            <h3>My Voucher</h3>
-            <div id="inventory-container">
-                </div>
+        <h3>My Voucher</h3>
+
+        <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+            <button class="tab-btn active" data-tab="ready">Ready to Use</button>
+            <button class="tab-btn" data-tab="activated">Activated</button>
+            <button class="tab-btn" data-tab="expired">Expired</button>
         </div>
+
+        <div id="inventory-container">
+            <p style="text-align:center; color:#64748b; padding:20px;">Loading your vouchers...</p>
+        </div>
+    </div>
 
         <div class="bottom-section">
             <h2 class="section-title">Available Vouchers</h2>

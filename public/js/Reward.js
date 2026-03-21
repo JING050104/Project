@@ -20,8 +20,10 @@ async function initRewards() {
         
         vouchers = vouchersData; 
         
-        renderVouchers();
-        loadInventory();
+        await loadInventory();          
+        initTabSwitch();                 
+        renderInventoryByTab('ready');
+
     } catch (err) {
         console.error("Failed to load rewards:", err);
     }
@@ -49,39 +51,93 @@ async function activateItem(inventoryId) {
     }
 }
 
+let allInventory = [];
+
 async function loadInventory() {
     try {
         const res = await fetch('/api/get-inventory');
-        if (!res.ok) throw new Error("Server Error");
-        let data = await res.json();
-        let items = (Array.isArray(data) && Array.isArray(data[0])) ? data[0] : data;
-        if (items && items.rows) items = items.rows;
+        if (!res.ok) throw new Error("Failed to load inventory");
 
-        const container = document.getElementById('inventory-container');
-        if (!container) return;
+        const data = await res.json();
+        // 處理可能的資料結構差異
+        let items = Array.isArray(data) ? data : (data.rows || []);
 
-        if (!Array.isArray(items) || items.length === 0) {
-            container.innerHTML = "<p class='placeholder-text'>No items in inventory.</p>";
-            return;
-        }
+        allInventory = items;  // 存起來供 tab 切換使用
 
-        container.innerHTML = '';
-        items.forEach(item => {
-            const div = document.createElement('div');
-            div.onclick = () => openVoucherModal(item);
-            div.className = 'inventory-item-inner';
-            div.innerHTML = `
-                <h4 style="color:var(--primary-blue)">${item.item_name || 'Item'}</h4>
-                <p style="font-size:0.8rem">Quantity: ${item.quantity ?? 0}</p> 
-                <div style="margin-top: 10px; font-size: 0.7rem; color: var(--primary-blue); font-weight: bold;">
-                    View Details
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    } catch (err) { 
-        console.error("Load Inventory Failed:", err);
+        // 初次載入顯示 "Ready to Use"
+        renderInventoryByTab('ready');
+
+    } catch (err) {
+        console.error("Load inventory failed:", err);
+        document.getElementById('inventory-container').innerHTML = 
+            '<p style="text-align:center; color:#ef4444;">Failed to load vouchers</p>';
     }
+}
+
+function renderInventoryByTab(tabType) {
+    const container = document.getElementById('inventory-container');
+    if (!container) return;
+
+    let filtered = [];
+
+    const now = new Date();
+
+    if (tabType === 'ready') {
+        filtered = allInventory.filter(item => 
+            item.status === 'unused' && 
+            (!item.expire_date || new Date(item.expire_date) > now)
+        );
+    } else if (tabType === 'activated') {
+        filtered = allInventory.filter(item => 
+            item.status === 'activated' || item.status === 'used'
+        );
+    } else if (tabType === 'expired') {
+        filtered = allInventory.filter(item => 
+            item.expire_date && new Date(item.expire_date) < now
+        );
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:30px;">No vouchers in this category</p>';
+        return;
+    }
+
+    // 渲染卡片（可根據你的原本 voucher 卡片樣式調整）
+    let html = '';
+    filtered.forEach(item => {
+        const isExpired = item.expire_date && new Date(item.expire_date) < now;
+        const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Activated' : 'Ready');
+
+        html += `
+            <div class="voucher-card" style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:12px; ${isExpired ? 'opacity:0.6;' : ''}">
+                <h4>${item.item_name || item.voucher_name || 'Voucher'}</h4>
+                <p style="color:#64748b; font-size:0.9rem;">${item.description || ''}</p>
+                <div style="margin-top:10px; font-weight:bold; color:#2563eb;">
+                    ${statusText}
+                    ${item.redeem_code ? `<br><small>Redeem Code: ${item.redeem_code}</small>` : ''}
+                </div>
+                ${!isExpired && item.status === 'unused' ? 
+                    `<button onclick="activateItem(${item.id})" style="margin-top:10px;">Activate</button>` : ''}
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function initTabSwitch() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // 移除 active
+            tabs.forEach(t => t.classList.remove('active'));
+            // 加 active
+            tab.classList.add('active');
+            
+            const tabType = tab.dataset.tab;
+            renderInventoryByTab(tabType);
+        });
+    });
 }
 
 function openVoucherModal(item) {
