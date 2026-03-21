@@ -128,22 +128,22 @@ function renderInventoryByTab(tab) {
 
     let html = '';
     filtered.forEach(item => {
-        const isExpired = item.expire_date && new Date(item.expire_date) < now;
-        const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Activated' : 'Ready');
+    const isExpired = item.expire_date && new Date(item.expire_date) < now;
+    const statusText = isExpired ? 'Expired' : (item.status === 'activated' ? 'Activated' : 'Ready');
 
-        html += `
-            <div class="voucher-card" style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:12px; ${isExpired ? 'opacity:0.6;' : ''}">
-                <h4>${item.item_name || item.voucher_name || 'Voucher'}</h4>
-                <p style="color:#64748b; font-size:0.9rem;">${item.description || ''}</p>
-                <div style="margin-top:10px; font-weight:bold; color:#2563eb;">
-                    ${statusText}
-                    ${item.redeem_code ? `<br><small>Redeem Code: ${item.redeem_code}</small>` : ''}
-                </div>
-                ${!isExpired && item.status === 'unused' ? 
-                    `<button onclick="activateItem(${item.id})" style="margin-top:10px;">Activate</button>` : ''}
+    html += `
+        <div class="voucher-card ${isExpired ? 'expired' : ''}">
+            <h4>${item.item_name || 'Voucher'}</h4>
+            <p class="description">${item.description || ''}</p>
+            <div class="status" style="color: #4a90e2;">
+                ${statusText}
+                ${item.redeem_code ? `<br><span class="redeem-code">${item.redeem_code}</span>` : ''}
             </div>
-        `;
-    });
+            ${!isExpired && (item.status === 'unused' || item.status === 'ready') ? 
+                `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>` : ''}
+        </div>
+    `;
+});
 
     container.innerHTML = html;
 }
