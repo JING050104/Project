@@ -93,31 +93,29 @@ async function loadInventory() {
     }
 }
 
-function renderInventoryByTab(tabType) {
+function renderInventoryByTab(tab) {
     const container = document.getElementById('inventory-container');
     if (!container) return;
+    container.innerHTML = '';
 
-    let filtered = [];
+    const filtered = inventoryItems.filter(item => {
+        const now = new Date();
+        const expiryDate = item.expiry_date ? new Date(item.expiry_date) : null;
 
-    const now = new Date();
-
-    if (tabType === 'ready') {
-        filtered = allInventory.filter(item => 
-            item.status === 'unused' && 
-            (!item.expire_date || new Date(item.expire_date) > now)
-        );
-    } else if (tabType === 'activated') {
-        filtered = allInventory.filter(item => 
-            item.status === 'activated' || item.status === 'used'
-        );
-    } else if (tabType === 'expired') {
-        filtered = allInventory.filter(item => 
-            item.expire_date && new Date(item.expire_date) < now
-        );
-    }
+        if (tab === 'ready') {
+            return item.status === 'unused' && (!expiryDate || expiryDate > now);
+        }
+        if (tab === 'activated') {
+            return item.status === 'activate';
+        }
+        if (tab === 'expired') {
+            return item.status === 'expired' || (expiryDate && expiryDate < now);
+        }
+        return false;
+    });
 
     if (filtered.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:30px;">No vouchers in this category</p>';
+        container.innerHTML = `<p style="text-align:center; padding:20px; color:#64748b;">No vouchers found.</p>`;
         return;
     }
 
