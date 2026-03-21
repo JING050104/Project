@@ -877,7 +877,7 @@ input {
     font-weight: bold;
 }
 
-.status-unused {
+.status-inactive {
     background: #e0e7ff;
     color: #4338ca;
 }

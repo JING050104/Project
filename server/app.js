@@ -177,7 +177,7 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
                 activated_at = $3
             WHERE id = $4 
               AND user_id = $5 
-              AND status = 'unused'
+              AND status = 'inactive'
             RETURNING id, redeem_code, expired_at, activated_at
         `, [newCode, expiredAt, activatedAt, inventoryId, userId]);
 
@@ -255,7 +255,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
         const existing = await db.execute(
             `SELECT id FROM user_inventory 
              WHERE user_id = $1 AND item_name = $2 
-             AND (status = 'unused' OR (status = 'active' AND (expired_at > NOW())))`,
+             AND (status = 'inactive' OR (status = 'active' AND (expired_at > NOW())))`,
             [userId, voucherName]
         );
 
@@ -292,7 +292,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
         await db.execute(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-            VALUES ($1, $2, $3, 1, 'unused')`, 
+            VALUES ($1, $2, $3, 1, 'inactive')`, 
             [userId, voucherId, voucherName]
         );
 

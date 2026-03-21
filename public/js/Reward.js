@@ -24,7 +24,7 @@ async function initRewards() {
         await loadInventory();  
         renderAvailableVouchers(vouchers);
         initTabSwitch();                 
-        renderInventoryByTab('ready');
+        renderInventoryByTab('inactive');
 
     } catch (err) {
         console.error("Failed to load rewards:", err);
@@ -49,8 +49,7 @@ function renderAvailableVouchers(voucherList) {
         const isOwned = inventoryItems.some(item => {
             const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
             return item.item_name === v.name && 
-                   (item.status === 'unused' || item.status === 'active' || item.status === 'activated') && 
-                   (!expiryDate || expiryDate > now);
+                   (item.status === 'inactive' || item.status === 'active') && (!expiryDate || expiryDate > now);
         });
         const canAfford = currentPoints >= v.cost;
 
@@ -110,7 +109,7 @@ async function loadInventory() {
         
         console.log("Inventory loaded successfully:", inventoryItems);
 
-        renderInventoryByTab('ready');
+        renderInventoryByTab('inactive');
 
     } catch (err) {
         console.error("Load inventory failed:", err);
@@ -131,7 +130,7 @@ function renderInventoryByTab(tab) {
 
     const filtered = inventoryItems.filter(item => {
         const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
-        if (tab === 'ready') return item.status === 'unused' && (!expiryDate || expiryDate > now);
+        if (tab === 'inactive') return item.status === 'inactive' && (!expiryDate || expiryDate > now);
         if (tab === 'activated') return item.status === 'active' && (!expiryDate || expiryDate > now);
         if (tab === 'expired') return item.status === 'expired' || (expiryDate && expiryDate < now);
         return false;
@@ -169,8 +168,8 @@ function renderInventoryByTab(tab) {
                     codeWrapper.innerHTML = `<span class="redeem-code">${item.redeem_code}</span>`;
                 }
             } else {
-                statusBadge.innerText = 'Ready'; 
-                statusBadge.className = 'v-status-badge status-unused';
+                statusBadge.innerText = 'Inactive'; 
+                statusBadge.className = 'v-status-badge status-inactive';
                 
                 btnWrapper.innerHTML = `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>`;
             }
@@ -243,8 +242,8 @@ function openVoucherModal(item) {
         codeText.innerText = item.redeem_code || 'N/A';
 
     } else {
-        statusBadge.innerText = 'Ready to Use';
-        statusBadge.className = 'modal-badge status-unused';
+        statusBadge.innerText = 'Inactive';
+        statusBadge.className = 'modal-badge status-inactive';
         desc.style.display = 'block';
         desc.innerText = item.description || 'Activate this voucher to reveal your unique redemption code.';
         btn.style.display = 'block';
