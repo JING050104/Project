@@ -251,7 +251,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     try {
         await db.execute('BEGIN');
 
-        // 檢查是否已擁有
         const existing = await db.execute(
             `SELECT id FROM user_inventory 
              WHERE user_id = $1 AND item_name = $2 
@@ -264,7 +263,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             return res.status(400).json({ error: `You already have a ${voucherName}` });
         }
 
-        // 檢查積分
         const pointRes = await db.execute("SELECT total_points FROM user_points WHERE user_id = $1", [userId]);
         const currentPoints = pointRes[0] ? pointRes[0].total_points : 0;
 
@@ -273,7 +271,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             return res.status(400).json({ error: "Insufficient points." });
         }
 
-        // 扣積分
         await db.execute(`
             UPDATE user_points 
             SET total_points = total_points - $1,
@@ -282,7 +279,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             [cost, userId]
         );
 
-        // 取得 voucher_id
         const voucherRes = await db.execute("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
         if (voucherRes.length === 0) {
             await db.execute('ROLLBACK');
@@ -291,10 +287,8 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
         const voucherId = voucherRes[0].id;
 
-        // 扣 stock
         await db.execute("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
 
-        // 加入背包
         await db.execute(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
             VALUES ($1, $2, $3, 1, 'unused')`, 
@@ -312,7 +306,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     }
 });
 
-// 清理任務
 setInterval(async () => {
     try {
         const [sessionResult, userResult] = await Promise.all([
