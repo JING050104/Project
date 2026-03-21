@@ -297,24 +297,24 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
 const PORT = process.env.PORT || 3000; 
 setInterval(async () => {
-
     try {
+        const sessionResult = await db.execute(`
+            DELETE FROM session 
+            WHERE expire_timestamp < NOW()
+        `);
 
-        await db.execute(`
+        const userResult = await db.execute(`
             DELETE FROM users
             WHERE is_verified = 0
             AND reset_expires < NOW()
         `);
 
-        console.log("Expired unverified users cleaned");
-
-    } catch(err) {
-
-        console.error("Cleanup error:", err);
-
+        console.log(`[Cleanup] ${sessionResult.rowCount || 0} expired sessions deleted | ${userResult.rowCount || 0} unverified users deleted`);
+        
+    } catch (err) {
+        console.error("[Cleanup Error]:", err.message);
     }
-
-}, 10 * 60 * 1000);
+}, 30 * 60 * 1000); 
 
 // --- 8. 启动服务器 ---
 // 优先使用云端分配的端口，如果本地运行则默认使用 3000
