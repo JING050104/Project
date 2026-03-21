@@ -157,37 +157,44 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { inventoryId } = req.body;
 
+    if (!inventoryId) {
+        return res.status(400).json({ error: "Missing inventoryId" });
+    }
+
     const activatedAt = new Date();
-    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000);
+    const expiredAt = new Date(activatedAt.getTime() + 60 * 60 * 1000); // 1小時後
 
     try {
         const newCode = "CQ-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-        const result = await db.execute(
-            `UPDATE user_inventory 
-             SET status = 'active', 
-                 redeem_code = $1, 
-                 expired_at = $2, 
-                 activated_at = $3
-             WHERE id = $4 AND user_id = $5 AND status = 'unused'`,
-            [newCode, expiredAt, activatedAt, inventoryId, userId]
-        );
+        const result = await db.execute(`
+            UPDATE user_inventory 
+            SET 
+                status = 'active', 
+                redeem_code = $1, 
+                expired_at = $2, 
+                activated_at = $3
+            WHERE id = $4 
+              AND user_id = $5 
+              AND status = 'unused'
+            RETURNING id, redeem_code, expired_at, activated_at
+        `, [newCode, expiredAt, activatedAt, inventoryId, userId]);
 
         if (result.length === 0) {
             return res.status(400).json({ 
-                error: "Item already activated, not found, or does not belong to you." 
+                error: "Item not found, already activated, or does not belong to you." 
             });
         }
 
         res.json({ 
             success: true, 
-            redeemCode: newCode,
-            expiredAt 
+            redeemCode: result[0].redeem_code,
+            expiredAt: result[0].expired_at 
         });
 
     } catch (err) {
-        console.error("Activation Error:", err);
-        res.status(500).json({ error: "Activation failed." });
+        console.error("Activation Error:", err.message);
+        res.status(500).json({ error: "Activation failed: " + err.message });
     }
 });
 
