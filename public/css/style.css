@@ -1347,7 +1347,7 @@ button:disabled {
 @media (max-width: 768px) {
 
     #voucher-container, #inventory-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;;
     }
 
     .form-content-flex {
