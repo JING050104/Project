@@ -363,8 +363,8 @@ input {
 .dashboard-content .login-card {
     max-width: 1200px; 
     width: 90%;       
-    margin: 30px auto;
-    padding: 40px 60px;
+    margin: 15px auto;
+    padding: 18px 20px;
 }
 
 .settings-form-wrapper form.active {
