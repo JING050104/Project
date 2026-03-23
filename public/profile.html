@@ -10,7 +10,10 @@
     <div class="dashboard-container">
         <header class="dashboard-header">
             <a href="dashboard.html" class="logo">Coverage Quest</a>
-            <button id="logoutBtn" class="mini-logout" onclick="handleLogout()">Logout</button>
+            <button id="logoutBtn" class="mini-logout" onclick="handleLogout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log Out
+            </button>
         </header>
 
             <main class="login-card profile-card-wide">
@@ -18,7 +21,7 @@
                 <div class="avatar-section">
                     <div class="avatar-wrapper">
                         <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff" alt="Profile">
-                        <label for="imageUpload" class="camera-icon"><i>📷</i></label>
+                        <label for="imageUpload" class="camera-icon"><i class="fa-solid fa-camera"></i></label>
                         <input type="file" id="imageUpload" accept="image/*" hidden>
                     </div>
                 </div>
@@ -78,7 +81,10 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="submit-btn update-full-btn">Update Profile & Password</button>
+                        <button type="submit" class="submit-btn update-full-btn">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Update Profile
+                        </button>
                     </form>
                 </div>
             </div>
@@ -113,7 +119,10 @@
                 <div class="password-container">
                     <input type="password" id="ModalConfirmPassword" placeholder="Confirm Password">
                 </div>
-                <button id="resetFinishBtn" class="submit-btn">Update Password</button>
+                <button id="resetFinishBtn" class="submit-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Update Password
+                </button>
             </div>
         </div>
     </div>
@@ -126,10 +135,15 @@
             <div class="input-group">
                 <input type="text" id="emailChangeCode" class="large-code-input" placeholder="Code" maxlength="6">
             </div>
-            <button id="confirmEmailChangeBtn" class="submit-btn">Confirm Change</button>
+            <button id="confirmEmailChangeBtn" class="submit-btn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Confirm Change
+            </button>
         </div>
     </div>
 
     <script src="js/Profile.js"></script>
+    <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+
 </body>
 </html>

@@ -12,17 +12,32 @@
                    connect-src *;">
   <title>Coverage Quest Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+  .dashboard-content {
+      max-width: 1450px !important; 
+      margin-left: auto !important;
+      margin-right: auto !important;
+  }
+
+  .dashboard-grid {
+      max-width: 1400px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+  }
+</style>
 </head>
 <body>
   <header class="dashboard-header">
     <h1 class="logo">Coverage Quest</h1>
     <div class="header-profile-box">
         <div class="profile-info">
-            <p id="userName">Hello,</p>
+            <p id="userName">Hello, </p>
             <a href="profile.html" class="profile-trigger" title="Go to Profile">
                 <img id="headerAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff" alt="Profile">
             </a>
-            <button id="logoutBtn" class="mini-logout">Logout</button>
+            <button id="logoutBtn" class="mini-logout" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
     </div>
 </header>
@@ -118,5 +133,6 @@
         rewards: ["Try Again", "100 pts", "20 pts", "10 pts", "5 pts", "50 pts"]
     });
 </script>
+<script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 </body>
 </html>

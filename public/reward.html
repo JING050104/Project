@@ -13,12 +13,12 @@
 
     <main class="dashboard-content">
         <div class="top-full-card login-card">
-            <h3>Total Points</h3>
+            <h3><i class="fa-solid fa-coins" style="color: #f1c40f;"></i> Total Points</h3>
             <span class="stat-value" id="display-points">0</span>
         </div>
 
+        <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
         <div class="login-card inventory-box">
-        <h3>My Voucher</h3>
 
         <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 15px;"> 
             <button class="tab-btn active" data-tab="inactive">Inactive</button>
@@ -27,12 +27,12 @@
         </div>
 
         <div id="inventory-container">
-            <p style="text-align:center; color:#64748b; padding:20px;">Loading your vouchers...</p>
+            </p>Loading your vouchers...</p>
         </div>
     </div>
 
         <div class="bottom-section">
-            <h2 class="section-title">Available Vouchers</h2>
+            <h2 class="section-title"><i class="fa-solid fa-ticket"></i> Available Vouchers</h2>
             
             <div class="login-card inventory-box"> 
                 <div class="dashboard-grid" id="voucher-container">
@@ -61,28 +61,34 @@
     </div>
     </div>
     <script src="js/Reward.js"></script>
+    <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
     <template id="voucher-template">
     <div class="voucher-card">
         <h4 class="v-name"></h4>
         <p class="description v-desc"></p>
         <div class="status-container">
             <span class="v-status-badge"></span>
-            <div class="v-code-wrapper"></div>
+            <div class="v-code-container">
+                <div class="v-code-wrapper redeem-code">
+                    <span class="code-text"></span> 
+                    <i class="v-copy-btn fa-regular fa-copy" title="Copy Code" style="cursor: pointer; display: none; font-size: 0.9rem; opacity: 0.8;"></i>
+                </div>
+            </div>
         </div>
         <div class="v-button-wrapper"></div>
     </div>
-    </template>
+</template>
 
     <template id="voucher-item-template">
     <div class="login-card voucher-card">
         <h4 class="v-name"></h4>
         <p class="description v-desc"></p>
         <div class="status-container">
-            <span class="v-status-badge"></span>
+            <span class="v-status-badge status-active"></span>
         </div>
         
         <div class="v-button-wrapper">
-            <button class="submit-btn v-redeem-btn">Redeem Now</button>
+            <button class="submit-btn v-redeem-btn"><i class="fa-solid fa-cart-shopping"></i>Redeem Now</button>
             
             <button class="submit-btn v-owned-btn" disabled 
                 style="background: #cbd5e1; cursor: not-allowed; display: none; width:100%; border:none;">

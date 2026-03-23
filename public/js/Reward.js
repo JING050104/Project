@@ -1,7 +1,6 @@
 let vouchers = []; 
 let currentPoints = 0;
 let inventoryItems = [];
-let allInventory = [];
 window.activateItem = activateItem;
 window.redeemVoucher = redeemVoucher;
 const container = document.getElementById('voucher-container');
@@ -119,7 +118,6 @@ async function loadInventory() {
         }
     }
 }
-
 function renderInventoryByTab(tab) {
     const container = document.getElementById('inventory-container');
     const template = document.getElementById('voucher-template');
@@ -131,7 +129,7 @@ function renderInventoryByTab(tab) {
     const filtered = inventoryItems.filter(item => {
         const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
         if (tab === 'inactive') return item.status === 'inactive' && (!expiryDate || expiryDate > now);
-        if (tab === 'activated') return item.status === 'active' && (!expiryDate || expiryDate > now);
+        if (tab === 'activated') return (item.status === 'active' || item.status === 'activated') && (!expiryDate || expiryDate > now);
         if (tab === 'expired') return item.status === 'expired' || (expiryDate && expiryDate < now);
         return false;
     });
@@ -146,7 +144,9 @@ function renderInventoryByTab(tab) {
         const card = clone.querySelector('.voucher-card');
         const statusBadge = clone.querySelector('.v-status-badge');
         const codeWrapper = clone.querySelector('.v-code-wrapper');
+        const codeText = clone.querySelector('.code-text');       
         const btnWrapper = clone.querySelector('.v-button-wrapper');
+        const copyBtn = clone.querySelector('.v-copy-btn');       
 
         const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
         const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
@@ -158,19 +158,37 @@ function renderInventoryByTab(tab) {
             card.classList.add('expired');
             statusBadge.innerText = 'Expired';
             statusBadge.className = 'v-status-badge status-expired'; 
-            codeWrapper.innerHTML = ''; 
+            if (codeWrapper) codeWrapper.style.display = 'none';
         } else {
             if (item.status === 'active' || item.status === 'activated') {
                 statusBadge.innerText = 'Active';
                 statusBadge.className = 'v-status-badge status-active';
                 
                 if (item.redeem_code) {
-                    codeWrapper.innerHTML = `<span class="redeem-code">${item.redeem_code}</span>`;
+                    if (codeWrapper) codeWrapper.style.display = 'flex'; 
+                    if (codeText) codeText.innerText = item.redeem_code;
+
+                    if (copyBtn) {
+                        copyBtn.style.display = 'inline-block';
+                        copyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(item.redeem_code).then(() => {
+                                const originalClass = copyBtn.className;
+                                copyBtn.className = "v-copy-btn fa-solid fa-check"; 
+                                copyBtn.style.color = "#2ecc71";
+                                
+                                setTimeout(() => {
+                                    copyBtn.className = originalClass;
+                                    copyBtn.style.color = "";
+                                }, 2000);
+                            }).catch(err => console.error('Copy failed', err));
+                        };
+                    }
                 }
             } else {
                 statusBadge.innerText = 'Inactive'; 
                 statusBadge.className = 'v-status-badge status-inactive';
-                
+                if (codeWrapper) codeWrapper.style.display = 'none';
                 btnWrapper.innerHTML = `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>`;
             }
         }

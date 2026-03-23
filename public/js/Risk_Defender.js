@@ -481,18 +481,49 @@ function showGameOver() {
     const finalGoldTxt = document.getElementById("final-gold");
     const placementStatusTxt = document.getElementById("placement-status");
 
-    finalWaveTxt.textContent = wave; 
-    finalGoldTxt.textContent = gold;
+    // 1. 计算最终分数 (防白嫖逻辑)
+    let finalPoints = gold - 200; 
+    if (finalPoints < 0) finalPoints = 0;
 
+    // 2. 检查是否放过塔 (双重保险)
     if (!hasPlacedTower) {
-        placementStatusTxt.textContent = "Warning: No towers were placed!";
+        finalPoints = 0; // 没放塔强制 0 分
+        placementStatusTxt.textContent = "Warning: No towers were placed! 0 Points earned.";
         placementStatusTxt.style.color = "#e74c3c"; // 红色
     } else {
         placementStatusTxt.textContent = "Towers successfully deployed.";
         placementStatusTxt.style.color = "#2ecc71"; // 绿色
     }
 
+    // 3. 更新 UI 显示
+    finalWaveTxt.textContent = wave; 
+    finalGoldTxt.textContent = finalPoints;
     modal.style.display = "flex";
+
+    // 4. 发送数据到后端 (直接在这里 fetch，不要再调外部函数防止出错)
+    console.log("Game Over! Sending final points:", finalPoints);
+    
+    const dataToSend = {
+        score: finalPoints,        // ✅ 必须对应上面的 finalPoints
+        reached_level: wave,      
+        gameType: 'RiskDefender'
+    };
+
+    fetch('/api/save-score', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend) 
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Server responded with error');
+        return res.json();
+    })
+    .then(data => {
+        console.log("SQL update success:", data.message);
+    })
+    .catch(err => {
+        console.error("SQL update failed:", err);
+    });
 }
 
 /* ========================
@@ -798,9 +829,6 @@ function animate() {
 
     if (gameState === "gameOver") {
 
-    let finalPoints = gold - 200;
-    if (finalPoints < 0) finalPoints = 0;
-
     document.getElementById("final-gold").textContent = finalPoints;
     document.getElementById("game-over-modal").style.display = "flex";
     saveScoreToDatabase(finalPoints);
@@ -854,46 +882,30 @@ pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
 
     if (isPaused) {
-        pauseBtn.textContent = "▶";
+        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         document.getElementById("wrapper").style.pointerEvents = "none";
     } else {
-        pauseBtn.textContent = "⏸";
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         document.getElementById("wrapper").style.pointerEvents = "auto";
     }
 
 });
 
-homeBtn.addEventListener("click", () => {
-
+function confirmAndExit() {
     const confirmLeave = confirm(
         "Your game progress will be lost. Are you sure?"
     );
-
     if (confirmLeave) {
         window.location.href = "dashboard.html";
     }
+}
 
-});
+homeBtn.addEventListener("click", confirmAndExit);
 
-function saveScoreToDatabase(score) {
-    const dataToSend = {
-    score: score,            
-    reached_level: wave,      
-    gameType: 'RiskDefender'
-    };
-
-    fetch('/api/save-score', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSend) 
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Point write in successed:", data.message);
-    })
-    .catch(err => {
-        console.error("Point write in failed:", err);
-    });
+const logoLink = document.querySelector('.logo');
+if (logoLink) {
+    logoLink.style.cursor = "pointer"; 
+    logoLink.addEventListener("click", confirmAndExit);
 }
 
 animate();

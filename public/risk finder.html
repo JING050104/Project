@@ -8,22 +8,19 @@
 </head>
     <body class="no-scroll-page"> 
     <header class="dashboard-header">
-        <h1 class="logo">Coverage Quest</a></h1>
+        <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
         <div class="header-controls">
         <div class="timer-box" id="timer-box">
-                ⏳: <span id="timer">60</span>s
+                <i class="fa-solid fa-stopwatch"></i> <span id="timer">60</span>s
                 <div class="time-bar">
                     <div class="time-fill" id="time-fill"></div>
                 </div>
         </div>
-            <button id="pause-btn" class="pause-btn">⏸</button>
-            <button id="home-btn" class="home-btn">
-                <svg class="home-icon" viewBox="0 0 24 24" fill="none" 
-                    stroke="currentColor" stroke-width="2" 
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 11l9-8 9 8"></path>
-                    <path d="M5 10v10h14V10"></path>
-                </svg>
+            <button id="pause-btn" class="pause-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-pause"></i>
+            </button>
+           <button id="home-btn" class="home-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-house"></i>
             </button>
     </header>
 
@@ -63,5 +60,7 @@
     </div>
 
     <script src="js/Risk_Finder.js"></script>
+    <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+
 </body>
 </html>

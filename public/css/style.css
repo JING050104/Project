@@ -794,7 +794,7 @@ input {
 
 .dashboard-grid .dash-card.clickable-card {
     aspect-ratio: 1 / 1;
-    display: flex;
+    display: block;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -802,11 +802,25 @@ input {
     padding: 40px;
     cursor: pointer;
     transition: all 0.3s ease;
-    
+    overflow: visible !important; 
+    margin-bottom: 40px !important; 
+    position: relative;
     background: #ffffff;
     border-radius: 24px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.dashboard-grid .dash-card.clickable-card h3 {
+    position: absolute;
+    bottom: -45px;      
+    left: 50%;          
+    transform: translateX(-50%);
+    width: 100%;       
+    color: #2c3e50;     
+    text-shadow: none !important; 
+    white-space: nowrap; 
+    font-size: 1.2rem !important;
 }
 
 .dash-card.clickable-card:hover {  
@@ -891,10 +905,12 @@ input {
     border: 2px dashed #4a90e2 !important;
     background: #f0f7ff !important;
     animation: fadeIn 0.5s ease;
+    display: flex;
+    gap: 12px; 
 }
 
 #redeem-code-text {
-    font-family: 'Courier New', monospace; /* 像代码一样的字体 */
+    font-family: 'Courier New', monospace;
     text-shadow: 1px 1px 0px #fff;
 }
 

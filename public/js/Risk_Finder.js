@@ -54,28 +54,33 @@ function startTimer() {
 
 startTimer();
 
-homeBtn.addEventListener("click", () => {
-
+function confirmAndExit() {
     const confirmLeave = confirm(
         "Your game progress will be lost. Are you sure?"
     );
-
     if (confirmLeave) {
         window.location.href = "dashboard.html";
     }
+}
 
-});
+homeBtn.addEventListener("click", confirmAndExit);
+
+const logoLink = document.querySelector('.logo');
+if (logoLink) {
+    logoLink.style.cursor = "pointer"; 
+    logoLink.addEventListener("click", confirmAndExit);
+}
 
 pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
 
     if (isPaused) {
-        pauseBtn.textContent = "▶";
+        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         wrapper.style.pointerEvents = "none";
         imgElement.style.filter = "blur(15px)"; 
         msgElement.innerText = "GAME PAUSED";
     } else {
-        pauseBtn.textContent = "⏸";
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         wrapper.style.pointerEvents = "auto";
         imgElement.style.filter = "none";
         msgElement.innerText = "";

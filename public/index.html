@@ -10,35 +10,38 @@
     <header class="dashboard-header">
     <h1 class="logo">Coverage Quest</h1>
     <nav style="display: flex; gap: 20px; align-items: center;">
-        <a href="#features" style="text-decoration: none; color: #5a6c7d; font-weight: 600;">Features</a>
+        <a href="#features" style="text-decoration: none; color: #5a6c7d; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Features</a>
     </nav>
     </header>
 
     <section class="hero">
         <h1>Welcome to Coverage Quest</h1>
-        <p>This is the landing page for insurance users to get their reward by playing the learning based insurance game.</p>
-        <button class="login-btn" style="padding: 15px 30px; font-size: 1.1rem;" id="ctaBtn">Get Started</button>
+        <p>Learn insurance the fun way by playing exciting mini-games. Identify risks, defend against them, and earn real rewards! </p>
+        <button class="login-btn" id="ctaBtn">
+            Get Started 
+            <i class="fa-solid fa-rocket"></i>
+        </button>
     </section>
     <section class="features-grid" id="features">
     <div class="section-title">
         <h2>Why Play Coverage Quest?</h2>
-        <p>Master the world of insurance through immersive gameplay.</p>
+        <p>Turn learning insurance into an interactive adventure.</p>
     </div>
     <div class="features-container">
         <div class="feature-card">
-            <div class="icon">🎮</div>
-            <h3>Interactive Learning</h3>
-            <p>Instead of exercising to get reward, We play!</p>
+            <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h3>Risk Finder</h3>
+            <p>Explore real-life scenarios and identify hidden risks to sharpen your awareness.</p>
         </div>
         <div class="feature-card">
-            <div class="icon">🏆</div>
-            <h3>Real Rewards</h3>
-            <p>Earn Points and exchange them for actual vouchers or insurance premium discounts.</p>
+            <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3>Risk Defender</h3>
+            <p>Make smart decisions to protect against risks and learn how insurance works.</p>
         </div>
         <div class="feature-card">
-            <div class="icon">🛡️</div>
-            <h3>Risk Assessment</h3>
-            <p>Identify hidden dangers in our "Find the Risk" mini-games to sharpen your eyes.</p>
+            <div class="icon"><i class="fa-solid fa-ticket"></i></div>
+            <h3>Earn Rewards</h3>
+            <p>Collect points from gameplay and redeem them for vouchers and exclusive benefits.</p>
         </div>
     </div>
     </section>
@@ -46,18 +49,18 @@
     <section class="how-it-works">
         <div class="step">
             <span class="step-num">01</span>
-            <h4>Join the Quest</h4>
-            <p>Create your profile and choose your first insurance module.</p>
+            <h4>Find the Risks</h4>
+        <p>Play Risk Finder to spot dangers in everyday situations.</p>
         </div>
         <div class="step">
             <span class="step-num">02</span>
-            <h4>Defeat Risks</h4>
-            <p>Complete challenges to earn points.</p>
+            <h4>Defend Smartly</h4>
+        <p>Use Risk Defender to choose the best protection strategies.</p>
         </div>
         <div class="step">
             <span class="step-num">03</span>
-            <h4>Redeem Prizes</h4>
-            <p>Turn your knowledge into real-world financial benefits.</p>
+            <h4>Redeem Rewards</h4>
+        <p>Earn points and exchange them for vouchers and real-life rewards.</p>
         </div>
     </section>
 
@@ -83,7 +86,7 @@
 
             <form id="registerForm">
                 <input type="email" name="email" placeholder="Enter your Email" required>
-                <button type="submit" class="submit-btn">Get Verification Code</button>
+                <button type="submit" class="submit-btn"><i class="fa-regular fa-envelope"></i>Get Verification Code</button>
             </form>
 
             <a href="/auth/google" class="google-btn-circle">
@@ -127,10 +130,10 @@
             <span class="close-modal" id="closeResetBtn">&times;</span>
             
             <div id="resetStep1">
-                <h2>Reset Password</h2>
+                <h2><i class="fa-regular fa-envelope"></i>Reset Password</h2>
                 <p>Enter your email to receive a reset code.</p>
                 <input type="email" id="resetEmail" placeholder="Enter your Email" required>
-                <button onclick="sendResetCode()" id="resetSendBtn" class="submit-btn">Send Code</button>
+                <button onclick="sendResetCode()" id="resetSendBtn" class="submit-btn"><i class="fa-regular fa-envelope"></i>Send Code</button>
             </div>
 
             <div id="resetStep2" style="display: none;">
@@ -387,5 +390,6 @@
         finally { btn.textContent = "Update Password"; btn.disabled = false; }
     }
 </script>
+<script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 </body>
 </html>

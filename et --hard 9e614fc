@@ -1,0 +1,164 @@
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to origin/main
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{1}: reset: moving to 9e614fc^
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{2}: reset: moving to origin/main
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{3}: reset: moving to HEAD~1
+[33m9e614fc[m HEAD@{4}: commit: chore: fixed layout and updated leaderboard logic
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{5}: reset: moving to 3081164^
+[33m002f74a[m HEAD@{6}: reset: moving to HEAD
+[33m002f74a[m HEAD@{7}: reset: moving to HEAD
+[33m002f74a[m HEAD@{8}: commit: add css and fix dashboard layout
+[33m3081164[m HEAD@{9}: commit: add css
+[33m72fc61c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{10}: commit: Stop tracking .env file
+[33m6d133d4[m HEAD@{11}: commit: add logic
+[33m1b42baf[m HEAD@{12}: commit: add logic
+[33m72f3e03[m HEAD@{13}: commit: add logic
+[33m12e8e51[m HEAD@{14}: commit: add logic
+[33m76973de[m HEAD@{15}: commit: add logic
+[33md31f0ef[m HEAD@{16}: commit: add logic
+[33mafbc722[m HEAD@{17}: commit: add logic
+[33m8e4963e[m HEAD@{18}: commit: add logic
+[33mf1c7067[m HEAD@{19}: commit: add css
+[33m2bd6a5c[m HEAD@{20}: commit: add css
+[33m54fbe2b[m HEAD@{21}: commit: add logic
+[33mebef737[m HEAD@{22}: commit: add logic
+[33mc50ceba[m HEAD@{23}: commit: add css
+[33m8c5e641[m HEAD@{24}: commit: add css
+[33m60c3c28[m HEAD@{25}: commit: add css
+[33m9564c59[m HEAD@{26}: commit: add css
+[33ma232df9[m HEAD@{27}: commit: add logic
+[33m9662eec[m HEAD@{28}: commit: add logic
+[33m7cf0182[m HEAD@{29}: commit: add logic
+[33mdb86a7d[m HEAD@{30}: commit: add logic
+[33me2bd3bf[m HEAD@{31}: commit: add logic
+[33m4e3a1bc[m HEAD@{32}: commit: add logic
+[33mc11814a[m HEAD@{33}: commit: add logic
+[33m9ee5ca5[m HEAD@{34}: commit: add logic
+[33md3c5569[m HEAD@{35}: commit: add logic
+[33mfcf4d42[m HEAD@{36}: commit: add logic
+[33m4cec0fd[m HEAD@{37}: commit: add logic
+[33m2e58f3e[m HEAD@{38}: commit: add logic
+[33mdcc8aa7[m HEAD@{39}: commit: add logic
+[33meb6cce0[m HEAD@{40}: commit: add logic
+[33m89079ea[m HEAD@{41}: commit: add logic
+[33md22543b[m HEAD@{42}: commit: add logic
+[33m1ae9118[m HEAD@{43}: commit: add logic
+[33m8e2b2f1[m HEAD@{44}: commit: add logic
+[33m3a375d6[m HEAD@{45}: commit: add logic
+[33mbea46ca[m HEAD@{46}: commit: add logic
+[33m40322cf[m HEAD@{47}: commit: add logic
+[33m1204d07[m HEAD@{48}: commit: add logic
+[33m77d9fcf[m HEAD@{49}: commit: add logic
+[33m3103fa7[m HEAD@{50}: commit: add logic
+[33m3e948aa[m HEAD@{51}: commit: add logic
+[33ma651f1b[m HEAD@{52}: commit: add logic
+[33m0904be2[m HEAD@{53}: commit: add logic
+[33mb554130[m HEAD@{54}: commit: add logic
+[33mcd7c491[m HEAD@{55}: commit: add logic
+[33ma9b9832[m HEAD@{56}: commit: add logic
+[33m1de3043[m HEAD@{57}: commit: add logic
+[33m6a29401[m HEAD@{58}: commit: add logic
+[33mc32ad02[m HEAD@{59}: commit: add logic
+[33m06f3e54[m HEAD@{60}: commit: add logic
+[33m9474beb[m HEAD@{61}: commit: add logic
+[33ma47bcf3[m HEAD@{62}: commit: add logic
+[33mf7c90cf[m HEAD@{63}: commit: add css
+[33mf2b067a[m HEAD@{64}: commit: add css
+[33mb2b161e[m HEAD@{65}: commit: add css
+[33mca05ac4[m HEAD@{66}: commit: add css
+[33meec1211[m HEAD@{67}: commit: add css
+[33m2feb12e[m HEAD@{68}: commit: add logic
+[33m5e00885[m HEAD@{69}: commit: add logic
+[33m865fc57[m HEAD@{70}: commit: add logic
+[33m98ed95f[m HEAD@{71}: commit: add logic
+[33mca025a3[m HEAD@{72}: commit: add logic
+[33m4364479[m HEAD@{73}: reset: moving to 4364479
+[33maf7cc10[m HEAD@{74}: commit: add logic
+[33m4364479[m HEAD@{75}: commit: add logic
+[33m5ee5755[m HEAD@{76}: commit: add logic
+[33m913c93d[m HEAD@{77}: commit: add logic
+[33m8815883[m HEAD@{78}: commit: add logic
+[33m3060ecc[m HEAD@{79}: commit: add logic
+[33m71949df[m HEAD@{80}: commit: add css
+[33mc3a0263[m HEAD@{81}: commit: add css
+[33mdc12fff[m HEAD@{82}: commit: add css
+[33m9fcce60[m HEAD@{83}: commit: add css
+[33m48865f5[m HEAD@{84}: commit: add logic
+[33m7eddda3[m HEAD@{85}: commit: add css
+[33m47e8719[m HEAD@{86}: commit: add css
+[33m4fb3522[m HEAD@{87}: commit: add css
+[33m9d28310[m HEAD@{88}: commit: add css
+[33ma33907b[m HEAD@{89}: commit: add css
+[33m857ed92[m HEAD@{90}: commit: add css
+[33m5059b3f[m HEAD@{91}: commit: add css
+[33m9f61da2[m HEAD@{92}: commit: add css
+[33m3956514[m HEAD@{93}: commit: add css
+[33m1b0095c[m HEAD@{94}: commit: add css
+[33m1082dac[m HEAD@{95}: commit: add logic
+[33m690dea2[m HEAD@{96}: commit: add logic
+[33m1723492[m HEAD@{97}: commit: add logic
+[33me7f363e[m HEAD@{98}: commit: add logic
+[33m3235ff1[m HEAD@{99}: commit: add logic
+[33m24c83db[m HEAD@{100}: commit: add logic
+[33m5759529[m HEAD@{101}: commit: add logic
+[33mb84b141[m HEAD@{102}: commit: add css
+[33m55c1597[m HEAD@{103}: commit: add css
+[33m0db271b[m HEAD@{104}: commit: add css
+[33mec98030[m HEAD@{105}: commit: add css
+[33mf985ac4[m HEAD@{106}: commit: add css
+[33mc32ed7e[m HEAD@{107}: commit: add css
+[33mff2b2f5[m HEAD@{108}: commit: add css
+[33m2335670[m HEAD@{109}: commit: add css
+[33m5ec5f7a[m HEAD@{110}: commit: add css
+[33m1ee4a64[m HEAD@{111}: commit: add css
+[33mc527974[m HEAD@{112}: commit: add css
+[33mb6be596[m HEAD@{113}: commit: add css
+[33m382f7dc[m HEAD@{114}: commit: add css
+[33m316bf8d[m HEAD@{115}: commit: add css
+[33m441c5cc[m HEAD@{116}: commit: add css
+[33m9441d9e[m HEAD@{117}: commit: add css
+[33mec91165[m HEAD@{118}: commit: add css
+[33m642c4cc[m HEAD@{119}: commit: update
+[33m63ea6f1[m HEAD@{120}: commit: update
+[33mc0dfd75[m HEAD@{121}: commit: update
+[33m23e4530[m HEAD@{122}: commit: update
+[33m72dc117[m HEAD@{123}: commit: update
+[33m11aaa56[m HEAD@{124}: commit: fix session cookie
+[33m4eb0787[m HEAD@{125}: commit: fix session cookie
+[33m293543e[m HEAD@{126}: commit: fix session cookie
+[33m43acc49[m HEAD@{127}: commit: fix session cookie
+[33m2ff6225[m HEAD@{128}: commit: fix session cookie
+[33m91a1075[m HEAD@{129}: commit: update
+[33m51d7526[m HEAD@{130}: commit: add logic
+[33m50767d9[m HEAD@{131}: commit: add logic
+[33m2446d3d[m HEAD@{132}: commit: add logic
+[33m6278025[m HEAD@{133}: commit: add logic
+[33m93d4c54[m HEAD@{134}: commit: add logic
+[33m9c45e01[m HEAD@{135}: commit: add logic
+[33m872d965[m HEAD@{136}: commit: add logic
+[33m8349e34[m HEAD@{137}: commit: add logic
+[33m5111b7c[m HEAD@{138}: commit: add logic
+[33m34d1617[m HEAD@{139}: commit: add logic
+[33m0326e1d[m HEAD@{140}: commit: add logic
+[33m9566ee1[m HEAD@{141}: commit: add logic
+[33m1ee1316[m HEAD@{142}: commit: add logic
+[33mffb2488[m HEAD@{143}: commit: add logic
+[33m7afb10f[m HEAD@{144}: commit: add logic
+[33mbcdd3c5[m HEAD@{145}: commit: add logic
+[33m2ce1a9f[m HEAD@{146}: commit: add logic
+[33mb1ea2e8[m HEAD@{147}: commit: add logic
+[33mb297ed7[m HEAD@{148}: commit: add logic
+[33mbe80f24[m HEAD@{149}: commit: add logic
+[33mdb1b99d[m HEAD@{150}: commit: add logic
+[33m8676b1a[m HEAD@{151}: commit: add css
+[33mf307eb9[m HEAD@{152}: commit: add logic
+[33mefca04b[m HEAD@{153}: commit: add css
+[33m83b976e[m HEAD@{154}: commit: add css
+[33mdce1f6f[m HEAD@{155}: commit: add css
+[33m434510c[m HEAD@{156}: commit: add logic
+[33m7dc0433[m HEAD@{157}: commit: add logic
+[33medcf4df[m HEAD@{158}: commit: add css
+[33me012aad[m HEAD@{159}: commit: add css
+[33mb20f2c7[m HEAD@{160}: commit: add logic
+[33m45010e6[m HEAD@{161}: commit: add logic
+[33m381d456[m HEAD@{162}: commit: add logic
+[33ma45aa65
