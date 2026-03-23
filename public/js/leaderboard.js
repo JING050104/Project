@@ -5,19 +5,21 @@ async function loadLeaderboard(gameType, element) {
     if (element) {
         element.classList.add('active');
     } else {
-        const defaultBtn = Array.from(tabs).find(b => b.textContent.replace(' ', '') === gameType);
+        const defaultBtn = Array.from(tabs).find(b => b.getAttribute('onclick')?.includes(gameType));
         if (defaultBtn) defaultBtn.classList.add('active');
     }
 
     const tbody = document.getElementById('leaderboardBody');
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 40px;">Loading scores...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5">Loading scores...</td></tr>';
 
     try {
         const response = await fetch(`/api/leaderboard?gameType=${gameType}`);
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        
         const data = await response.json();
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 40px;">No scores yet. Be the first!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">No scores yet. Be the first!</td></tr>';
             return;
         }
 
@@ -26,34 +28,34 @@ async function loadLeaderboard(gameType, element) {
             const unit = gameType === 'RiskDefender' ? 'Waves' : 'Photos';
             
             let rankDisplay = rank;
-            let rankClass = '';
-            if (rank === 1) { rankDisplay = '🥇'; rankClass = 'rank-1'; }
-            else if (rank === 2) { rankDisplay = '🥈'; rankClass = 'rank-2'; }
-            else if (rank === 3) { rankDisplay = '🥉'; rankClass = 'rank-3'; }
+            let rowClass = 'fade-in';
+            if (rank === 1) { rankDisplay = '🥇'; rowClass += ' top-1'; }
+            else if (rank === 2) { rankDisplay = '🥈'; rowClass += ' top-2'; }
+            else if (rank === 3) { rankDisplay = '🥉'; rowClass += ' top-3'; }
 
-            const timeBonus = (gameType === 'RiskFinder' && entry.time_left > 0) 
-                ? `<div style="font-size: 11px; color: #22c55e;">⏱ Remaining: ${entry.time_left}s</div>` 
-                : '';
+            const timeValue = (entry.time_used != null) ? `${entry.time_used}s` : '-';
 
             return `
-                <tr class="fade-in">
-                    <td class="${rankClass}" style="text-align:center; font-size: 20px;">${rankDisplay}</td>
+                <tr class="${rowClass}">
+                    <td class="rank-cell">${rankDisplay}</td>
+                    <td><div class="player-name">${entry.username || 'Anonymous'}</div></td>
                     <td>
-                        <div style="font-weight: bold;">${entry.username || 'Anonymous'}</div>
+                        <span class="level-badge">${entry.reached_level || 0}</span>
+                        <span class="unit-label">${unit}</span>
                     </td>
+                    <td class="time-cell">${timeValue}</td>
                     <td>
-                        <div class="score-cell" style="font-weight: bold; color: #2563eb;">
-                            ${entry.score.toLocaleString()} pts
+                        <div class="score-container">
+                            ${(entry.score || 0).toLocaleString()} 
+                            <span class="score-unit">pts</span>
                         </div>
-                        <small style="color:#64748b;">(${entry.reached_level} ${unit})</small>
-                        ${timeBonus} 
                     </td>
                 </tr>
             `;
         }).join('');
 
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #ff2e2e; padding: 40px;">Error loading data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="color: #ff2e2e;">Error loading data.</td></tr>';
         console.error("Leaderboard Error:", err);
     }
 }

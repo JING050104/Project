@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { Pool } = require('pg');
 const express = require("express");
 const session = require("express-session");
 const pgSession = require('connect-pg-simple')(session);
@@ -21,7 +22,7 @@ app.use(session({
         pool: db.pool,
         tableName: 'session',
         ttl: 86400,                    // 24小時
-        pruneSessionInterval: false,
+        pruneSessionInterval: 60,
     }),
     key: 'fyp_session_cookie',
     secret: process.env.SESSION_SECRET || "fyp_secret",
@@ -82,6 +83,33 @@ app.get('/api/get-vouchers', ensureAuthenticated, async (req, res) => {
     } catch (err) {
         console.error("Get Vouchers Error:", err.message);
         res.status(500).json({ error: "Failed to load vouchers" });
+    }
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const { gameType } = req.query;
+
+        const queryText = `
+            SELECT username, score, reached_level, time_used
+            FROM (
+                SELECT DISTINCT ON (username) 
+                    username, score, reached_level, time_used
+                FROM scores
+                WHERE game_type = $1
+                ORDER BY username, score DESC, time_used ASC
+            ) AS unique_scores
+            ORDER BY score DESC, time_used ASC
+            LIMIT 10
+        `;
+
+        const result = await db.query(queryText, [gameType]);
+        
+        res.json(result.rows || result);
+
+    } catch (err) {
+        console.error("Leaderboard Error:", err.message);
+        res.status(500).json({ error: "Database error" });
     }
 });
 
@@ -308,18 +336,21 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
 setInterval(async () => {
     try {
-        const [sessionResult, userResult] = await Promise.all([
-            db.execute(`DELETE FROM session WHERE expire_timestamp < NOW()`),
-            db.execute(`DELETE FROM users WHERE is_verified = 0 AND reset_expires < NOW()`)
-        ]);
+        // 只清理未验证且过期的用户
+        const userResult = await db.execute(`
+            DELETE FROM users 
+            WHERE is_verified = false 
+            AND (reset_expires < NOW() OR created_at < NOW() - INTERVAL '24 hours')
+        `);
 
-        console.log(`[Cleanup] ${sessionResult.length || 0} expired sessions | ${userResult.length || 0} unverified users`);
+        console.log(`[Cleanup] Run at: ${new Date().toLocaleString()}`);
+        console.log(`[Cleanup] Unverified users removed: ${userResult ? userResult.length : 0}`);
+
     } catch (err) {
         console.error("[Cleanup Error]:", err.message);
     }
 }, 30 * 60 * 1000);
 
-// 啟動伺服器
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
