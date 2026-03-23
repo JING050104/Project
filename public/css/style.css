@@ -700,7 +700,7 @@ input {
 
 .dashboard-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
     width: 100% !important;
     gap: 25px;
     border-radius: 16px; 
@@ -708,7 +708,7 @@ input {
 }
 
 .dashboard-content {
-    max-width: 1200px !important; 
+    max-width: 1250px !important; 
     margin: 100px auto 40px !important; 
     padding: 20px !important;
     display: flex !important;

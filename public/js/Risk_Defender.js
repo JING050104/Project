@@ -468,47 +468,54 @@ canvas.addEventListener("click", (e) => {
     if (gold >= cost) {
         gold -= cost;
         towers.push(new Insurance(x, y, selectedType));
+        hasPlacedTower = true;
         lastPlacementTime = now; 
     } else {
         floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
     }
 });
 
+function showGameOver() {
+    const modal = document.getElementById("game-over-modal");
+    const finalWaveTxt = document.getElementById("final-wave");
+    const finalGoldTxt = document.getElementById("final-gold");
+    const placementStatusTxt = document.getElementById("placement-status");
+
+    finalWaveTxt.textContent = wave; 
+    finalGoldTxt.textContent = gold;
+
+    if (!hasPlacedTower) {
+        placementStatusTxt.textContent = "Warning: No towers were placed!";
+        placementStatusTxt.style.color = "#e74c3c"; // 红色
+    } else {
+        placementStatusTxt.textContent = "Towers successfully deployed.";
+        placementStatusTxt.style.color = "#2ecc71"; // 绿色
+    }
+
+    modal.style.display = "flex";
+}
+
 /* ========================
    🌊 Wave System
 ======================== */
 
 function handleWave() {
-    if (!waveInProgress) return;
-    totalEnemiesThisWave = wave * 5;
-    let bossCountNeeded = (wave % 5 === 0) ? Math.floor(wave / 5) : 0;
-    
-    let enemiesRemainingToSpawn = totalEnemiesThisWave - enemiesSpawned;
-    let isBossTime = (bossCountNeeded > 0) && (enemiesRemainingToSpawn <= bossCountNeeded);
+    if (!waveInProgress || gameState !== "playing") return;
 
+    totalEnemiesThisWave = wave * 5;
     let currentSpawnRate = Math.max(40, 120 - (wave * 5));
 
     if (frames % currentSpawnRate === 0 && enemiesSpawned < totalEnemiesThisWave) {
-        
         let randomCol = Math.floor(Math.random() * 5);
         let startX = randomCol * cellSize;
-
-        if (isBossTime) {
-            if (bossWarningTimer <= 0) bossWarningTimer = 120;
-            enemies.push(new Boss(startX, wave)); // 注意：Boss 类构造函数如果是 (x, wave)
-        } else {
-            enemies.push(new Risk(startX, wave));
-        }
-        
+        enemies.push(new Risk(startX, wave));
         enemiesSpawned++;
-        rewardGiven = false;
     }
 
     if (enemiesSpawned >= totalEnemiesThisWave && enemies.length === 0) {
         waveInProgress = false;
-        rewardGiven = true;
 
-        if (gameState === "playing") {
+        if (hasPlacedTower) {
             let bonus = 30;
             gold += bonus; 
             floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
@@ -518,7 +525,7 @@ function handleWave() {
             if (gameState === "playing") {
                 wave++;
                 enemiesSpawned = 0; 
-                waveInProgress = true;
+                waveInProgress = true; 
                 floatingTexts.push(new FloatingText("Wave " + wave, canvas.width / 2 - 40, 100, "white"));
             }
         }, 2000);
@@ -619,8 +626,9 @@ function handleLogic() {
         enemies.splice(i, 1); 
         
         if (baseHealth <= 0) {
-            baseHealth = 0;          
-            gameState = "gameOver";
+        baseHealth = 0;          
+        gameState = "gameover"; // 确保这里是小写，和你 showGameOver 函数里的判断一致
+        showGameOver();
         }
     }
 }
