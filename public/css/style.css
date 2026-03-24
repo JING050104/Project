@@ -535,6 +535,7 @@ input {
     align-items: center;
     justify-content: center;
     padding: 10px;
+    background-color: #f4f4f9;
 }
 
 .viewport {
@@ -624,13 +625,15 @@ input {
 }
 
 #wrapper {
-    position: relative; /* 必须，为了让反馈圆圈定位准确 */
+    background: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
     width: 100%;
-    max-width: 600px;  /* 你可以根据需求调整这个宽度 */
-    margin: 0 auto;
-    overflow: hidden;   /* 防止内容溢出 */
-    background-color: #eee;
-    flex: 75;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
 }
 
 #risk-image {
@@ -692,14 +695,13 @@ input {
     font-size: 0.9rem;
 }
 
-.bottom-section {
-    width: 100%;
-    border-radius: 32px; 
-}
-
 .section-title {
-    text-align: center;
-    margin-bottom: 30px;
+    margin: 30px 0 15px 5px;
+    font-size: 1.4rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .dashboard-grid {
@@ -719,7 +721,7 @@ input {
     flex-direction: column !important;
     gap: 30px !important; 
     margin: 0 auto;   
-    margin-top: 80px !important;
+    margin-top: 40px !important;
 }
 
 .top-full-card.login-card {
@@ -740,14 +742,14 @@ input {
 }
 
 .inventory-box.login-card {
-    margin-top: 15px;
+    margin-top: auto !important;
     max-width: 100% !important; 
     width: 100% !important;
     margin: 0 !important;
     padding: 30px !important;
-    min-height: 350px !important;
     display: flex !important;
     flex-direction: column !important;
+    margin-bottom: 40px;
 }
 
 #voucher-container, #inventory-container {
@@ -756,8 +758,14 @@ input {
     grid-template-columns: repeat(3, 1fr) !important;
     width: 100% !important;
     height: auto !important;
-    margin-top: 15px !important;
-    padding: 20px 10px;
+    padding: 10px 10px;
+}
+
+.voucher-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
 }
 
 .inventory-item-inner {
@@ -803,16 +811,14 @@ input {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 40px;
     cursor: pointer;
     transition: all 0.3s ease;
     overflow: visible !important; 
-    margin-bottom: 40px !important; 
     position: relative;
     background: #ffffff;
     border-radius: 24px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 20px 20px rgba(0,0,0,0.05);
 }
 
 .dashboard-grid .dash-card.clickable-card h3 {
@@ -1139,7 +1145,8 @@ body.flash-red {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 0;     
+    min-height: 0;    
+    background-color: transparent; 
 }
 
 #gameCanvas {
@@ -1238,10 +1245,13 @@ button:disabled {
     text-align: center;
 }
 
-.section-title h2 {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 15px;
+.section-title {
+    margin: 30px 0 12px 5px !important; 
+    padding: 0 !important;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .features-container {
@@ -1581,13 +1591,11 @@ button:disabled {
 
 .tab-buttons {
     display: flex;
-    gap: 8px;
-    margin: 0 0 20px 0;
-    padding-bottom: 4px;
-    border-bottom: 2px solid #e2e8f0;
-    flex-wrap: wrap;          
+    gap: 10px;
+    margin-bottom: 15px !important; 
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
 }
-
 .tab-btn {
     flex: 1;
     padding: 15px 0;
@@ -1605,6 +1613,7 @@ button:disabled {
 .tab-btn:hover {
     color: var(--primary-blue);
     background: rgba(74, 144, 226, 0.08);
+    border-radius: 10px;
 }
 
 .tab-btn.active {
@@ -1612,6 +1621,7 @@ button:disabled {
     font-weight: 600;
     background: rgba(74, 144, 226, 0.12);
     border-bottom: 3px solid var(--primary-blue);
+    border-radius: 10px;
 }
 
 .voucher-card {

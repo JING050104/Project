@@ -38,14 +38,17 @@ let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical'; 
 
 function setupCanvas() {
+    const paddingWidth = window.innerWidth * 0.95;
+    const paddingHeight = window.innerHeight * 0.8;
+
     if (window.innerWidth > window.innerHeight || window.innerWidth > 800) {
         gameMode = 'horizontal';
-        GAME_WIDTH = 1200;
-        GAME_HEIGHT = 600;
+        GAME_WIDTH = Math.floor(Math.min(1200, paddingWidth) / cellSize) * cellSize;
+        GAME_HEIGHT = Math.floor(Math.min(600, paddingHeight) / cellSize) * cellSize;
     } else {
         gameMode = 'vertical';
-        GAME_WIDTH = 600;
-        GAME_HEIGHT = 1000;
+        GAME_WIDTH = Math.floor(Math.min(600, paddingWidth) / cellSize) * cellSize;
+        GAME_HEIGHT = Math.floor(Math.min(1000, paddingHeight) / cellSize) * cellSize;
     }
 
     canvas.width = GAME_WIDTH;
@@ -54,13 +57,16 @@ function setupCanvas() {
     const container = document.querySelector('.canvas-wrapper');
     if (container) {
         const scale = Math.min(
-            (window.innerWidth * 0.95) / GAME_WIDTH, 
-            (window.innerHeight * 0.8) / GAME_HEIGHT
+            paddingWidth / GAME_WIDTH, 
+            paddingHeight / GAME_HEIGHT
         );
         canvas.style.width = (GAME_WIDTH * scale) + "px";
         canvas.style.height = (GAME_HEIGHT * scale) + "px";
     }
+    
+    console.log(`Canvas Scaled to: ${GAME_WIDTH}x${GAME_HEIGHT}, Mode: ${gameMode}`);
 }
+
 window.addEventListener('resize', setupCanvas);
 setupCanvas();
 
@@ -258,13 +264,15 @@ class Risk {
         this.escaped = false;
 
         if (gameMode === 'horizontal') {
-            this.x = canvas.width + 50; 
-            this.y = pos;              
-            this.spawnRow = Math.floor(pos / cellSize);
+            const targetRow = Math.floor(pos / cellSize);
+            this.spawnRow = targetRow;
+            this.x = canvas.width; 
+            this.y = targetRow * cellSize + (cellSize / 4); 
         } else {
-            this.x = pos;             
-            this.y = -50;             
-            this.spawnCol = Math.floor(pos / cellSize);
+            const targetCol = Math.floor(pos / cellSize);
+            this.spawnCol = targetCol;
+            this.x = targetCol * cellSize + (cellSize / 4);
+            this.y = 0; 
         }
 
         const types = ['fire', 'flood', 'thief', 'virus'];
@@ -457,6 +465,7 @@ canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
+    
     mouse.x = (e.clientX - rect.left) * scaleX;
     mouse.y = (e.clientY - rect.top) * scaleY;
 });
@@ -464,16 +473,32 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener("click", (e) => {
     if (gameState !== "playing" || isPaused) return;
 
-   const rect = canvas.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    // 1. 获取点击位置并强制转换
+    let clickX = (e.clientX - rect.left) * scaleX;
+    let clickY = (e.clientY - rect.top) * scaleY;
 
-   const gridX = Math.floor(clickX / cellSize);
+    // --- 修复：防止边缘像素溢出导致的“点不到” ---
+    // 确保坐标不会因为微小偏移变成负数或超出最大宽度
+    clickX = Math.max(0, Math.min(clickX, canvas.width - 1));
+    clickY = Math.max(0, Math.min(clickY, canvas.height - 1));
+
+    // 2. 计算格子索引
+    const gridX = Math.floor(clickX / cellSize);
     const gridY = Math.floor(clickY / cellSize);
-    let clickedTower = towers.find(t => t.x === x && t.y === y);
+
+    // 3. 计算对齐后的塔位置
+    const towerX = gridX * cellSize;
+    const towerY = gridY * cellSize;
+
+    // 调试打印：如果还点不到，请看 F12 这里的输出
+    console.log(`Real Click: ${clickX.toFixed(2)}, Grid Index: ${gridX}`);
+
+    // 4. 检查是否已有塔 (修正：使用刚才计算出的对齐坐标 towerX, towerY)
+    let clickedTower = towers.find(t => t.x === towerX && t.y === towerY);
 
     if (clickedTower) {
         if (clickedTower.selected) {
@@ -481,7 +506,7 @@ canvas.addEventListener("click", (e) => {
         } else {
             towers.forEach(t => t.selected = false);
             clickedTower.selected = true;
-            setTowerType(clickedTower.type); 
+            if (typeof setTowerType === "function") setTowerType(clickedTower.type); 
         }
         return; 
     }
@@ -493,19 +518,24 @@ canvas.addEventListener("click", (e) => {
     }
 
     towers.forEach(t => t.selected = false);
-    const isOccupied = towers.some(t => t.x === x && t.y === y);
+    
+    // 再次确认占用
+    const isOccupied = towers.some(t => t.x === towerX && t.y === towerY);
     if (isOccupied) return;
 
+    // 5. 计算价格并放置
     let cost = 0;
     if (selectedType === "home") cost = 50;
     else if (selectedType === "car") cost = 40;
     else if (selectedType === "medical") cost = 60;
 
     if (gold >= cost) {
-    gold -= cost;
-    towers.push(new Insurance(x, y, selectedType)); 
-    hasPlacedTower = true; 
-    lastPlacementTime = now; 
+        gold -= cost;
+        // 关键：push 进去的坐标必须是 towerX 和 towerY
+        towers.push(new Insurance(towerX, towerY, selectedType)); 
+        hasPlacedTower = true; 
+        lastPlacementTime = now; 
+        if (typeof updateHUD === "function") updateHUD();
     } else {
         floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
     }

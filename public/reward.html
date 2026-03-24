@@ -12,34 +12,33 @@
     </header>
 
     <main class="dashboard-content">
-        <div class="top-full-card login-card">
-            <h3><i class="fa-solid fa-coins" style="color: #f1c40f;"></i> Total Points</h3>
-            <span class="stat-value" id="display-points">0</span>
-        </div>
+    <div class="top-full-card login-card">
+        <h3><i class="fa-solid fa-coins" style="color: #f1c40f;"></i> Total Points</h3>
+        <span class="stat-value" id="display-points">0</span>
+    </div>
 
+    <div class="reward-section">
         <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
         <div class="login-card inventory-box">
-
-        <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 15px;"> 
-            <button class="tab-btn active" data-tab="inactive">Inactive</button>
-            <button class="tab-btn" data-tab="activated">Activated</button>
-            <button class="tab-btn" data-tab="expired">Expired</button>
-        </div>
-
-        <div id="inventory-container">
-            </p>Loading your vouchers...</p>
+            <div class="tab-buttons"> 
+                <button class="tab-btn active" data-tab="inactive">Inactive</button>
+                <button class="tab-btn" data-tab="activated">Activated</button>
+                <button class="tab-btn" data-tab="expired">Expired</button>
+            </div>
+            <div id="inventory-container" class="voucher-grid">
+                <p class="loading-text">Loading your vouchers...</p>
+            </div>
         </div>
     </div>
 
-        <div class="bottom-section">
-            <h2 class="section-title"><i class="fa-solid fa-ticket"></i> Available Vouchers</h2>
-            
-            <div class="login-card inventory-box"> 
-                <div class="dashboard-grid" id="voucher-container">
-                    </div>
-            </div>
+    <div class="reward-section">
+        <h2 class="section-title"><i class="fa-solid fa-cart-shopping"></i> Available Vouchers</h2>
+        <div class="login-card inventory-box"> 
+            <div id="voucher-container" class="voucher-grid">
+                </div>
         </div>
-    </main>
+    </div>
+</main>
     <div id="voucher-detail-modal" class="modal-overlay">
     <div class="login-card voucher-detail-card">
         <span class="close-modal" onclick="closeVoucherModal()">&times;</span>
