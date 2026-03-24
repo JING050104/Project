@@ -493,7 +493,6 @@ input {
     border: 1px solid #e2e8f0;
     box-shadow: var(--card-shadow);
     text-align: center;
-    gap:15px;
 }
 
 .dash-card:hover {
@@ -506,14 +505,12 @@ input {
     transform: translateY(0); /* "Pushes" the button down when clicked */
 }
 
-/* This keeps the markers stuck to the image, not the page */
 .image-wrapper {
     position: relative; 
     display: inline-block;
     line-height: 0; /* Prevents tiny gaps at the bottom of the image */
 }
 
-/* Updated marker to be a circle */
 .risk-marker {
     position: absolute;
     width: 50px;
@@ -820,18 +817,24 @@ input {
     border-radius: 24px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 20px 20px rgba(0,0,0,0.05);
+    padding: 20px;
+    min-height: 180px; 
+    margin-bottom: 60px;   
 }
 
 .dashboard-grid .dash-card.clickable-card h3 {
     position: absolute;
-    bottom: -45px;      
+    bottom: -50px;      
     left: 50%;          
     transform: translateX(-50%);
-    width: 100%;       
+    width: 100%;        
+    text-align: center;
     color: #2c3e50;     
-    text-shadow: none !important; 
+    font-size: 1.5rem !important;
+    font-weight: 600;
     white-space: nowrap; 
-    font-size: 1.2rem !important;
+    background: none;
+    text-shadow: none !important;
 }
 
 .dash-card.clickable-card:hover {  
