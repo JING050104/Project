@@ -40,8 +40,8 @@ async function loadLeaderboard(gameType, element) {
                     <td class="rank-cell">${rankDisplay}</td>
                     <td><div class="player-name">${entry.username || 'Anonymous'}</div></td>
                     <td>
-                        <span class="level-badge">${entry.reached_level || 0}</span>
                         <span class="unit-label">${unit}</span>
+                        <span class="level-badge">${entry.reached_level || 0}</span>
                     </td>
                     <td class="time-cell">${timeValue}</td>
                     <td>

@@ -5,10 +5,13 @@ let currentAnnotations = [];
 let currentIndex = 0;
 let chances = 3;
 let totalScore = 0;
-let timeLeft = 60;
 let isPaused = false;
-let countdown;
 let isGameOver = false;
+let startTime;         
+let totalPausedTime = 0;
+let pauseStartTime;
+let timerInterval;      
+let timeUsedSeconds = 0;
 
 // 2. DOM ELEMENTS
 const imgElement = document.getElementById('risk-image');
@@ -22,37 +25,9 @@ const gameOverModal = document.getElementById('game-over-modal');
 const finalScoreDisplay = document.getElementById('final-score');
 
 // 3. CONFIGURATION
-const timerDisplay = document.getElementById("timer");
-const timerBox = document.getElementById("timer-box");
-const timeFill = document.getElementById("time-fill");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const pauseIcon = document.getElementById("pause-icon");
-
-function startTimer() {
-    countdown = setInterval(() => {
-
-        if (!isPaused) {
-            timeLeft--;
-            timerDisplay.textContent = timeLeft;
-
-            timeFill.style.width = (timeLeft / 60) * 100 + "%";
-
-            if (timeLeft <= 10) {
-                timerBox.classList.add("timer-warning");
-                timeFill.style.background = "#ff2e2e";
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                endGameByTime();
-            }
-        }
-
-    }, 1000);
-}
-
-startTimer();
 
 function confirmAndExit() {
     const confirmLeave = confirm(
@@ -75,22 +50,20 @@ pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
 
     if (isPaused) {
+        pauseStartTime = Date.now(); 
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         wrapper.style.pointerEvents = "none";
         imgElement.style.filter = "blur(15px)"; 
         msgElement.innerText = "GAME PAUSED";
     } else {
+        totalPausedTime += (Date.now() - pauseStartTime); 
+        
         pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         wrapper.style.pointerEvents = "auto";
         imgElement.style.filter = "none";
         msgElement.innerText = "";
     }
 });
-
-function endGameByTime() {
-    clearInterval(countdown);
-    endGame();
-}
 
 document.body.classList.add("flash-red");
 setTimeout(() => {
@@ -106,10 +79,29 @@ async function initGame() {
         if (!response.ok) throw new Error("JSON data not found");
         allData = await response.json();
         imageList = allData.images.map(img => `${BASE_PATH}/${img.file_name}`);
-        if (imageList.length > 0) loadLevel();
+        if (imageList.length > 0) {
+            startTime = Date.now(); 
+            startRealTimeTimer();
+            loadLevel();
+        }
     } catch (err) {
         msgElement.innerText = "Connection Error.";
     }
+}
+
+function startRealTimeTimer() {
+    const timeDisplay = document.getElementById('time-spent');
+    timerInterval = setInterval(() => {
+        if (!isPaused && !isGameOver) {
+            let currentTime = Date.now();
+            let elapsed = Math.floor((currentTime - startTime - totalPausedTime) / 1000);
+            timeUsedSeconds = elapsed;
+            
+            if (timeDisplay) {
+                timeDisplay.innerText = timeUsedSeconds + "s";
+            }
+        }
+    }, 1000);
 }
 
 function loadLevel() {
@@ -200,14 +192,22 @@ function goToNextLevel() {
 function endGame() {
     if (isGameOver) return;
     isGameOver = true;
-    document.getElementById('final-score').innerText = totalScore;
-    document.getElementById('game-over-modal').style.display = 'flex';
+    let endTime = Date.now();
+    let timeUsedMS = endTime - startTime - totalPausedTime; 
+    let timeUsedSeconds = Math.floor(timeUsedMS / 1000);
 
+    document.getElementById('final-score').innerText = totalScore;
+    const finalTimeElem = document.getElementById('final-time-display');
+    if (finalTimeElem) {
+        finalTimeElem.innerText = timeUsedSeconds + "s";
+    }
+    document.getElementById('game-over-modal').style.display = 'flex';
+    
     const dataToSend = {
         score: totalScore, 
         reached_level: currentIndex, 
         gameType: 'RiskFinder',
-        time_left: timeLeft
+        time_used: timeUsedSeconds
     };
 
     console.log("Saving final score...", dataToSend);

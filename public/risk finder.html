@@ -10,12 +10,6 @@
     <header class="dashboard-header">
         <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
         <div class="header-controls">
-        <div class="timer-box" id="timer-box">
-                <i class="fa-solid fa-stopwatch"></i> <span id="timer">60</span>s
-                <div class="time-bar">
-                    <div class="time-fill" id="time-fill"></div>
-                </div>
-        </div>
             <button id="pause-btn" class="pause-btn" style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-pause"></i>
             </button>
@@ -39,6 +33,10 @@
                     <span class="stat-value" id="risk-count">3</span>
                     <p id="message">Locate the hazard...</p>
                 </div>
+                <div class="dash-card">
+                    <h3 style="color: #64748b;">Time Spent</h3>
+                    <span class="stat-value" id="time-spent">0s</span>
+                </div>
             </aside>
         </div>
     </main>
@@ -46,18 +44,23 @@
     <div id="game-over-modal" class="modal-overlay">
     <div class="login-card">
         <h1 class="logo">Game Over</h1>
-        <p class="user-email">All chances used!</p>
+        <p class="user-email">Session Completed!</p>
         
         <div class="dash-card" style="box-shadow: none; border: none;">
             <span class="level-badge">Final Score</span>
             <div class="stat-value pulse" id="final-score">0</div>
         </div>
 
+        <div class="dash-card">
+            <h3 style="color: #64748b;">Time Spent</h3>
+            <span class="stat-value" id="final-time-display">0s</span> 
+        </div>
+
         <button onclick="window.location.href='dashboard.html'" class="submit-btn">
             Back to Home
         </button>
     </div>
-    </div>
+</div>
 
     <script src="js/Risk_Finder.js"></script>
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>

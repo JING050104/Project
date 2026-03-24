@@ -90,6 +90,15 @@ app.get('/api/leaderboard', async (req, res) => {
     try {
         const { gameType } = req.query;
 
+        let orderByClause = "";
+        if (gameType === 'risk_id') {
+            orderByClause = "score DESC, time_used ASC";
+        } else if (gameType === 'tower_defense') {
+            orderByClause = "reached_level DESC, score DESC, time_used ASC";
+        } else {
+            orderByClause = "score DESC, time_used ASC";
+        }
+
         const queryText = `
             SELECT username, score, reached_level, time_used
             FROM (
@@ -97,14 +106,13 @@ app.get('/api/leaderboard', async (req, res) => {
                     username, score, reached_level, time_used
                 FROM scores
                 WHERE game_type = $1
-                ORDER BY username, score DESC, time_used ASC
+                ORDER BY username, ${orderByClause}
             ) AS unique_scores
-            ORDER BY score DESC, time_used ASC
+            ORDER BY ${orderByClause}
             LIMIT 10
         `;
 
         const result = await db.query(queryText, [gameType]);
-        
         res.json(result.rows || result);
 
     } catch (err) {
@@ -231,8 +239,7 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const username = req.user.username || req.user.email;
-    const { score, reached_level, gameType } = req.body; 
-
+    const { score, reached_level, gameType, time_used } = req.body;
     try {
         await db.execute('BEGIN');
 
@@ -247,9 +254,9 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         );
 
         await db.execute(`
-            INSERT INTO scores (user_id, username, game_type, score, reached_level) 
-            VALUES ($1, $2, $3, $4, $5)`,
-            [userId, username, gameType, score, reached_level]
+            INSERT INTO scores (user_id, username, game_type, score, reached_level, time_used) 
+            VALUES ($1, $2, $3, $4, $5,$6)`,
+            [userId, username, gameType, score, reached_level,time_used]
         );
 
         const description = `Finished ${gameType}: Level ${reached_level}`;
