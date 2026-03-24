@@ -124,6 +124,7 @@ body.no-scroll-page {
     background: #f1f5f9; 
     border-radius: 12px; 
     padding: 6px;
+    margin-bottom: 25px;
 }
 
 .tab { 
@@ -623,20 +624,22 @@ input {
 }
 
 #wrapper {
-    flex : 75;
-    max-height: 80vh;       /* Limits the height so it doesn't push the header away */
-    aspect-ratio: 4/3;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    border-radius: 12px;
-    overflow: hidden;
+    position: relative; /* 必须，为了让反馈圆圈定位准确 */
+    width: 100%;
+    max-width: 600px;  /* 你可以根据需求调整这个宽度 */
+    margin: 0 auto;
+    overflow: hidden;   /* 防止内容溢出 */
+    background-color: #eee;
+    flex: 75;
 }
 
 #risk-image {
-    width: 100%;             /* Fills the 70% width of #wrapper */
-    height: auto;            /* Keeps image proportional */
+    width: 100%;            
+    height: auto;         
     display: block;
     object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .sidebar {

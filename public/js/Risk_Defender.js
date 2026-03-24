@@ -464,13 +464,15 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener("click", (e) => {
     if (gameState !== "playing" || isPaused) return;
 
-    const rect = canvas.getBoundingClientRect();
+   const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    const x = Math.floor(((e.clientX - rect.left) * scaleX) / cellSize) * cellSize;
-    const y = Math.floor(((e.clientY - rect.top) * scaleY) / cellSize) * cellSize;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
 
+   const gridX = Math.floor(clickX / cellSize);
+    const gridY = Math.floor(clickY / cellSize);
     let clickedTower = towers.find(t => t.x === x && t.y === y);
 
     if (clickedTower) {

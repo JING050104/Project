@@ -61,5 +61,5 @@ async function loadLeaderboard(gameType, element) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadLeaderboard('RiskDefender');
+    loadLeaderboard('RiskFinder');
 });
