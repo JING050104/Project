@@ -493,6 +493,7 @@ input {
     border: 1px solid #e2e8f0;
     box-shadow: var(--card-shadow);
     text-align: center;
+    gap:15px;
 }
 
 .dash-card:hover {
