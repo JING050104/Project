@@ -706,9 +706,10 @@ input {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
     width: 100% !important;
-    gap: 25px;
     border-radius: 16px; 
     justify-content: center;
+    column-gap: 25px;
+    row-gap: 90px;
 }
 
 .dashboard-content {
@@ -819,7 +820,6 @@ input {
     box-shadow: 0 20px 20px rgba(0,0,0,0.05);
     padding: 20px;
     min-height: 180px; 
-    margin-bottom: 90px !important; 
 }
 
 .dashboard-grid .dash-card.clickable-card h3 {
@@ -830,7 +830,7 @@ input {
     width: 100%;
     text-align: center;
     white-space: nowrap;
-    color: #2c3e50 !important; 
+    color: #000000 !important; 
     text-shadow: none !important; 
     font-size: 1.2rem !important;
     font-weight: 600;
