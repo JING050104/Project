@@ -463,7 +463,7 @@ input {
 
 .input-group, .password-container {
     position: relative;
-    display: flex;
+    display: block;
     flex-direction: column;
     margin-bottom: 15px;
     min-width: 280px;

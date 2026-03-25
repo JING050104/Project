@@ -49,20 +49,24 @@
                             <div class="profile-section-right">
                                 <h3 class="group-title">Change Password</h3>
                                 
-                                <div class="input-group password-container">
+                                <div class="input-group">
                                     <label>Current Password</label>
-                                    <input type="password" id="currPass" placeholder="Enter current password">
-                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-currPass" onclick="toggleVisibility('currPass')"></i>
+                                    <div class="password-container">
+                                        <input type="password" id="currPass" placeholder="Enter current password">
+                                        <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-currPass" onclick="toggleVisibility('currPass')"></i>
+                                    </div>
                                 </div>
 
                                 <p class="forgot-link-container">
                                     <a href="#" id="forgotPasswordLink">Forgot Password?</a>
                                 </p>
 
-                                <div class="password-container">
+                                <div class="input-group">
                                     <label>New Password</label>
-                                    <input type="password" id="NewPassword" placeholder="New password">
-                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-NewPassword" onclick="toggleVisibility('NewPassword')"></i>
+                                    <div class="password-container">
+                                        <input type="password" id="NewPassword" placeholder="New password">
+                                        <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-NewPassword" onclick="toggleVisibility('NewPassword')"></i>
+                                    </div>
                                 </div>
 
                                 <div id="regPasswordRequirements" class="requirements-box">
@@ -72,15 +76,15 @@
                                     <div id="reg-req-num" class="req-item">× Numeric</div>
                                     <div id="reg-req-special" class="req-item">× Special Character</div>
                                 </div>
-
+                                <div class="input-group">
+                                <label>Confirm Password</label>
                                 <div class="password-container">
-                                    <label>Confirm Password</label>
                                     <input type="password" id="regConfirmPassword" placeholder="Confirm new password">
                                     <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword" onclick="toggleVisibility('regConfirmPassword')"></i>
                                 </div>
                             </div>
                         </div>
-
+                    </div>
                         <button type="submit" class="submit-btn update-full-btn">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Update Profile
