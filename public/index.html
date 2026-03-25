@@ -73,10 +73,10 @@
             </div>
 
             <form id="loginForm" class="active">
-                <input type="text" name="identifier" placeholder="Username or Email" required>
+                <input type="email" name="email" placeholder="Email Address" required>
                 <div class="password-container">
                     <input type="password" id="loginPass" name="password" placeholder="Password" required>
-                    <span class="toggle-eye" onclick="toggleVisibility('loginPass')"></span>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-loginPass" onclick="toggleVisibility('loginPass')"></i>
                 </div>
                 <p style="text-align: right; font-size: 12px;">
                     <a href="#" id="forgotPasswordLink" style="color: #4a90e2;">Forgot Password?</a>
@@ -89,9 +89,12 @@
                 <button type="submit" class="submit-btn"><i class="fa-regular fa-envelope"></i>Get Verification Code</button>
             </form>
 
-            <a href="/auth/google" class="google-btn-circle">
-                <img src="https://img.icons8.com/color/40/000000/google-logo.png" alt="Google">
-            </a>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/auth/google" class="google-btn-circle" style="margin: 0 auto;">
+                    <img src="https://img.icons8.com/color/40/000000/google-logo.png" alt="Google">
+                </a>
+                <p style="margin-top: 8px; font-size: 14px; color: #5a6c7d; font-weight: 500;">Google Login</p>
+            </div>
         </div>
     </div>
 
@@ -105,7 +108,7 @@
             
             <div class="password-container">
                 <input type="password" id="regPassword" placeholder="Create Password" required>
-                <span class="toggle-eye" onclick="toggleVisibility('regPassword')"></span>
+                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regPassword" onclick="toggleVisibility('regPassword')"></i>
             </div>
 
             <div id="regPasswordRequirements" class="requirements-box">
@@ -118,7 +121,7 @@
 
             <div class="password-container">
                 <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-                <span class="toggle-eye" onclick="toggleVisibility('regConfirmPassword')"></span>
+                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword" onclick="toggleVisibility('regConfirmPassword')"></i>
             </div>
             
             <button id="finishRegisterBtn" class="submit-btn">Create Account</button>
@@ -143,7 +146,7 @@
 
                 <div class="password-container">
                     <input type="password" id="newPassword" placeholder="New Password" required>
-                    <span class="toggle-eye" onclick="toggleVisibility('newPassword')"></span>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-newPassword" onclick="toggleVisibility('newPassword')"></i>
                 </div>
 
                 <div id="resPasswordRequirements" class="requirements-box">
@@ -156,7 +159,7 @@
 
                 <div class="password-container">
                     <input type="password" id="ConfirmPassword" placeholder="Confirm Password" required>
-                    <span class="toggle-eye" onclick="toggleVisibility('ConfirmPassword')"></span>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ConfirmPassword" onclick="toggleVisibility('ConfirmPassword')"></i>
                 </div>
 
                 <button onclick="verifyAndReset()" id="resetFinishBtn" class="submit-btn">Update Password</button>
@@ -250,9 +253,23 @@
     });
 
     function toggleVisibility(inputId) {
-        const input = document.getElementById(inputId);
-        input.type = (input.type === "password") ? "text" : "password";
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(`toggle-icon-${inputId}`);
+
+    if (input.type === "password") {
+        input.type = "text";
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    } else {
+        input.type = "password";
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
     }
+}
 
     document.getElementById("forgotPasswordLink").onclick = (e) => {
         e.preventDefault();
@@ -262,13 +279,13 @@
 
     document.getElementById("loginForm").onsubmit = async (e) => {
         e.preventDefault();
-        const identifier = e.target.identifier.value; 
+        const email = e.target.email.value; 
         const password = e.target.password.value;
         try {
             const res = await fetch("/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ identifier, password })
+                body: JSON.stringify({ email, password })
             });
             const data = await res.json();
             if (data.success) window.location.href = "/dashboard.html";

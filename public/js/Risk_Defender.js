@@ -8,7 +8,24 @@ const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
-const cellSize = 100;
+const cellSize = 70;
+
+const srcMap = {
+    'map': 'risk-image/map.png',
+    'tower_home': 'risk-image/tower_home.png',      
+    'tower_car': 'risk-image/tower_car.png',       
+    'tower_medical': 'risk-image/tower_medical.png', 
+    'fire': 'risk-image/fire.png',
+    'flood': 'risk-image/flood.png',
+    'virus': 'risk-image/virus.png',
+    'thief': 'risk-image/thief.png'
+};
+
+const images = {};
+for (let key in srcMap) {
+    images[key] = new Image();
+    images[key].src = srcMap[key];
+}
 
 let startTime = Date.now();  
 let totalPausedTime = 0;   
@@ -38,33 +55,30 @@ let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical'; 
 
 function setupCanvas() {
-    const paddingWidth = window.innerWidth * 0.95;
-    const paddingHeight = window.innerHeight * 0.8;
+    const MOBILE_W = 350;
+    const MOBILE_H = 490;
+    const DESKTOP_W = 490;
+    const DESKTOP_H = 350;
 
-    if (window.innerWidth > window.innerHeight || window.innerWidth > 800) {
-        gameMode = 'horizontal';
-        GAME_WIDTH = Math.floor(Math.min(1200, paddingWidth) / cellSize) * cellSize;
-        GAME_HEIGHT = Math.floor(Math.min(600, paddingHeight) / cellSize) * cellSize;
-    } else {
+    if (window.innerHeight > window.innerWidth) {
+        GAME_WIDTH = MOBILE_W;
+        GAME_HEIGHT = MOBILE_H;
         gameMode = 'vertical';
-        GAME_WIDTH = Math.floor(Math.min(600, paddingWidth) / cellSize) * cellSize;
-        GAME_HEIGHT = Math.floor(Math.min(1000, paddingHeight) / cellSize) * cellSize;
+    } else {
+        GAME_WIDTH = DESKTOP_W;
+        GAME_HEIGHT = DESKTOP_H;
+        gameMode = 'horizontal';
     }
 
-    canvas.width = GAME_WIDTH;
-    canvas.height = GAME_HEIGHT;
-
-    const container = document.querySelector('.canvas-wrapper');
-    if (container) {
-        const scale = Math.min(
-            paddingWidth / GAME_WIDTH, 
-            paddingHeight / GAME_HEIGHT
-        );
-        canvas.style.width = (GAME_WIDTH * scale) + "px";
-        canvas.style.height = (GAME_HEIGHT * scale) + "px";
-    }
+    const dpr = window.devicePixelRatio || 1;
     
-    console.log(`Canvas Scaled to: ${GAME_WIDTH}x${GAME_HEIGHT}, Mode: ${gameMode}`);
+    canvas.width = GAME_WIDTH * dpr;
+    canvas.height = GAME_HEIGHT * dpr;
+
+    canvas.style.width = GAME_WIDTH + 'px';
+    canvas.style.height = GAME_HEIGHT + 'px';
+
+    ctx.scale(dpr, dpr);
 }
 
 window.addEventListener('resize', setupCanvas);
@@ -109,7 +123,7 @@ class Insurance {
                 this.label = "Property";
                 this.attackSpeed = 30; 
                 this.attackPower = 1.0;
-                this.range = 200;
+                this.range = 100;
                 break;
             case 'car': 
                 this.health = 400;
@@ -117,7 +131,7 @@ class Insurance {
                 this.label = "Car";
                 this.attackSpeed = 90;
                 this.attackPower = 3.5;
-                this.range = 150;
+                this.range = 75;
                 break;
             case 'medical': 
                 this.health = 250;
@@ -125,7 +139,7 @@ class Insurance {
                 this.label = "Life";
                 this.attackSpeed = 60;
                 this.attackPower = 0;
-                this.range = 120;
+                this.range = 60;
                 this.healTimer = 0; 
                 break;
         }
@@ -135,70 +149,155 @@ class Insurance {
 
     draw() {
     ctx.save();
-        
+    
+    ctx.beginPath();
+    ctx.arc(this.x + 35, this.y + 35, this.range, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.setLineDash([5, 5]); 
+    ctx.stroke();
+    ctx.setLineDash([]); 
+
     if (this.level >= 4 && this.level < 7) {
-        ctx.translate(this.x + 50, this.y + 50);
+        ctx.save();
+        ctx.translate(this.x + 35, this.y + 35);
         ctx.rotate(frames * 0.05); 
-        ctx.strokeStyle = "white";
-        ctx.strokeRect(-20, -20, 40, 40);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.strokeRect(-25, -25, 50, 50);
         ctx.restore(); 
     } else if (this.level >= 7) {
         ctx.beginPath();
-        ctx.arc(this.x + 50, this.y + 50, 40, 0, Math.PI * 2);
+        ctx.arc(this.x + 35, this.y + 35, 38, 0, Math.PI * 2);
         ctx.strokeStyle = "#f1c40f";
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
 
-        ctx.beginPath();
-        ctx.arc(this.x + 50, this.y + 50, this.range, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.setLineDash([5, 5]); 
-        ctx.stroke();
-        ctx.setLineDash([]); 
+    let imgKey = 'tower_' + this.type; 
+    let img = images[imgKey]; 
+
+    if (img && img.complete) {
+        ctx.drawImage(img, this.x + 5, this.y + 5, 60, 60);
+    }
 
     if (this.selected) {
         ctx.strokeStyle = "#f1c40f"; 
         ctx.lineWidth = 3;
-        ctx.strokeRect(this.x + 5, this.y + 5, 90, 90);
+        ctx.strokeRect(this.x + 2, this.y + 2, 66, 66);
+    }
+
+    const barX = this.x + 10;
+    const barY = this.y + 60;
+    const barW = 50;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(barX, barY, barW, 4);
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(barX, barY, (this.health / this.maxHealth) * barW, 4);
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 11px Arial";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 2;
+    ctx.fillText("Lv." + this.level, this.x + 8, this.y + 18);
+    ctx.shadowBlur = 0;
+
+    if (this.type === 'medical') {
+        ctx.beginPath();
+        let speed = 0.1 + (this.level * 0.02);
+        let maxRadius = 25 + (this.level * 2);
+        let pulse = Math.sin(frames * speed) * 5 + maxRadius; 
+        
+        ctx.arc(this.x + 35, this.y + 35, pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(46, 204, 113, ${0.4 - (this.level * 0.03)})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+draw() {
+    ctx.save();
+    
+    const center = cellSize / 2; 
+    const padding = cellSize * 0.1; 
+    const innerSize = cellSize * 0.8;
+    
+    if (this.level >= 4 && this.level < 7) {
+        ctx.save();
+        ctx.translate(this.x + center, this.y + center);
+        ctx.rotate(frames * 0.05); 
+        ctx.strokeStyle = "white";
+        const decorSize = cellSize * 0.3;
+        ctx.strokeRect(-decorSize, -decorSize, decorSize * 2, decorSize * 2);
+        ctx.restore(); 
+    } 
+    else if (this.level >= 7) {
+        ctx.beginPath();
+        ctx.arc(this.x + center, this.y + center, cellSize * 0.55, 0, Math.PI * 2);
+        ctx.strokeStyle = "#f1c40f";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(this.x + center, this.y + center, this.range, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.setLineDash([5, 5]); 
+    ctx.stroke();
+    ctx.setLineDash([]); 
+
+    if (this.selected) {
+        ctx.strokeStyle = "#f1c40f"; 
+        ctx.lineWidth = 3;
+        ctx.strokeRect(this.x + 2, this.y + 2, cellSize - 4, cellSize - 4);
     }
 
     ctx.shadowBlur = 10;
     ctx.shadowColor = this.color;
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x + 10, this.y + 10, 80, 80);
+    ctx.fillRect(this.x + padding, this.y + padding, innerSize, innerSize);
     ctx.shadowBlur = 0; 
 
+    const hpBarY = this.y + innerSize + padding - 5; // 自动计算血条高度
     ctx.fillStyle = 'red';
-    ctx.fillRect(this.x + 15, this.y + 80, 70, 5);
+    ctx.fillRect(this.x + padding, hpBarY, innerSize, 5);
     ctx.fillStyle = 'lime';
-    ctx.fillRect(this.x + 15, this.y + 80, (this.health / this.maxHealth) * 70, 5);
+    ctx.fillRect(this.x + padding, hpBarY, (this.health / this.maxHealth) * innerSize, 5);
 
     ctx.fillStyle = "white";
-        ctx.font = "12px Arial";
-        ctx.fillText("Lv." + this.level, this.x + 10, this.y + 20);
+    ctx.font = "10px Arial"; 
+    ctx.fillText("Lv." + this.level, this.x + padding, this.y + padding + 10);
 
     if (this.type === 'medical') {
-    ctx.beginPath();
-    let speed = 0.1 + (this.level * 0.02);
-    let maxRadius = 20 + (this.level * 5);
-    let pulse = Math.sin(frames * speed) * 10 + maxRadius; 
-    
-    ctx.arc(this.x + 50, this.y + 50, pulse, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
+        ctx.beginPath();
+        let speed = 0.1 + (this.level * 0.02);
+        let baseRadius = cellSize * 0.3;
+        let pulse = Math.sin(frames * speed) * 5 + baseRadius; 
+        
+        ctx.arc(this.x + center, this.y + center, pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
 
     if (this.isBuffed) {
         ctx.fillStyle = "#2ecc71";
         ctx.font = "bold 20px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("+", this.x + 50, this.y + 40);
+        ctx.fillText("+", this.x + center, this.y + center + 7);
     }
     
     ctx.restore();
 }
+
+    getTowerColor() {
+        switch (this.type) {
+            case "home": return "#2563eb"; 
+            case "car": return "#ea580c"; 
+            case "medical": return "#16a34a"; 
+            default: return "#475569"; 
+        }
+    }
 
     upgrade() {
     let upgradeCost = this.cost;
@@ -208,7 +307,7 @@ class Insurance {
         
         if (this.type === 'medical') {
             this.range += 10; 
-            floatingTexts.push(new FloatingText("Heal +", this.x + 25, this.y + 50, "#2ecc71"));
+            floatingTexts.push(new FloatingText("Heal +", this.x + 25, this.y + 35, "#2ecc71"));
         } else {
             this.attackPower *= 1.25; 
             this.range += 5;
@@ -216,10 +315,10 @@ class Insurance {
         this.maxHealth += 100;
         this.health = Math.min(this.health + 100, this.maxHealth);
         
-        floatingTexts.push(new FloatingText("-" + upgradeCost, this.x + 25, this.y + 50, "#e74c3c"));
+        floatingTexts.push(new FloatingText("-" + upgradeCost, this.x + 25, this.y + 35, "#e74c3c"));
         floatingTexts.push(new FloatingText("Lv." + this.level, this.x + 25, this.y + 20, "#f1c40f"));
     } else {
-        floatingTexts.push(new FloatingText("Insufficient Gold!", this.x + 25, this.y + 50, "#bdc3c7"));
+        floatingTexts.push(new FloatingText("Insufficient Gold!", this.x + 25, this.y + 35, "#bdc3c7"));
     }
 }
 
@@ -231,14 +330,14 @@ class Insurance {
         if (this.healTimer >= 60) { 
             towers.forEach(t => {
                 if (t === this) return;
-                let dist = Math.hypot((t.x + 50) - (this.x + 50), (t.y + 50) - (this.y + 50));
+                let dist = Math.hypot((t.x + 35) - (this.x + 35), (t.y + 35) - (this.y + 35));
                 
                 if (dist < this.range && t.health < t.maxHealth) {
                     let healAmount = 2 + (this.level * 3); 
                     t.health = Math.min(t.maxHealth, t.health + healAmount);
                     t.isBuffed = true;
                     
-                    floatingTexts.push(new FloatingText("+" + healAmount, t.x + 50, t.y + 20, "#2ecc71"));
+                    floatingTexts.push(new FloatingText("+" + healAmount, t.x + 35, t.y + 20, "#2ecc71"));
                 }
             });
             this.healTimer = 0;
@@ -266,7 +365,7 @@ class Risk {
         if (gameMode === 'horizontal') {
             const targetRow = Math.floor(pos / cellSize);
             this.spawnRow = targetRow;
-            this.x = canvas.width; 
+            this.x = GAME_WIDTH;
             this.y = targetRow * cellSize + (cellSize / 4); 
         } else {
             const targetCol = Math.floor(pos / cellSize);
@@ -307,14 +406,14 @@ class Risk {
         if (this.isDying) { this.size -= 2; return; }
         if (this.blocked) return;
 
-        let targetX = (gameMode === 'horizontal') ? -50 : (this.spawnCol * cellSize + 50);
-        let targetY = (gameMode === 'horizontal') ? (this.spawnRow * cellSize + 50) : (canvas.height + 50);
+        let targetX = (gameMode === 'horizontal') ? - 35 : (this.spawnCol * cellSize + 35);
+        let targetY = (gameMode === 'horizontal') ? (this.spawnRow * cellSize + 35) : (canvas.height + 35);
         let attractionTarget = null;
         let minDist = 180; 
 
         towers.forEach(t => {
             if (this.shouldBeAttractedTo(t)) {
-                let dist = Math.hypot((t.x + 50) - this.x, (t.y + 50) - this.y);
+                let dist = Math.hypot((t.x + 35) - this.x, (t.y + 35) - this.y);
                 if (dist < minDist) {
                     minDist = dist;
                     attractionTarget = t;
@@ -323,8 +422,8 @@ class Risk {
         });
 
         if (attractionTarget) {
-            targetX = attractionTarget.x + 50;
-            targetY = attractionTarget.y + 50;
+            targetX = attractionTarget.x + 35;
+            targetY = attractionTarget.y + 35;
         }
 
         let dx = targetX - this.x;
@@ -350,22 +449,37 @@ class Risk {
     }
 
     draw() {
+    ctx.save();
 
     if (this.hitFlash > 0) {
-        ctx.fillStyle = "white";
+        ctx.globalAlpha = 0.7; 
         this.hitFlash--;
-    } else {
-        ctx.fillStyle = '#c0392b';
     }
 
-    ctx.fillStyle = 'black';
-    ctx.fillRect(this.x + 30, this.y + 15, 40, 4); // Background
-    ctx.fillStyle = 'red';
-    ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); // Health fill
+    const img = images[this.type]; 
+    if (img && img.complete) {
+        ctx.drawImage(img, this.x, this.y, this.size, this.size);
+    } else {
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText(this.label, this.x + 5, this.y + 20);
+    }
 
-    ctx.fillStyle = "white";
-    ctx.font = "20px Arial";
-    ctx.fillText(this.label, this.x + 40, this.y + 60);
+    ctx.globalAlpha = 1.0; 
+
+    const barW = this.size;       
+    const barH = 4;               
+    const barX = this.x;          
+    const barY = this.y - 10;     
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(barX, barY, barW, barH); 
+    
+    ctx.fillStyle = '#ff4757';
+    const healthWidth = (this.health / this.maxHealth) * barW;
+    ctx.fillRect(barX, barY, healthWidth > 0 ? healthWidth : 0, barH);
+
+    ctx.restore();
 }
 }
 
@@ -387,8 +501,8 @@ class Bullet {
             return;
         }
 
-        let dx = (this.target.x + 50) - this.x;
-        let dy = (this.target.y + 50) - this.y;
+        let dx = (this.target.x + 35) - this.x;
+        let dy = (this.target.y + 35) - this.y;
         let dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 10) {
@@ -463,9 +577,10 @@ class FloatingText {
 
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     
+    const scaleX = GAME_WIDTH / rect.width;
+    const scaleY = GAME_HEIGHT / rect.height;
+
     mouse.x = (e.clientX - rect.left) * scaleX;
     mouse.y = (e.clientY - rect.top) * scaleY;
 });
@@ -474,35 +589,25 @@ canvas.addEventListener("click", (e) => {
     if (gameState !== "playing" || isPaused) return;
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    
+    const scaleX = GAME_WIDTH / rect.width;
+    const scaleY = GAME_HEIGHT / rect.height;
 
-    // 1. 获取点击位置并强制转换
     let clickX = (e.clientX - rect.left) * scaleX;
     let clickY = (e.clientY - rect.top) * scaleY;
 
-    // --- 修复：防止边缘像素溢出导致的“点不到” ---
-    // 确保坐标不会因为微小偏移变成负数或超出最大宽度
-    clickX = Math.max(0, Math.min(clickX, canvas.width - 1));
-    clickY = Math.max(0, Math.min(clickY, canvas.height - 1));
-
-    // 2. 计算格子索引
     const gridX = Math.floor(clickX / cellSize);
     const gridY = Math.floor(clickY / cellSize);
-
-    // 3. 计算对齐后的塔位置
     const towerX = gridX * cellSize;
     const towerY = gridY * cellSize;
 
-    // 调试打印：如果还点不到，请看 F12 这里的输出
-    console.log(`Real Click: ${clickX.toFixed(2)}, Grid Index: ${gridX}`);
+    console.log(`Attempting to place at: ${gridX}, ${gridY}`);
 
-    // 4. 检查是否已有塔 (修正：使用刚才计算出的对齐坐标 towerX, towerY)
     let clickedTower = towers.find(t => t.x === towerX && t.y === towerY);
 
     if (clickedTower) {
         if (clickedTower.selected) {
-            clickedTower.upgrade();
+            if (typeof clickedTower.upgrade === "function") clickedTower.upgrade();
         } else {
             towers.forEach(t => t.selected = false);
             clickedTower.selected = true;
@@ -513,17 +618,12 @@ canvas.addEventListener("click", (e) => {
 
     const now = Date.now();
     if (now - lastPlacementTime < PLACEMENT_COOLDOWN) {
-        floatingTexts.push(new FloatingText("Cooling down!", mouse.x, mouse.y, "#e74c3c"));
+        floatingTexts.push(new FloatingText("Cooling down!", clickX, clickY, "#e74c3c"));
         return;
     }
 
     towers.forEach(t => t.selected = false);
-    
-    // 再次确认占用
-    const isOccupied = towers.some(t => t.x === towerX && t.y === towerY);
-    if (isOccupied) return;
 
-    // 5. 计算价格并放置
     let cost = 0;
     if (selectedType === "home") cost = 50;
     else if (selectedType === "car") cost = 40;
@@ -531,13 +631,16 @@ canvas.addEventListener("click", (e) => {
 
     if (gold >= cost) {
         gold -= cost;
-        // 关键：push 进去的坐标必须是 towerX 和 towerY
         towers.push(new Insurance(towerX, towerY, selectedType)); 
+        
         hasPlacedTower = true; 
         lastPlacementTime = now; 
+        
+        // 更新 UI
         if (typeof updateHUD === "function") updateHUD();
+        console.log("Tower placed successfully!");
     } else {
-        floatingTexts.push(new FloatingText("Insufficient Gold!", mouse.x, mouse.y, "#bdc3c7"));
+        floatingTexts.push(new FloatingText("Insufficient Gold!", clickX, clickY, "#bdc3c7"));
     }
 });
 
@@ -610,17 +713,22 @@ function handleWave() {
     let currentSpawnRate = Math.max(40, 120 - (wave * 5));
 
     if (frames % currentSpawnRate === 0 && enemiesSpawned < totalEnemiesThisWave) {
-        if (gameMode === 'horizontal') {
-            let maxRows = Math.floor(canvas.height / cellSize);
-            let startY = Math.floor(Math.random() * maxRows) * cellSize;
-            enemies.push(new Risk(startY, wave));
-        } else {
-            let maxCols = Math.floor(canvas.width / cellSize);
-            let startX = Math.floor(Math.random() * maxCols) * cellSize;
-            enemies.push(new Risk(startX, wave));
-        }
-        enemiesSpawned++;
+    const enemySize = 60; 
+    const offset = (cellSize - enemySize) / 2;
+
+    if (gameMode === 'horizontal') {
+        let maxRows = Math.floor(GAME_HEIGHT / cellSize); 
+        let row = Math.floor(Math.random() * maxRows);
+        let startY = row * cellSize + offset; 
+        enemies.push(new Risk(startY, wave));
+    } else {
+        let maxCols = Math.floor(GAME_WIDTH / cellSize);
+        let col = Math.floor(Math.random() * maxCols);
+        let startX = col * cellSize + offset;
+        enemies.push(new Risk(startX, wave));
     }
+    enemiesSpawned++;
+}
 
     if (enemiesSpawned >= totalEnemiesThisWave && enemies.length === 0) {
         waveInProgress = false;
@@ -664,8 +772,8 @@ function handleLogic() {
         enemies.forEach(enemy => {
         let enemyCenterX = enemy.x + 15; 
         let enemyCenterY = enemy.y + 15;
-        let towerCenterX = tower.x + 50;
-        let towerCenterY = tower.y + 50;
+        let towerCenterX = tower.x + 35;
+        let towerCenterY = tower.y + 35;
 
         let dx = enemyCenterX - towerCenterX;
         let dy = enemyCenterY - towerCenterY;
@@ -681,8 +789,8 @@ function handleLogic() {
 
             bullets.push(
                 new Bullet(
-                    tower.x + 50,
-                    tower.y + 50,
+                    tower.x + 35,
+                    tower.y + 35,
                     target,
                     tower.attackPower
                 )
@@ -691,8 +799,8 @@ function handleLogic() {
 
             ctx.strokeStyle = "yellow";
             ctx.beginPath();
-            ctx.moveTo(tower.x + 50, tower.y + 50);
-            ctx.lineTo(target.x + 50, target.y + 50);
+            ctx.moveTo(tower.x + 35, tower.y + 35);
+            ctx.lineTo(target.x + 35, target.y + 35);
             ctx.stroke();
         }
     });
@@ -703,9 +811,9 @@ function handleLogic() {
     en.blocked = false; 
 
     towers.forEach(tower => {
-        let dist = Math.hypot((en.x + 20) - (tower.x + 50), (en.y + 20) - (tower.y + 50));
-        if (dist < 60) { 
-        en.blocked = true;
+        let dist = Math.hypot((en.x + 35) - (tower.x + 35), (en.y + 35) - (tower.y + 35));
+        if (dist < 45) { 
+            en.blocked = true;
             en.attackTimer++;
             if (en.attackTimer >= en.attackSpeed) {
                 tower.health -= en.damage;
@@ -721,7 +829,7 @@ function handleLogic() {
         en.isDying = true;
         gold += 5;
         floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
-        for(let j = 0; j < 10; j++) particles.push(new Particle(en.x + 50, en.y + 50, '#c0392b'));
+        for(let j = 0; j < 10; j++) particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
     }
 
     if (en.isDying) {
@@ -890,18 +998,27 @@ function animate() {
         if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();      
+    if (images['map'] && images['map'].complete) {
+        for (let x = 0; x < GAME_WIDTH; x += cellSize) {
+            for (let y = 0; y < GAME_HEIGHT; y += cellSize) {
+                ctx.drawImage(images['map'], x, y, cellSize, cellSize);
+            }
+        }
+    } else {
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        drawGrid(); 
+    } 
 
     if (isPaused) {
         towers.forEach(t => t.draw());
         enemies.forEach(e => e.draw());
         ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
-        ctx.font = "50px Arial";
-        ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+        ctx.font = "40px Arial"; 
+        ctx.fillText("PAUSED", GAME_WIDTH / 2, GAME_HEIGHT / 2);
         requestAnimationFrame(animate);
         return; 
     }
@@ -913,14 +1030,16 @@ function animate() {
     }
 
     towers.forEach(t => t.draw());
-    handleLogic(); 
+    handleLogic();
 
     if (bossWarningTimer > 0) {
         drawBossWarning(); 
         bossWarningTimer--;
     }
+
     floatingTexts.forEach((text, i) => {
-        text.update(); text.draw();
+        text.update(); 
+        text.draw();
         if (text.alpha <= 0) floatingTexts.splice(i, 1);
     });
 
@@ -931,7 +1050,6 @@ function animate() {
 floatingTexts.push(
     new FloatingText("Wave 1", canvas.width / 2 - 40, 100, "white")
 );
-
 
 pauseBtn.addEventListener("click", () => {
 

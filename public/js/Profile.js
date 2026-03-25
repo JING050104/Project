@@ -241,9 +241,23 @@ async function submitFinalUpdate(updateData) {
     }
 }
 
-function toggleVisibility(id) {
-    const el = document.getElementById(id);
-    if (el) el.type = el.type === 'password' ? 'text' : 'password';
+function toggleVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(`toggle-icon-${inputId}`);
+
+    if (input.type === "password") {
+        input.type = "text";
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    } else {
+        input.type = "password";
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    }
 }
 
 function handleLogout() {

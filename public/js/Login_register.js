@@ -4,13 +4,13 @@ let tempResetCode = "";
 loginForm.addEventListener("submit", async e => {
     e.preventDefault();
 
-    const identifier = e.target.identifier.value;
+    const email = e.target.email.value;
     const password = e.target.password.value;
 
     const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password })
+        body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();

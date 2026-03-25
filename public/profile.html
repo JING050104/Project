@@ -31,7 +31,6 @@
                 <div class="settings-form-wrapper">
                     <form id="profileUpdateForm" class="active">
                         <div class="form-content-flex">
-                            
                             <div class="profile-section-left">
                                 <h3 class="group-title">Profile Information</h3>
                                 <div class="input-group">
@@ -41,8 +40,8 @@
                                 <div class="input-group">
                                     <label>Email Address</label>
                                     <input type="email" id="editEmail" placeholder="Email">
-                                    <small style="color:#666; display:block; margin-top:4px;">
-                                        Verification needed after change email address
+                                    <small style="color:#ff0000; display:block; margin-top:4px;">
+                                        *Verification needed after email address changed
                                     </small>
                                 </div>
                             </div>
@@ -50,9 +49,10 @@
                             <div class="profile-section-right">
                                 <h3 class="group-title">Change Password</h3>
                                 
-                                <div class="input-group">
+                                <div class="input-group password-container">
                                     <label>Current Password</label>
                                     <input type="password" id="currPass" placeholder="Enter current password">
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-currPass" onclick="toggleVisibility('currPass')"></i>
                                 </div>
 
                                 <p class="forgot-link-container">
@@ -62,7 +62,7 @@
                                 <div class="password-container">
                                     <label>New Password</label>
                                     <input type="password" id="NewPassword" placeholder="New password">
-                                    <span class="toggle-eye" onclick="toggleVisibility('NewPassword')"></span>
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-NewPassword" onclick="toggleVisibility('NewPassword')"></i>
                                 </div>
 
                                 <div id="regPasswordRequirements" class="requirements-box">
@@ -76,7 +76,7 @@
                                 <div class="password-container">
                                     <label>Confirm Password</label>
                                     <input type="password" id="regConfirmPassword" placeholder="Confirm new password">
-                                    <span class="toggle-eye" onclick="toggleVisibility('regConfirmPassword')"></span>
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword" onclick="toggleVisibility('regConfirmPassword')"></i>
                                 </div>
                             </div>
                         </div>
@@ -106,6 +106,7 @@
                 
                 <div class="password-container">
                     <input type="password" id="ModalNewPassword" placeholder="New Password">
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalNewPassword" onclick="toggleVisibility('ModalNewPassword')"></i>
                 </div>
 
                 <div id="regPasswordRequirements" class="requirements-box">
@@ -118,6 +119,7 @@
 
                 <div class="password-container">
                     <input type="password" id="ModalConfirmPassword" placeholder="Confirm Password">
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalConfirmPassword" onclick="toggleVisibility('ModalConfirmPassword')"></i>
                 </div>
                 <button id="resetFinishBtn" class="submit-btn">
                     <i class="fa-solid fa-floppy-disk"></i>

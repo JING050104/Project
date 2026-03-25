@@ -30,16 +30,19 @@ module.exports = function(passport) {
   // ====================== Local Strategy ======================
   passport.use(
     new LocalStrategy(
-      { usernameField: "identifier", passwordField: "password" }, 
-      async (identifier, password, done) => {
+      { 
+        usernameField: "email", 
+        passwordField: "password" 
+      }, 
+      async (email, password, done) => {
         try {
           const rows = await db.execute(
-            "SELECT * FROM users WHERE (email = $1 OR username = $1) AND is_verified = 1",
-            [identifier]
+            "SELECT * FROM users WHERE email = $1 AND is_verified = 1",
+            [email]
           );
 
           if (rows.length === 0) {
-            return done(null, false, { message: "Account not verified or user not found." });
+            return done(null, false, { message: "Invalid email or account not verified." });
           }
 
           const user = rows[0];
