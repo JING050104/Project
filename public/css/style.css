@@ -750,6 +750,24 @@ input {
     display: flex !important;
     flex-direction: column !important;
     margin-bottom: 40px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.point-plus { color: #10b981 !important; } 
+.point-minus { color: #ef4444 !important; }
+
+.h-date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
 }
 
 #voucher-container, #inventory-container {
@@ -1648,6 +1666,7 @@ button:disabled {
 
 .voucher-card.expired,
 .voucher-card.used {
+    filter: grayscale(0.8);
     opacity: 0.7;
     background: #f8fafc;
     border-color: #cbd5e1;

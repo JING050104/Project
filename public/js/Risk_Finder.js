@@ -207,7 +207,7 @@ function endGame() {
         score: totalScore, 
         reached_level: currentIndex, 
         gameType: 'RiskFinder',
-        time_used: timeUsedSeconds
+        time_used: timeUsedSeconds,
     };
 
     console.log("Saving final score...", dataToSend);

@@ -24,6 +24,7 @@ async function initRewards() {
         renderAvailableVouchers(vouchers);
         initTabSwitch();                 
         renderInventoryByTab('inactive');
+        await loadPointHistory();
 
     } catch (err) {
         console.error("Failed to load rewards:", err);
@@ -118,9 +119,10 @@ async function loadInventory() {
         }
     }
 }
+
 function renderInventoryByTab(tab) {
     const container = document.getElementById('inventory-container');
-    const template = document.getElementById('voucher-template');
+    const template = document.getElementById('voucher-item-template'); 
     if (!container || !template) return;
 
     container.innerHTML = '';
@@ -140,61 +142,84 @@ function renderInventoryByTab(tab) {
     }
 
     filtered.forEach(item => {
-        const clone = template.content.cloneNode(true);
-        const card = clone.querySelector('.voucher-card');
-        const statusBadge = clone.querySelector('.v-status-badge');
-        const codeWrapper = clone.querySelector('.v-code-wrapper');
-        const codeText = clone.querySelector('.code-text');       
-        const btnWrapper = clone.querySelector('.v-button-wrapper');
-        const copyBtn = clone.querySelector('.v-copy-btn');       
+    const clone = template.content.cloneNode(true);
+    const card = clone.querySelector('.voucher-card');
+    const statusBadge = clone.querySelector('.v-status-badge');
+    const codeWrapper = clone.querySelector('.v-code-wrapper');
+    const codeText = clone.querySelector('.code-text');       
+    const copyBtn = clone.querySelector('.v-copy-btn');       
+    const expiryContainer = clone.querySelector('.v-expiry-container');
+    const expiryDateEl = clone.querySelector('.v-expiry-date');
 
-        const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
-        const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
+    const redeemBtn = clone.querySelector('.v-redeem-btn');
+    const ownedBtn = clone.querySelector('.v-owned-btn');
+    const lowPointsBtn = clone.querySelector('.v-low-points-btn');
 
-        clone.querySelector('.v-name').innerText = item.item_name || 'Voucher';
-        clone.querySelector('.v-desc').innerText = item.description || '';
+    const now = new Date();
+    const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
+    const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
 
-        if (isExpired) {
-            card.classList.add('expired');
-            statusBadge.innerText = 'Expired';
-            statusBadge.className = 'v-status-badge status-expired'; 
-            if (codeWrapper) codeWrapper.style.display = 'none';
-        } else {
-            if (item.status === 'active' || item.status === 'activated') {
-                statusBadge.innerText = 'Active';
-                statusBadge.className = 'v-status-badge status-active';
-                
-                if (item.redeem_code) {
-                    if (codeWrapper) codeWrapper.style.display = 'flex'; 
-                    if (codeText) codeText.innerText = item.redeem_code;
+    clone.querySelector('.v-name').innerText = item.item_name || 'Voucher';
+    clone.querySelector('.v-desc').innerText = item.description || '';
 
-                    if (copyBtn) {
-                        copyBtn.style.display = 'inline-block';
-                        copyBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(item.redeem_code).then(() => {
-                                const originalClass = copyBtn.className;
-                                copyBtn.className = "v-copy-btn fa-solid fa-check"; 
-                                copyBtn.style.color = "#2ecc71";
-                                
-                                setTimeout(() => {
-                                    copyBtn.className = originalClass;
-                                    copyBtn.style.color = "";
-                                }, 2000);
-                            }).catch(err => console.error('Copy failed', err));
-                        };
-                    }
+    if (ownedBtn) ownedBtn.remove();
+    if (lowPointsBtn) lowPointsBtn.remove();
+
+    if (isExpired) {
+        if (redeemBtn) redeemBtn.remove();
+        card.classList.add('expired');
+        statusBadge.innerText = 'Expired';
+        statusBadge.className = 'v-status-badge status-expired'; 
+        if (codeWrapper) codeWrapper.style.display = 'none';
+    } else {
+        if (item.status === 'active' || item.status === 'activated') {
+            if (redeemBtn) redeemBtn.remove(); 
+            
+            statusBadge.innerText = 'Active';
+            statusBadge.className = 'v-status-badge status-active';
+            
+            if (item.redeem_code) {
+                if (codeWrapper) codeWrapper.style.display = 'flex'; 
+                if (codeText) codeText.innerText = item.redeem_code;
+                if (copyBtn) {
+                    copyBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(item.redeem_code).then(() => {
+                            const originalClass = copyBtn.className;
+                            copyBtn.className = "fa-solid fa-check"; 
+                            copyBtn.style.color = "#2ecc71";
+                            setTimeout(() => {
+                                copyBtn.className = originalClass;
+                                copyBtn.style.color = "";
+                            }, 2000);
+                        });
+                    };
                 }
-            } else {
-                statusBadge.innerText = 'Inactive'; 
-                statusBadge.className = 'v-status-badge status-inactive';
-                if (codeWrapper) codeWrapper.style.display = 'none';
-                btnWrapper.innerHTML = `<button class="submit-btn" onclick="activateItem(${item.id})" style="margin-top:10px; width:100%;">Activate Now</button>`;
+            }
+        } else {
+            statusBadge.innerText = 'Inactive'; 
+            statusBadge.className = 'v-status-badge status-inactive';
+            if (codeWrapper) codeWrapper.style.display = 'none';
+
+            if (redeemBtn) {
+                redeemBtn.style.display = 'block';
+                redeemBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Activate Now';
+                redeemBtn.onclick = () => activateItem(item.id);
             }
         }
+    }
 
-        container.appendChild(clone);
-    });
+    if (expiryDate && !isExpired && (item.status === 'active' || item.status === 'activated')) {
+        const dateString = expiryDate.toLocaleDateString() + ' ' + expiryDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        if (expiryDateEl) {
+            expiryDateEl.innerText = dateString;
+            expiryContainer.style.display = 'block';
+        }
+    }
+
+    container.appendChild(clone);
+});
+
 }
 
 function initTabSwitch() {
@@ -303,8 +328,50 @@ function renderVouchers() {
  * @param {number} cost 消耗积分
  */
 
+async function loadPointHistory() {
+    const container = document.getElementById('point-history-container');
+    const template = document.getElementById('history-item-template');
+    if (!container || !template) return;
+
+    try {
+        const res = await fetch('/api/get-point-history');
+        const history = await res.json();
+
+        container.innerHTML = '';
+
+        if (!history || history.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">No transaction history found.</p>';
+            return;
+        }
+
+        history.forEach(item => {
+            const clone = template.content.cloneNode(true);
+            
+            clone.querySelector('.h-desc').innerText = item.description;
+            
+            const date = new Date(item.created_at);
+            clone.querySelector('.h-date').innerText = date.toLocaleString();
+
+            const changeEl = clone.querySelector('.h-change');
+            const val = item.points_change;
+
+            if (val > 0) {
+                changeEl.innerText = `+${val}`;
+                changeEl.classList.add('point-plus');
+            } else {
+                changeEl.innerText = `${val}`; 
+                changeEl.classList.add('point-minus');
+            }
+
+            container.appendChild(clone);
+        });
+    } catch (err) {
+        console.error("Failed to load history:", err);
+        container.innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading history.</p>';
+    }
+}
+
 async function redeemVoucher(voucherName, cost) {
-    // 1. 基础确认
     if (!confirm(`Are you sure you want to spend ${cost} points for ${voucherName}?`)) return;
 
     try {

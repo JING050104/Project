@@ -16,6 +16,15 @@
         <h3><i class="fa-solid fa-coins" style="color: #f1c40f;"></i> Total Points</h3>
         <span class="stat-value" id="display-points">0</span>
     </div>
+    
+    <div class="reward-section">
+    <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Point History</h2>
+    <div class="login-card inventory-box" style="max-height: 400px; overflow-y: auto;">
+        <div id="point-history-container">
+            <p class="loading-text">Loading point history...</p>
+        </div>
+    </div>
+    </div>
 
     <div class="reward-section">
         <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
@@ -38,6 +47,7 @@
                 </div>
         </div>
     </div>
+
 </main>
     <div id="voucher-detail-modal" class="modal-overlay">
     <div class="login-card voucher-detail-card">
@@ -85,8 +95,13 @@
         <div class="status-container">
             <span class="v-status-badge status-active"></span>
         </div>
-        
-        <div class="v-button-wrapper">
+        <div class="v-expiry-container" style="display:none; margin: 10px 0; font-size: 0.85rem; color: #64748b;">
+            <i class="fa-solid fa-clock"></i> Expired at: <span class="v-expiry-date"></span>
+        </div>
+        <div class="v-code-wrapper" style="display:none; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 6px;">
+            <code class="code-text" style="font-weight: bold; color: #1e293b;"></code>
+            <i class="fa-solid fa-copy v-copy-btn" style="cursor: pointer; color: #64748b;"></i>
+        </div>
             <button class="submit-btn v-redeem-btn"><i class="fa-solid fa-cart-shopping"></i>Redeem Now</button>
             
             <button class="submit-btn v-owned-btn" disabled 
@@ -101,6 +116,22 @@
         </div>
     </div>
     </template> 
+    <template id="history-item-template">
+    <div class="history-item">
+        <div class="h-date-column">
+            <span class="h-date"></span>
+        </div>
+
+        <div class="h-activity-column">
+            <div class="h-type"></div>
+            <div class="h-desc"></div>
+        </div>
+
+        <div class="h-change-column">
+            <span class="h-change"></span>
+        </div>
+    </div>
+    </template>
 
 </body>
 </html>

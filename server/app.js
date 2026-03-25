@@ -126,6 +126,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { reward } = req.body;
 
+    // 1. 验证奖励格式
     if (!reward || !reward.includes("pts")) {
         return res.json({ success: false, error: "No points earned" });
     }
@@ -137,17 +138,17 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 
         await db.execute(`
             INSERT INTO user_points (user_id, total_points, last_updated) 
-            VALUES ($1, $2, NOW() AT TIME ZONE 'Asia/Kuala_Lumpur')
+            VALUES ($1, $2, CURRENT_TIMESTAMP)
             ON CONFLICT (user_id) 
             DO UPDATE SET 
-                total_points = user_points.total_points + $3,
-                last_updated = NOW() AT TIME ZONE 'Asia/Kuala_Lumpur'`, 
-            [userId, points, points]
+                total_points = user_points.total_points + $2,
+                last_updated = CURRENT_TIMESTAMP`, 
+            [userId, points] 
         );
 
         await db.execute(`
-            INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
-            VALUES ($1, $2, $3, $4)`,
+            INSERT INTO point_transactions (user_id, points_change, activity_type, description, created_at) 
+            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
             [userId, points, 'DAILY_SPIN', `Spin Win: ${reward}`]
         );
 
@@ -155,21 +156,20 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         res.json({ success: true, type: 'points' });
 
     } catch (err) {
-        await db.execute('ROLLBACK');
-        console.error("Spin Reward Error:", err);
+        if (db && db.execute) await db.execute('ROLLBACK');
+        console.error("Spin Reward Error Details:", err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
-
 // C. 獲取背包（已修正）
 app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     const query = `
         SELECT 
             i.id as "id", 
             COALESCE(v.name, i.item_name) as "item_name", 
-            i.quantity as "quantity", 
             i.status as "status",
             i.redeem_code as "redeem_code",
+            activated_at AS "activated_at", 
             v.description AS "description",
             i.expired_at as "expired_at"
         FROM user_inventory i
@@ -235,43 +235,46 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// E. 保存遊戲得分
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
-    const username = req.user.username || req.user.email;
+    const username = req.user.username || req.user.email || 'Unknown'; 
     const { score, reached_level, gameType, time_used } = req.body;
+   
+    if (!score || score <= 0) {
+        return res.json({ success: true, message: "0 points, not saved." });
+    }
+    
     try {
         await db.execute('BEGIN');
 
         await db.execute(`
-            INSERT INTO user_points (user_id, total_points, last_updated) 
-            VALUES ($1, $2, NOW() AT TIME ZONE 'Asia/Kuala_Lumpur')
+            INSERT INTO user_points (user_id, total_points, last_updated)
+            VALUES ($1, $2, CURRENT_TIMESTAMP)
             ON CONFLICT (user_id) 
             DO UPDATE SET 
-                total_points = user_points.total_points + $3,
-                last_updated = NOW() AT TIME ZONE 'Asia/Kuala_Lumpur'`, 
-            [userId, score, score]
+                total_points = user_points.total_points + $2,
+                last_updated = CURRENT_TIMESTAMP`,
+            [userId, score]
         );
 
         await db.execute(`
-            INSERT INTO scores (user_id, username, game_type, score, reached_level, time_used) 
-            VALUES ($1, $2, $3, $4, $5,$6)`,
-            [userId, username, gameType, score, reached_level,time_used]
+            INSERT INTO point_transactions (user_id, points_change, activity_type, description, created_at)
+            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
+            [userId, score, 'Game Reward', `Played ${gameType} - Level ${reached_level}`]
         );
 
-        const description = `Finished ${gameType}: Level ${reached_level}`;
         await db.execute(`
-            INSERT INTO point_transactions (user_id, points_change, activity_type, description) 
-            VALUES ($1, $2, $3, $4)`,
-            [userId, score, 'GAME_EARN', description]
+            INSERT INTO scores (user_id, username, score, reached_level, game_type, time_used, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+            [userId, username, score, reached_level, gameType, time_used] // 对应 $1 到 $6
         );
 
         await db.execute('COMMIT'); 
-        res.json({ success: true, message: "All records updated successfully!" });
+        res.json({ success: true, message: "Scores and transactions updated!" });
     } catch (err) {
         await db.execute('ROLLBACK');
-        console.error("Save Score Error:", err.message);
-        res.status(500).json({ success: false, error: "Failed to sync data." });
+        console.error("Save Score Error Details:", err.message); 
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -310,9 +313,15 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
         await db.execute(`
             UPDATE user_points 
             SET total_points = total_points - $1,
-                last_updated = NOW() AT TIME ZONE 'Asia/Kuala_Lumpur'
+                last_updated = CURRENT_TIMESTAMP
             WHERE user_id = $2`,
             [cost, userId]
+        );
+
+        await db.execute(`
+            INSERT INTO point_transactions (user_id, points_change, activity_type, description, created_at)
+            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
+            [userId, -cost, 'Redemption', `Redeemed ${voucherName}`]
         );
 
         const voucherRes = await db.execute("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
@@ -341,9 +350,29 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
     }
 });
 
+app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const result = await db.execute(
+            `SELECT points_change, description, created_at 
+             FROM point_transactions 
+             WHERE user_id = $1 
+             ORDER BY created_at DESC`, 
+            [userId]
+        );
+
+       const history = result.rows || result; 
+        
+        res.json(history);
+    } catch (err) {
+        console.error("Database Error:", err.message);
+        res.status(500).json({ error: "Failed to fetch point history" });
+    }
+});
+
 setInterval(async () => {
     try {
-        // 只清理未验证且过期的用户
         const userResult = await db.execute(`
             DELETE FROM users 
             WHERE is_verified = false 

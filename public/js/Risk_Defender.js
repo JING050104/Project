@@ -10,23 +10,6 @@ const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
 const cellSize = 70;
 
-const srcMap = {
-    'map': 'risk-image/map.png',
-    'tower_home': 'risk-image/tower_home.png',      
-    'tower_car': 'risk-image/tower_car.png',       
-    'tower_medical': 'risk-image/tower_medical.png', 
-    'fire': 'risk-image/fire.png',
-    'flood': 'risk-image/flood.png',
-    'virus': 'risk-image/virus.png',
-    'thief': 'risk-image/thief.png'
-};
-
-const images = {};
-for (let key in srcMap) {
-    images[key] = new Image();
-    images[key].src = srcMap[key];
-}
-
 let startTime = Date.now();  
 let totalPausedTime = 0;   
 let pauseStartTime;         
@@ -149,69 +132,68 @@ class Insurance {
 
     draw() {
     ctx.save();
-    
-    ctx.beginPath();
-    ctx.arc(this.x + 35, this.y + 35, this.range, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.setLineDash([5, 5]); 
-    ctx.stroke();
-    ctx.setLineDash([]); 
-
+        
     if (this.level >= 4 && this.level < 7) {
-        ctx.save();
         ctx.translate(this.x + 35, this.y + 35);
         ctx.rotate(frames * 0.05); 
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.strokeRect(-25, -25, 50, 50);
+        ctx.strokeStyle = "white";
+        ctx.strokeRect(-20, -20, 40, 40);
         ctx.restore(); 
     } else if (this.level >= 7) {
         ctx.beginPath();
-        ctx.arc(this.x + 35, this.y + 35, 38, 0, Math.PI * 2);
+        ctx.arc(this.x + 35, this.y + 35, 40, 0, Math.PI * 2);
         ctx.strokeStyle = "#f1c40f";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5;
         ctx.stroke();
     }
 
-    let imgKey = 'tower_' + this.type; 
-    let img = images[imgKey]; 
-
-    if (img && img.complete) {
-        ctx.drawImage(img, this.x + 5, this.y + 5, 60, 60);
-    }
+        ctx.beginPath();
+        ctx.arc(this.x + 35, this.y + 35, this.range, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.setLineDash([5, 5]); 
+        ctx.stroke();
+        ctx.setLineDash([]); 
 
     if (this.selected) {
         ctx.strokeStyle = "#f1c40f"; 
         ctx.lineWidth = 3;
-        ctx.strokeRect(this.x + 2, this.y + 2, 66, 66);
+        ctx.strokeRect(this.x + 5, this.y + 5, 90, 90);
     }
 
-    const barX = this.x + 10;
-    const barY = this.y + 60;
-    const barW = 50;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(barX, barY, barW, 4);
-    ctx.fillStyle = '#2ecc71';
-    ctx.fillRect(barX, barY, (this.health / this.maxHealth) * barW, 4);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = this.color;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x + 10, this.y + 10, 80, 80);
+    ctx.shadowBlur = 0; 
+
+    ctx.fillStyle = 'red';
+    ctx.fillRect(this.x + 15, this.y + 80, 70, 5);
+    ctx.fillStyle = 'lime';
+    ctx.fillRect(this.x + 15, this.y + 80, (this.health / this.maxHealth) * 70, 5);
 
     ctx.fillStyle = "white";
-    ctx.font = "bold 11px Arial";
-    ctx.shadowColor = "black";
-    ctx.shadowBlur = 2;
-    ctx.fillText("Lv." + this.level, this.x + 8, this.y + 18);
-    ctx.shadowBlur = 0;
+        ctx.font = "12px Arial";
+        ctx.fillText("Lv." + this.level, this.x + 10, this.y + 20);
 
     if (this.type === 'medical') {
-        ctx.beginPath();
-        let speed = 0.1 + (this.level * 0.02);
-        let maxRadius = 25 + (this.level * 2);
-        let pulse = Math.sin(frames * speed) * 5 + maxRadius; 
-        
-        ctx.arc(this.x + 35, this.y + 35, pulse, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(46, 204, 113, ${0.4 - (this.level * 0.03)})`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
+    ctx.beginPath();
+    let speed = 0.1 + (this.level * 0.02);
+    let maxRadius = 20 + (this.level * 5);
+    let pulse = Math.sin(frames * speed) * 10 + maxRadius; 
+    
+    ctx.arc(this.x + 35, this.y + 35, pulse, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
 
+    if (this.isBuffed) {
+        ctx.fillStyle = "#2ecc71";
+        ctx.font = "bold 20px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("+", this.x + 35, this.y + 40);
+    }
+    
     ctx.restore();
 }
 
@@ -449,37 +431,22 @@ class Risk {
     }
 
     draw() {
-    ctx.save();
 
     if (this.hitFlash > 0) {
-        ctx.globalAlpha = 0.7; 
-        this.hitFlash--;
-    }
-
-    const img = images[this.type]; 
-    if (img && img.complete) {
-        ctx.drawImage(img, this.x, this.y, this.size, this.size);
-    } else {
         ctx.fillStyle = "white";
-        ctx.font = "20px Arial";
-        ctx.fillText(this.label, this.x + 5, this.y + 20);
+        this.hitFlash--;
+    } else {
+        ctx.fillStyle = '#c0392b';
     }
 
-    ctx.globalAlpha = 1.0; 
+    ctx.fillStyle = 'black';
+    ctx.fillRect(this.x + 30, this.y + 15, 40, 4); // Background
+    ctx.fillStyle = 'red';
+    ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); // Health fill
 
-    const barW = this.size;       
-    const barH = 4;               
-    const barX = this.x;          
-    const barY = this.y - 10;     
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(barX, barY, barW, barH); 
-    
-    ctx.fillStyle = '#ff4757';
-    const healthWidth = (this.health / this.maxHealth) * barW;
-    ctx.fillRect(barX, barY, healthWidth > 0 ? healthWidth : 0, barH);
-
-    ctx.restore();
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText(this.label, this.x + 40, this.y + 60);
 }
 }
 
@@ -998,27 +965,18 @@ function animate() {
         if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
     }
 
-    if (images['map'] && images['map'].complete) {
-        for (let x = 0; x < GAME_WIDTH; x += cellSize) {
-            for (let y = 0; y < GAME_HEIGHT; y += cellSize) {
-                ctx.drawImage(images['map'], x, y, cellSize, cellSize);
-            }
-        }
-    } else {
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        drawGrid(); 
-    } 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();      
 
     if (isPaused) {
         towers.forEach(t => t.draw());
         enemies.forEach(e => e.draw());
         ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
-        ctx.font = "40px Arial"; 
-        ctx.fillText("PAUSED", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        ctx.font = "50px Arial";
+        ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
         requestAnimationFrame(animate);
         return; 
     }
@@ -1030,16 +988,14 @@ function animate() {
     }
 
     towers.forEach(t => t.draw());
-    handleLogic();
+    handleLogic(); 
 
     if (bossWarningTimer > 0) {
         drawBossWarning(); 
         bossWarningTimer--;
     }
-
     floatingTexts.forEach((text, i) => {
-        text.update(); 
-        text.draw();
+        text.update(); text.draw();
         if (text.alpha <= 0) floatingTexts.splice(i, 1);
     });
 
