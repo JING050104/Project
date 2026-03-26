@@ -38,28 +38,34 @@ let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical'; 
 
 function setupCanvas() {
-    const MOBILE_W = 350;
-    const MOBILE_H = 490;
-    const DESKTOP_W = 490;
-    const DESKTOP_H = 350;
+    const wrapper = document.querySelector('.canvas-wrapper');
+    if (!wrapper) return;
 
-    if (window.innerHeight > window.innerWidth) {
-        GAME_WIDTH = MOBILE_W;
-        GAME_HEIGHT = MOBILE_H;
-        gameMode = 'vertical';
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const TARGET_RATIO = isPortrait ? (350 / 490) : (490 / 350);
+
+    let maxWidth = wrapper.clientWidth;
+    let maxHeight = wrapper.clientHeight;
+
+    let newWidth, newHeight;
+    if (maxWidth / maxHeight > TARGET_RATIO) {
+        newHeight = maxHeight;
+        newWidth = maxHeight * TARGET_RATIO;
     } else {
-        GAME_WIDTH = DESKTOP_W;
-        GAME_HEIGHT = DESKTOP_H;
-        gameMode = 'horizontal';
+        newWidth = maxWidth;
+        newHeight = maxWidth / TARGET_RATIO;
     }
 
+    GAME_WIDTH = isPortrait ? 350 : 490;
+    GAME_HEIGHT = isPortrait ? 490 : 350;
+    gameMode = isPortrait ? 'vertical' : 'horizontal';
+
     const dpr = window.devicePixelRatio || 1;
-    
     canvas.width = GAME_WIDTH * dpr;
     canvas.height = GAME_HEIGHT * dpr;
 
-    canvas.style.width = GAME_WIDTH + 'px';
-    canvas.style.height = GAME_HEIGHT + 'px';
+    canvas.style.width = newWidth + 'px';
+    canvas.style.height = newHeight + 'px';
 
     ctx.scale(dpr, dpr);
 }
@@ -122,7 +128,7 @@ class Insurance {
                 this.label = "Life";
                 this.attackSpeed = 60;
                 this.attackPower = 0;
-                this.range = 60;
+                this.range = 80;
                 this.healTimer = 0; 
                 break;
         }
@@ -550,6 +556,15 @@ canvas.addEventListener('mousemove', (e) => {
 
     mouse.x = (e.clientX - rect.left) * scaleX;
     mouse.y = (e.clientY - rect.top) * scaleY;
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / (rect.width * (window.devicePixelRatio || 1));
+    const scaleY = canvas.height / (rect.height * (window.devicePixelRatio || 1));
+
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
 });
 
 canvas.addEventListener("click", (e) => {

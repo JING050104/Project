@@ -149,7 +149,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         await db.execute(`
             INSERT INTO point_transactions (user_id, points_change, activity_type, description, created_at) 
             VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
-            [userId, points, 'DAILY_SPIN', `Spin Win: ${reward}`]
+            [userId, points, 'Daily Spin', `Spin Win: ${reward}`]
         );
 
         await db.execute('COMMIT');
@@ -161,6 +161,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 // C. 獲取背包（已修正）
 app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     const query = `

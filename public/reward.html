@@ -12,20 +12,23 @@
     </header>
 
     <main class="dashboard-content">
-    <div class="top-full-card login-card">
-        <h3><i class="fa-solid fa-coins" style="color: #f1c40f;"></i> Total Points</h3>
-        <span class="stat-value" id="display-points">0</span>
-    </div>
-    
-    <div class="reward-section">
-    <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Point History</h2>
-    <div class="login-card inventory-box" style="max-height: 400px; overflow-y: auto;">
-        <div id="point-history-container">
-            <p class="loading-text">Loading point history...</p>
+    <div class="rewards-top-row">
+        <div class="reward-section flex-2">
+            <h2 class="section-title"><i class="fa-solid fa-coins"></i> Total Points</h2>
+            <div class="top-full-card login-card">
+                <span class="stat-value" id="display-points">0</span>
+                <p style="color: #64748b; font-size: 0.9rem;">Available Points</p>
+            </div>
+        </div>
+        
+        <div class="reward-section flex-8">
+        <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Point History</h2>
+        <div id="history-scroll-box" class="login-card inventory-box">
+            <div id="point-history-container"></div>
         </div>
     </div>
-    </div>
-
+</div>
+    
     <div class="reward-section">
         <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
         <div class="login-card inventory-box">
@@ -47,7 +50,6 @@
                 </div>
         </div>
     </div>
-
 </main>
     <div id="voucher-detail-modal" class="modal-overlay">
     <div class="login-card voucher-detail-card">
