@@ -822,7 +822,7 @@ input {
 }
 
 .dashboard-grid .dash-card.clickable-card {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 3 / 4;
     display: flex;         
     flex-direction: column;
     align-items: center;
@@ -1347,6 +1347,11 @@ button:disabled {
 
 @media (max-width: 768px) {
 
+    .dashboard-grid .dash-card.clickable-card 
+    {
+    aspect-ratio: 3 / 4;
+    }
+    
     .flex-2, .flex-8 {
         flex: none;
         width: 100%;
