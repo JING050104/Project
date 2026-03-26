@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simplified Leaderboard - Coverage Quest</title>
+    <style>
+        :root {
+            --main-purple: #8e24aa;
+            --light-pink: #fce4ec;
+            --text-dark: #333;
+            --border-rad: 12px; /* 极简版使用常规圆角 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-rad);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+
+        h2 {
+            color: var(--main-purple);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        /* 极简切换开关 */
+        .tabs {
+            display: flex;
+            background: var(--light-pink);
+            padding: 5px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--main-purple);
+            border-radius: 6px;
+        }
+
+        .tab.active {
+            background: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 极简表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #f9f9f9;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+
+        .rank { font-weight: bold; width: 50px; }
+        .score { text-align: right; color: var(--main-purple); font-weight: bold; }
+        
+        .medal { font-size: 18px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🏆 Global Rankings</h2>
+    
+    <div class="tabs">
+        <div class="tab active">Risk Finder</div>
+        <div class="tab">Risk Defender</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th style="text-align: right;">Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="rank"><span class="medal">🥇</span></td>
+                <td>Lee Wan Jing</td>
+                <td class="score">12,450 pts</td>
+            </tr>
+            <tr>
+                <td class="rank"><span class="medal">🥈</span></td>
+                <td>Alex_Tester</td>
+                <td class="score">10,200 pts</td>
+            </tr>
+            <tr>
+                <td class="rank"><span class="medal">🥉</span></td>
+                <td>Sam_Insurance</td>
+                <td class="score">9,850 pts</td>
+            </tr>
+            <tr>
+                <td class="rank">4</td>
+                <td>User_772</td>
+                <td class="score">8,100 pts</td>
+            </tr>
+            <tr>
+                <td class="rank">5</td>
+                <td>Quest_Player</td>
+                <td class="score">7,400 pts</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
