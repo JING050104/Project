@@ -169,14 +169,14 @@ router.get("/user", (req, res) => {
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 router.get("/google/callback", 
-    passport.authenticate("google", { failureRedirect: "/login.html" }),
+    passport.authenticate("google", { failureRedirect: "/index.html" }),
     (req, res) => {
         req.session.save((err) => {
             if (err) {
                 console.error("Session save error:", err);
-                return res.redirect("/login.html");
+                return res.redirect("/index.html");
             }
-            res.redirect("/dashboard.html");
+            res.redirect("/");
         });
     }
 );

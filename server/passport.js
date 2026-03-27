@@ -11,21 +11,24 @@ module.exports = function(passport) {
     done(null, user.id);
   });
 
-  // 2. Deserialize User
   passport.deserializeUser(async (id, done) => {
     try {
-      const rows = await db.execute("SELECT * FROM users WHERE id = $1", [id]);
-      
-      if (!rows || rows.length === 0) {
-        return done(null, false);
-      }
-      
-      done(null, rows[0]);
+        const result = await db.execute("SELECT * FROM users WHERE id = $1", [id]);
+        
+        const user = (result.rows && result.rows.length > 0) ? result.rows[0] : result[0];
+
+        console.log("------------------------------------------");
+        console.log("DEBUG: Deserializing user ID:", id);
+        console.log("DEBUG: Full User Object from DB:", user); 
+        console.log("DEBUG: Detected Role:", user ? user.role : "UNDEFINED");
+        console.log("------------------------------------------");
+
+        done(null, user);
     } catch (err) {
-      console.error("Deserialize Error:", err.message);
-      done(err, null);
+        console.error("Deserialize Error:", err.message);
+        done(err, null);
     }
-  });
+});
 
   // ====================== Local Strategy ======================
   passport.use(
@@ -98,11 +101,10 @@ module.exports = function(passport) {
           return done(null, emailUser[0]);
         }
 
-        // 建立新用戶
         const newUserRows = await db.execute(
-          `INSERT INTO users (username, email, google_id, password, is_verified) 
-           VALUES ($1, $2, $3, $4, 1) 
-           RETURNING id, username, email`,
+          `INSERT INTO users (username, email, google_id, password, is_verified, role) 
+          VALUES ($1, $2, $3, $4, 1, 'user') 
+          RETURNING *`, 
           [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
         );
 

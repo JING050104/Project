@@ -13,7 +13,6 @@ const app = express();
 
 require('./passport')(passport);
 
-// ====================== 中間件 ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,7 +20,7 @@ app.use(session({
     store: new pgSession({
         pool: db.pool,
         tableName: 'session',
-        ttl: 86400,                    // 24小時
+        ttl: 86400,                  
         pruneSessionInterval: 60,
     }),
     key: 'fyp_session_cookie',
@@ -41,23 +40,39 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(express.static(path.join(__dirname, "../public")));
-
-// ====================== 路由 ======================
 app.get("/", (req, res) => {
+    console.log("Root path access. Authenticated:", req.isAuthenticated());
     if (req.isAuthenticated()) {
-        return res.redirect("/dashboard.html");
+        const userRole = String(req.user.role).trim().toLowerCase();
+        console.log("User Role:", userRole);
+        if (userRole === 'admin') {
+            return res.redirect("/admin.html"); 
+        } else {
+            return res.redirect("/dashboard.html");
+        }
     }
     res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
-app.get("/dashboard.html", ensureAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "../public/dashboard.html"));
+app.get("/admin.html", (req, res, next) => {
+    if (req.isAuthenticated() && String(req.user.role).trim().toLowerCase() === 'admin') {
+        return res.sendFile(path.join(__dirname, "../public/admin.html"));
+    } else {
+        console.log("Unauthorized access to admin.html, redirecting...");
+        return res.redirect("/"); 
+    }
 });
 
-app.use("/auth", authRoutes);
+app.use("/api/admin", (req, res, next) => {
+    if (req.isAuthenticated() && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: "No access." });
+    }
+});
 
-// ====================== REWARD & POINT API ======================
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/auth", authRoutes);
 
 // A. 獲取積分
 app.get("/api/get-points", ensureAuthenticated, async (req, res) => {
@@ -372,21 +387,85 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
     }
 });
 
+app.get("/api/admin/users", (req, res) => {
+    if (req.isAuthenticated() && String(req.user.role).trim().toLowerCase() === 'admin') {
+        db.execute("SELECT id, username, email, role, is_verified FROM users ORDER BY id ASC")
+            .then(users => {
+                res.json({ success: true, users: users });
+            })
+            .catch(err => {
+                console.error("Fetch Users Error:", err);
+                res.status(500).json({ success: false, message: "Database error" });
+            });
+    } else {
+        res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+});
+
+app.put("/api/admin/edit-user/:id", async (req, res) => {
+    const { username, role } = req.body;
+    const targetId = req.params.id;
+
+    if (!req.isAuthenticated() || req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    try {
+        await db.execute(
+            "UPDATE users SET username = $1, role = $2 WHERE id = $3",
+            [username, role, targetId]
+        );
+        res.json({ success: true, message: "Update successful!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Database error" });
+    }
+});
+
+app.delete("/api/admin/delete-user/:id", async (req, res) => {
+    const targetUserId = req.params.id;
+    const adminId = req.user.id; 
+
+    try {
+        if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access Denied." });
+        }
+
+        if (parseInt(targetUserId) === parseInt(adminId)) {
+            return res.status(400).json({ success: false, message: "Access Denied.You can't delete your own account!" });
+        }
+
+        const result = await db.execute("DELETE FROM users WHERE id = $1", [targetUserId]);
+
+        res.json({ success: true, message: `User ID ${targetUserId} deleted successfully` });
+        console.log(`[Admin Action] Admin (ID: ${adminId}) deleted User (ID: ${targetUserId})`);
+
+    } catch (err) {
+        console.error("Delete User Error:", err.message);
+        res.status(500).json({ success: false, message: "Delete failed. Database sync error" });
+    }
+});
+
 setInterval(async () => {
     try {
-        const userResult = await db.execute(`
+        const result = await db.query(`
             DELETE FROM users 
-            WHERE is_verified = false 
-            AND (reset_expires < NOW() OR created_at < NOW() - INTERVAL '24 hours')
+            WHERE is_verified = 0 
+            AND (
+                reset_expires < NOW() 
+                OR created_at < NOW() - INTERVAL '24 hours'
+            )
         `);
 
         console.log(`[Cleanup] Run at: ${new Date().toLocaleString()}`);
-        console.log(`[Cleanup] Unverified users removed: ${userResult ? userResult.length : 0}`);
+        
+        const deletedCount = result ? result.rowCount : 0;
+        console.log(`[Cleanup] Unverified users removed: ${deletedCount}`);
 
     } catch (err) {
         console.error("[Cleanup Error]:", err.message);
     }
-}, 30 * 60 * 1000);
+}, 30 * 60 * 1000); 
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {

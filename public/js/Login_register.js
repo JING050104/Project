@@ -16,7 +16,7 @@ loginForm.addEventListener("submit", async e => {
     const data = await res.json();
 
     if (data.success) {
-        window.location.href = "/dashboard.html";
+        window.location.href = "/";
     } else {
         alert(data.message);
     }

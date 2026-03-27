@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Quest Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  </head>
+<body class="admin-body">
+
+  <header class="admin-navbar">
+    <div class="logo-section">
+      <i class="fas fa-shield-halved"></i>
+      <h1>Coverage Quest <span>Admin</span></h1>
+    </div>
+    <div class="admin-controls">
+      <span id="admin-name">Loading Admin...</span>
+      <button id="logoutBtn" class="mini-logout" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-container">
+    <aside class="sidebar">
+      <nav>
+        <a href="#" class="active"><i class="fas fa-users"></i> User Management</a>
+        <a href="#"><i class="fas fa-chart-line"></i> Analytics</a>
+        <a href="#"><i class="fas fa-cog"></i> System Settings</a>
+      </nav>
+    </aside>
+
+    <section class="admin-content">
+      <div class="content-header">
+        <h2>User Management</h2>
+        <button class="btn-refresh" id="refresh-users">
+          <i class="fas fa-sync"></i> Refresh Data
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+              <tr>
+                  <td colspan="6" style="text-align:center; padding: 20px;">
+                      <i class="fas fa-spinner fa-spin"></i> Loading users from database...
+                  </td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h3>Edit User</h3>
+        <form id="editForm">
+          <input type="hidden" id="edit-user-id">
+          
+          <label>Username:</label>
+          <input type="text" id="edit-username" required>
+          
+          <label>Role:</label>
+          <select id="edit-role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn-save">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/Admin.js"></script>
+  <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+</body>
+</html>
