@@ -174,6 +174,42 @@ async function deleteUser(id) {
     }
 }
 
+async function addVoucher() {
+    const name = document.getElementById("new-vname").value;
+    const stock = document.getElementById("new-vstock").value;
+    const cost = document.getElementById("new-vcost").value;
+    const description = document.getElementById("new-vdesc").value;
+
+    if (!name || isNaN(stock) || isNaN(cost)) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/admin/add-voucher", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: name.trim(),
+                stock: parseInt(stock),
+                cost: parseInt(cost),
+                description: description.trim()
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            alert("New voucher added!");
+            ["new-vname", "new-vstock", "new-vcost", "new-vdesc"].forEach(id => document.getElementById(id).value = "");
+            loadVouchers();
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (err) {
+        alert("Server error.");
+    }
+}
+
 function startEditVoucher(id) {
     const nameTd = document.getElementById(`td-v-name-${id}`);
     const stockTd = nameTd.nextElementSibling;
@@ -224,41 +260,6 @@ async function saveEditVoucherAction(id) {
     }
 }
 
-async function addVoucher() {
-    const name = document.getElementById("new-vname").value;
-    const stock = document.getElementById("new-vstock").value;
-    const cost = document.getElementById("new-vcost").value;
-    const description = document.getElementById("new-vdesc").value;
-
-    if (!name || isNaN(stock) || isNaN(cost)) {
-        alert("Please fill in all fields.");
-        return;
-    }
-
-    try {
-        const response = await fetch("/api/admin/add-voucher", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: name.trim(),
-                stock: parseInt(stock),
-                cost: parseInt(cost),
-                description: description.trim()
-            })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            alert("New voucher added!");
-            ["new-vname", "new-vstock", "new-vcost", "new-vdesc"].forEach(id => document.getElementById(id).value = "");
-            loadVouchers();
-        } else {
-            alert("Error: " + data.message);
-        }
-    } catch (err) {
-        alert("Server error.");
-    }
-}
 
 async function deleteVoucher(id) {
     if (!confirm(`Are you sure you want to delete Voucher ID: ${id}?`)) return;
@@ -279,6 +280,75 @@ async function deleteVoucher(id) {
         alert("Server error while deleting.");
     }
 }
+
+async function handleExcelUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const fileName = file.name;
+    const extension = fileName.split('.').pop().toLowerCase();
+    if (extension !== 'xlsx' && extension !== 'xls') {
+        alert("Please upload a valid Excel file (.xlsx or .xls)");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("excelFile", file);
+
+    try {
+        const btn = document.getElementById('add-voucher-list-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        btn.disabled = true;
+
+        const response = await fetch("/api/admin/upload-vouchers-excel", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(`Successfully imported ${data.count} vouchers!`);
+            loadVouchers();
+        } else {
+            alert("Upload failed: " + data.message);
+        }
+    } catch (err) {
+        console.error("Upload error:", err);
+        alert("Server error during upload.");
+    } finally {
+        const btn = document.getElementById('add-voucher-list-btn');
+        btn.innerHTML = '<i class="fa-solid fa-file-import"></i> Upload Excel';
+        btn.disabled = false;
+        input.value = ""; 
+    }
+}
+
+document.getElementById('download-template').onclick = function(e) {
+    e.preventDefault();
+    
+    const headers = [["Name", "Stock", "Cost", "Description"]];
+    
+    const sampleData = [
+        ["Welcome Gift", 100, 50, "Special voucher for new users"],
+        ["Holiday Sale", 200, 150, "Valid until end of the month"]
+    ];
+    
+    const content = headers.concat(sampleData);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(content);
+    
+    ws['!cols'] = [
+        { wch: 20 }, 
+        { wch: 10 }, 
+        { wch: 10 }, 
+        { wch: 30 }  
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "Voucher_Import_Template.xlsx");
+};
 
 function showSection(sectionId, ev) {
     const sections = document.querySelectorAll('.admin-section');

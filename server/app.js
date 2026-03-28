@@ -8,8 +8,20 @@ const path = require("path");
 const db = require("./db");
 const authRoutes = require('./routes/auth');
 const ensureAuthenticated = require("./middleware/auth");
-
+const multer = require('multer');
+const xlsx = require('xlsx');
+const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
+const toTitleCase = (str) => {
+    if (str === null || str === undefined) return "";
+    return str.toString()
+        .trim()                       
+        .toLowerCase()                
+        .split(/\s+/)                 
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
+        .join(' ');                  
+};
 
 require('./passport')(passport);
 
@@ -387,6 +399,7 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
     }
 });
 
+// G. 管理员权限
 app.get("/api/admin/users", (req, res) => {
     if (req.isAuthenticated() && String(req.user.role).trim().toLowerCase() === 'admin') {
         db.execute("SELECT id, username, email, role, is_verified FROM users ORDER BY id ASC")
@@ -474,7 +487,7 @@ app.get("/api/admin/vouchers", (req, res) => {
 
 app.post("/api/admin/add-voucher", async (req, res) => {
     const { name, stock, cost, description } = req.body;
-    
+
     try {
         if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
             return res.status(403).json({ success: false, message: "Unauthorized" });
@@ -528,6 +541,64 @@ app.delete("/api/admin/delete-voucher/:id", async (req, res) => {
     }
 });
 
+app.post("/api/admin/upload-vouchers-excel", upload.single("excelFile"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file uploaded" });
+        }
+
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+        let importCount = 0;
+
+        for (const row of data) {
+            const cleanRow = Object.keys(row).reduce((acc, key) => {
+                acc[key.toLowerCase().trim()] = row[key];
+                return acc;
+            }, {});
+
+            console.log("Cleaned Row Data:", cleanRow);
+
+            const { name, stock, cost, description } = cleanRow;
+
+            if (name && stock !== undefined && cost !== undefined) {
+                try {
+                    const formattedName = toTitleCase(name);
+                    const formattedDesc = toTitleCase(description);
+                    const sql = `
+                        INSERT INTO vouchers (name, stock, cost, description, created_at) 
+                        VALUES ($1, $2, $3, $4, NOW())
+                        ON CONFLICT (name) 
+                        DO UPDATE SET 
+                            stock = vouchers.stock + EXCLUDED.stock,
+                            cost = EXCLUDED.cost,
+                            description = EXCLUDED.description
+                    `;
+
+                    await db.query(sql, [
+                        formattedName,
+                        parseInt(stock) || 0,
+                        parseInt(cost) || 0,
+                        formattedDesc
+                    ]);
+
+                    importCount++;
+                } catch (rowErr) {
+                    console.error(`Row Import Error (${name}):`, rowErr.message);
+                }
+            }
+        }
+
+        res.json({ success: true, count: importCount });
+
+    } catch (err) {
+        console.error("Upload Error:", err);
+        res.status(500).json({ success: false, message: "Internal server error: " + err.message });
+    }
+});
+
+//H. 定时清理
 setInterval(async () => {
     try {
         const result = await db.query(`

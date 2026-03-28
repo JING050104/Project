@@ -35,7 +35,7 @@
     <section id="users-section" class="admin-section active">
       <div class="content-header">
         <h2>User Management</h2>
-        <button class="btn-refresh" id="refresh-users"><i class="fas fa-sync"></i> Refresh Data</button>
+        <button class="btn-refresh" id="refresh-users"><i class="fas fa-sync"></i> Refresh</button>
       </div>
       <div class="admin-card">
         <table class="admin-table">
@@ -64,7 +64,16 @@
       <div class="content-header">
         <h2>Voucher Stock Management</h2>
         <div class="header-actions">
-          <button class="btn-add" id="add-voucher-btn" onclick="addVoucher()"><i class="fa-solid fa-plus"></i> Add New Voucher</button>
+          <a href="#" id="download-template"
+            style="margin-right: 15px; font-size: 0.85rem; color: #6a5acd; text-decoration: none; border-bottom: 1px dashed #6a5acd;">
+            <i class="fa-solid fa-download"></i> Download Template
+          </a>
+          <input type="file" id="excel-upload-input" accept=".xlsx, .xls" style="display: none;"
+            onchange="handleExcelUpload(this)">
+          <button class="btn-add" id="add-voucher-list-btn"
+            onclick="document.getElementById('excel-upload-input').click()">
+            <i class="fa-solid fa-file-import"></i> Upload Excel
+          </button>
           <button class="btn-refresh" id="refresh-vouchers"><i class="fas fa-sync"></i> Refresh</button>
         </div>
       </div>
@@ -85,11 +94,11 @@
           </thead>
           <tbody id="voucher-table-body">
             <tr id="add-voucher-row" class="add-row-form">
-              <td>NEW</td>
-              <td><input type="text" id="new-vname" placeholder="Name"></td>
-              <td><input type="number" id="new-vstock" placeholder="Stock"></td>
-              <td><input type="number" id="new-vcost" placeholder="Cost"></td>
-              <td><input type="text" id="new-vdesc" placeholder="Description"></td>
+              <td></td>
+              <td><input type="text" id="new-vname"></td>
+              <td><input type="number" id="new-vstock"></td>
+              <td><input type="number" id="new-vcost"></td>
+              <td><input type="text" id="new-vdesc"></td>
               <td>
                 <button class="add-save-btn" onclick="addVoucher()"><i class="fas fa-plus-circle"></i> Add</button>
               </td>
@@ -104,6 +113,7 @@
   </main>
   <script src="js/Admin.js"></script>
   <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 
 </html>
