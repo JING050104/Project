@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, 
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }
@@ -14,7 +14,7 @@ module.exports = {
     const client = await pool.connect();
     try {
       const result = await client.query(sql, params);
-      return result.rows;          
+      return result.rows;
     } finally {
       client.release();
     }

@@ -1,62 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CoverageQuest - Home</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
     <header class="dashboard-header">
-    <h1 class="logo">Coverage Quest</h1>
-    <nav style="display: flex; gap: 20px; align-items: center;">
-        <a href="#features" style="text-decoration: none; color: #5a6c7d; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Features</a>
-    </nav>
+        <h1 class="logo">Coverage Quest</h1>
+        <nav style="display: flex; gap: 20px; align-items: center;">
+            <a href="#features" style="text-decoration: none; color: #5a6c7d; font-weight: 600;"><i
+                    class="fa-solid fa-list-check"></i> Features</a>
+        </nav>
     </header>
 
     <section class="hero">
         <h1>Welcome to Coverage Quest</h1>
-        <p>Learn insurance the fun way by playing exciting mini-games. Identify risks, defend against them, and earn real rewards! </p>
+        <p>Learn insurance the fun way by playing exciting mini-games. Identify risks, defend against them, and earn
+            real rewards! </p>
         <button class="login-btn" id="ctaBtn">
-            Get Started 
+            Get Started
             <i class="fa-solid fa-rocket"></i>
         </button>
     </section>
     <section class="features-grid" id="features">
-    <div class="features-container">
-        <div class="feature-card">
-            <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-            <h3>Risk Finder</h3>
-            <p>Explore real-life scenarios and identify hidden risks to sharpen your awareness.</p>
+        <div class="features-container">
+            <div class="feature-card">
+                <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <h3>Risk Finder</h3>
+                <p>Explore real-life scenarios and identify hidden risks to sharpen your awareness.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Risk Defender</h3>
+                <p>Make smart decisions to protect against risks and learn how insurance works.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon"><i class="fa-solid fa-ticket"></i></div>
+                <h3>Earn Rewards</h3>
+                <p>Collect points from gameplay and redeem them for vouchers and exclusive benefits.</p>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3>Risk Defender</h3>
-            <p>Make smart decisions to protect against risks and learn how insurance works.</p>
-        </div>
-        <div class="feature-card">
-            <div class="icon"><i class="fa-solid fa-ticket"></i></div>
-            <h3>Earn Rewards</h3>
-            <p>Collect points from gameplay and redeem them for vouchers and exclusive benefits.</p>
-        </div>
-    </div>
     </section>
 
     <section class="how-it-works">
         <div class="step">
             <span class="step-num">01</span>
             <h4>Find the Risks</h4>
-        <p>Play Risk Finder to spot dangers in everyday situations.</p>
+            <p>Play Risk Finder to spot dangers in everyday situations.</p>
         </div>
         <div class="step">
             <span class="step-num">02</span>
             <h4>Defend Smartly</h4>
-        <p>Use Risk Defender to choose the best protection strategies.</p>
+            <p>Use Risk Defender to choose the best protection strategies.</p>
         </div>
         <div class="step">
             <span class="step-num">03</span>
             <h4>Redeem Rewards</h4>
-        <p>Earn points and exchange them for vouchers and real-life rewards.</p>
+            <p>Earn points and exchange them for vouchers and real-life rewards.</p>
         </div>
     </section>
 
@@ -72,7 +76,8 @@
                 <input type="email" name="email" placeholder="Email Address" required>
                 <div class="password-container">
                     <input type="password" id="loginPass" name="password" placeholder="Password" required>
-                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-loginPass" onclick="toggleVisibility('loginPass')"></i>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-loginPass"
+                        onclick="toggleVisibility('loginPass')"></i>
                 </div>
                 <p style="text-align: right; font-size: 12px;">
                     <a href="#" id="forgotPasswordLink" style="color: #4a90e2;">Forgot Password?</a>
@@ -82,7 +87,8 @@
 
             <form id="registerForm">
                 <input type="email" name="email" placeholder="Enter your Email" required>
-                <button type="submit" class="submit-btn"><i class="fa-regular fa-envelope"></i>Get Verification Code</button>
+                <button type="submit" class="submit-btn"><i class="fa-regular fa-envelope"></i>Get Verification
+                    Code</button>
             </form>
 
             <div style="text-align: center; margin-top: 20px;">
@@ -99,12 +105,14 @@
             <span class="close-modal" onclick="closeVerify()">&times;</span>
             <h2>Complete Registration</h2>
             <p>Enter the 6-digit code and set your password.</p>
-            
-            <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6" required>
-            
+
+            <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e"
+                maxlength="6" required>
+
             <div class="password-container">
                 <input type="password" id="regPassword" placeholder="Create Password" required>
-                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regPassword" onclick="toggleVisibility('regPassword')"></i>
+                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regPassword"
+                    onclick="toggleVisibility('regPassword')"></i>
             </div>
 
             <div id="regPasswordRequirements" class="requirements-box">
@@ -117,9 +125,10 @@
 
             <div class="password-container">
                 <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword" onclick="toggleVisibility('regConfirmPassword')"></i>
+                <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword"
+                    onclick="toggleVisibility('regConfirmPassword')"></i>
             </div>
-            
+
             <button id="finishRegisterBtn" class="submit-btn">Create Account</button>
         </div>
     </div>
@@ -127,22 +136,25 @@
     <div id="resetModal" class="modal-overlay">
         <div class="login-card">
             <span class="close-modal" id="closeResetBtn">&times;</span>
-            
+
             <div id="resetStep1">
                 <h2><i class="fa-regular fa-envelope"></i>Reset Password</h2>
                 <p>Enter your email to receive a reset code.</p>
                 <input type="email" id="resetEmail" placeholder="Enter your Email" required>
-                <button onclick="sendResetCode()" id="resetSendBtn" class="submit-btn"><i class="fa-regular fa-envelope"></i>Send Code</button>
+                <button onclick="sendResetCode()" id="resetSendBtn" class="submit-btn"><i
+                        class="fa-regular fa-envelope"></i>Send Code</button>
             </div>
 
             <div id="resetStep2" style="display: none;">
                 <h2>Reset Password</h2>
                 <p>Enter the 6-digit code sent to your email.</p>
-                <input type="text" id="resetVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6">
+                <input type="text" id="resetVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e"
+                    maxlength="6">
 
                 <div class="password-container">
                     <input type="password" id="newPassword" placeholder="New Password" required>
-                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-newPassword" onclick="toggleVisibility('newPassword')"></i>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-newPassword"
+                        onclick="toggleVisibility('newPassword')"></i>
                 </div>
 
                 <div id="resPasswordRequirements" class="requirements-box">
@@ -155,7 +167,8 @@
 
                 <div class="password-container">
                     <input type="password" id="ConfirmPassword" placeholder="Confirm Password" required>
-                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ConfirmPassword" onclick="toggleVisibility('ConfirmPassword')"></i>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ConfirmPassword"
+                        onclick="toggleVisibility('ConfirmPassword')"></i>
                 </div>
 
                 <button onclick="verifyAndReset()" id="resetFinishBtn" class="submit-btn">Update Password</button>
@@ -164,245 +177,246 @@
     </div>
 
     <script>
-    let tempEmail = "";         
-    let resetEmailStorage = "";  
+        let tempEmail = "";
+        let resetEmailStorage = "";
 
-    const loginModal = document.getElementById("loginModal");
-    const resetModal = document.getElementById("resetModal");
-    const verifyModal = document.getElementById("verifyModal");
-    const ctaBtn = document.getElementById("ctaBtn");
-    const closeBtn = document.getElementById("closeBtn");
-    const closeResetBtn = document.getElementById("closeResetBtn");
+        const loginModal = document.getElementById("loginModal");
+        const resetModal = document.getElementById("resetModal");
+        const verifyModal = document.getElementById("verifyModal");
+        const ctaBtn = document.getElementById("ctaBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const closeResetBtn = document.getElementById("closeResetBtn");
 
-    function validatePassword(pw) {
-        const minLength = 8;
-        const hasUpper = /[A-Z]/.test(pw);
-        const hasLower = /[a-z]/.test(pw);
-        const hasNum = /[0-9]/.test(pw);
-        const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+        function validatePassword(pw) {
+            const minLength = 8;
+            const hasUpper = /[A-Z]/.test(pw);
+            const hasLower = /[a-z]/.test(pw);
+            const hasNum = /[0-9]/.test(pw);
+            const hasSpecial = /[^A-Za-z0-9]/.test(pw);
 
-        if (pw.length < minLength) return "Password must be at least 8 characters long.";
-        if (!hasUpper) return "Need at least one Capital Letter (A-Z).";
-        if (!hasLower) return "Need at least one Small Letter (a-z).";
-        if (!hasNum) return "Need at least one numeric digit (0-9).";
-        if (!hasSpecial) return "Need at least one special character (@#$%).";
-        return true;
-    }
-
-    function attachLiveValidation(inputId, prefix) {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        input.addEventListener('input', () => {
-            const val = input.value;
-            updateItem(`${prefix}-req-length`, val.length >= 8);
-            updateItem(`${prefix}-req-upper`, /[A-Z]/.test(val));
-            updateItem(`${prefix}-req-lower`, /[a-z]/.test(val));
-            updateItem(`${prefix}-req-num`, /[0-9]/.test(val));
-            updateItem(`${prefix}-req-special`, /[^A-Za-z0-9]/.test(val));
-        });
-    }
-
-    function updateItem(id, isPassed) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (isPassed) {
-            el.classList.add('valid');
-            el.innerText = el.innerText.replace('×', '√');
-        } else {
-            el.classList.remove('valid');
-            el.innerText = el.innerText.replace('√', '×');
+            if (pw.length < minLength) return "Password must be at least 8 characters long.";
+            if (!hasUpper) return "Need at least one Capital Letter (A-Z).";
+            if (!hasLower) return "Need at least one Small Letter (a-z).";
+            if (!hasNum) return "Need at least one numeric digit (0-9).";
+            if (!hasSpecial) return "Need at least one special character (@#$%).";
+            return true;
         }
-    }
 
-    attachLiveValidation('regPassword', 'reg');
-    attachLiveValidation('newPassword', 'res');
-
-    if (ctaBtn) ctaBtn.onclick = () => loginModal.style.display = "flex";
-    closeBtn.onclick = () => loginModal.style.display = "none";
-    closeResetBtn.onclick = () => {
-        resetModal.style.display = "none";
-        document.getElementById("resetStep1").style.display = "block";
-        document.getElementById("resetStep2").style.display = "none";
-    };
-
-    function closeVerify() {
-        verifyModal.style.display = 'none';
-        loginModal.style.display = 'flex'; 
-    }
-
-    window.onclick = (e) => {
-        if (e.target === loginModal) loginModal.style.display = "none";
-        if (e.target === resetModal) resetModal.style.display = "none";
-        if (e.target === verifyModal) closeVerify();
-    };
-
-    const tabs = document.querySelectorAll(".tab");
-    const forms = document.querySelectorAll("form");
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            tabs.forEach(t => t.classList.remove("active"));
-            forms.forEach(f => f.classList.remove("active"));
-            tab.classList.add("active");
-            const target = tab.getAttribute("data-target");
-            document.getElementById(target + "Form").classList.add("active");
-        });
-    });
-
-    function toggleVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(`toggle-icon-${inputId}`);
-
-    if (input.type === "password") {
-        input.type = "text";
-        if (icon) {
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    } else {
-        input.type = "password";
-        if (icon) {
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        }
-    }
-}
-
-    document.getElementById("forgotPasswordLink").onclick = (e) => {
-        e.preventDefault();
-        loginModal.style.display = "none";
-        resetModal.style.display = "flex";
-    };
-
-    document.getElementById("loginForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const email = e.target.email.value; 
-        const password = e.target.password.value;
-        try {
-            const res = await fetch("/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
+        function attachLiveValidation(inputId, prefix) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('input', () => {
+                const val = input.value;
+                updateItem(`${prefix}-req-length`, val.length >= 8);
+                updateItem(`${prefix}-req-upper`, /[A-Z]/.test(val));
+                updateItem(`${prefix}-req-lower`, /[a-z]/.test(val));
+                updateItem(`${prefix}-req-num`, /[0-9]/.test(val));
+                updateItem(`${prefix}-req-special`, /[^A-Za-z0-9]/.test(val));
             });
-            const data = await res.json();
-            if (data.success) window.location.href = "/dashboard.html";
-            else alert(data.message);
-        } catch (err) { alert("Login failed. Check your connection."); }
-    };
+        }
 
-    document.getElementById("registerForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const emailInput = e.target.email.value;
-        const btn = e.target.querySelector('button');
-        
-        btn.textContent = "Sending Code...";
-        btn.disabled = true;
-
-        try {
-            const res = await fetch("/auth/send-reg-code", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: emailInput })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                tempEmail = emailInput; 
-                loginModal.style.display = "none";
-                verifyModal.style.display = "flex";
+        function updateItem(id, isPassed) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isPassed) {
+                el.classList.add('valid');
+                el.innerText = el.innerText.replace('×', '√');
             } else {
-                alert(data.message);
+                el.classList.remove('valid');
+                el.innerText = el.innerText.replace('√', '×');
             }
-        } catch (err) { 
-            alert("Timeout. Please try again or check your inbox."); 
-        } finally { 
-            btn.textContent = "Get Verification Code"; 
-            btn.disabled = false; 
         }
-    };
 
-    document.getElementById("finishRegisterBtn").onclick = async () => {
-        const code = document.getElementById("regVerifyCode").value;
-        const password = document.getElementById("regPassword").value;
-        const confirm = document.getElementById("regConfirmPassword").value;
+        attachLiveValidation('regPassword', 'reg');
+        attachLiveValidation('newPassword', 'res');
 
-        const isValid = validatePassword(password);
-        if (isValid !== true) return alert(isValid);
-        if (password !== confirm) return alert("Passwords do not match!");
-        if (!code) return alert("Please enter the verification code.");
+        if (ctaBtn) ctaBtn.onclick = () => loginModal.style.display = "flex";
+        closeBtn.onclick = () => loginModal.style.display = "none";
+        closeResetBtn.onclick = () => {
+            resetModal.style.display = "none";
+            document.getElementById("resetStep1").style.display = "block";
+            document.getElementById("resetStep2").style.display = "none";
+        };
 
-        try {
-            const res = await fetch("/auth/complete-registration", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    email: tempEmail, 
-                    code, 
-                    password, 
-                    username: tempEmail.split('@')[0] 
-                })
+        function closeVerify() {
+            verifyModal.style.display = 'none';
+            loginModal.style.display = 'flex';
+        }
+
+        window.onclick = (e) => {
+            if (e.target === loginModal) loginModal.style.display = "none";
+            if (e.target === resetModal) resetModal.style.display = "none";
+            if (e.target === verifyModal) closeVerify();
+        };
+
+        const tabs = document.querySelectorAll(".tab");
+        const forms = document.querySelectorAll("form");
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                tabs.forEach(t => t.classList.remove("active"));
+                forms.forEach(f => f.classList.remove("active"));
+                tab.classList.add("active");
+                const target = tab.getAttribute("data-target");
+                document.getElementById(target + "Form").classList.add("active");
             });
-            
-            const data = await res.json();
-            if (data.success) {
-                alert("Registration Successful!");
-                location.reload();
-            } else alert(data.message);
-        } catch (err) { alert("Registration failed. Please try again."); }
-    };
+        });
 
-    async function sendResetCode() {
-        const email = document.getElementById("resetEmail").value;
-        const btn = document.getElementById("resetSendBtn");
-        if (!email) return alert("Please enter your email");
+        function toggleVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(`toggle-icon-${inputId}`);
 
-        btn.textContent = "Sending...";
-        btn.disabled = true;
+            if (input.type === "password") {
+                input.type = "text";
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            } else {
+                input.type = "password";
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            }
+        }
 
-        try {
-            const res = await fetch("/auth/forgot-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json(); 
-            if (data.success) {
-                resetEmailStorage = email; 
-                document.getElementById("resetStep1").style.display = "none";
-                document.getElementById("resetStep2").style.display = "block";
-            } else alert(data.message);
-        } catch (err) { alert("Failed to send code."); }
-        finally { btn.textContent = "Send Code"; btn.disabled = false; }
-    }
+        document.getElementById("forgotPasswordLink").onclick = (e) => {
+            e.preventDefault();
+            loginModal.style.display = "none";
+            resetModal.style.display = "flex";
+        };
 
-    async function verifyAndReset() {
-        const code = document.getElementById("resetVerifyCode").value;
-        const newPassword = document.getElementById("newPassword").value;
-        const confirm = document.getElementById("ConfirmPassword").value;
-        const btn = document.getElementById("resetFinishBtn");
+        document.getElementById("loginForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            try {
+                const res = await fetch("/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) window.location.href = "/dashboard.html";
+                else alert(data.message);
+            } catch (err) { alert("Login failed. Check your connection."); }
+        };
 
-        const isValid = validatePassword(newPassword);
-        if (isValid !== true) return alert(isValid);
-        if (newPassword !== confirm) return alert("Passwords do not match!");
-        if (!code) return alert("Please enter the reset code");
+        document.getElementById("registerForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const emailInput = e.target.email.value;
+            const btn = e.target.querySelector('button');
 
-        btn.textContent = "Updating...";
-        btn.disabled = true;
+            btn.textContent = "Sending Code...";
+            btn.disabled = true;
 
-        try {
-            const res = await fetch("/auth/reset-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: resetEmailStorage, code, newPassword })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert("Password Updated! Please login.");
-                location.reload();
-            } else alert(data.message);
-        } catch (err) { alert("Reset failed."); }
-        finally { btn.textContent = "Update Password"; btn.disabled = false; }
-    }
-</script>
-<script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+            try {
+                const res = await fetch("/auth/send-reg-code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: emailInput })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    tempEmail = emailInput;
+                    loginModal.style.display = "none";
+                    verifyModal.style.display = "flex";
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                alert("Timeout. Please try again or check your inbox.");
+            } finally {
+                btn.textContent = "Get Verification Code";
+                btn.disabled = false;
+            }
+        };
+
+        document.getElementById("finishRegisterBtn").onclick = async () => {
+            const code = document.getElementById("regVerifyCode").value;
+            const password = document.getElementById("regPassword").value;
+            const confirm = document.getElementById("regConfirmPassword").value;
+
+            const isValid = validatePassword(password);
+            if (isValid !== true) return alert(isValid);
+            if (password !== confirm) return alert("Passwords do not match!");
+            if (!code) return alert("Please enter the verification code.");
+
+            try {
+                const res = await fetch("/auth/complete-registration", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: tempEmail,
+                        code,
+                        password,
+                        username: tempEmail.split('@')[0]
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert("Registration Successful!");
+                    location.reload();
+                } else alert(data.message);
+            } catch (err) { alert("Registration failed. Please try again."); }
+        };
+
+        async function sendResetCode() {
+            const email = document.getElementById("resetEmail").value;
+            const btn = document.getElementById("resetSendBtn");
+            if (!email) return alert("Please enter your email");
+
+            btn.textContent = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/auth/forgot-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resetEmailStorage = email;
+                    document.getElementById("resetStep1").style.display = "none";
+                    document.getElementById("resetStep2").style.display = "block";
+                } else alert(data.message);
+            } catch (err) { alert("Failed to send code."); }
+            finally { btn.textContent = "Send Code"; btn.disabled = false; }
+        }
+
+        async function verifyAndReset() {
+            const code = document.getElementById("resetVerifyCode").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirm = document.getElementById("ConfirmPassword").value;
+            const btn = document.getElementById("resetFinishBtn");
+
+            const isValid = validatePassword(newPassword);
+            if (isValid !== true) return alert(isValid);
+            if (newPassword !== confirm) return alert("Passwords do not match!");
+            if (!code) return alert("Please enter the reset code");
+
+            btn.textContent = "Updating...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/auth/reset-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: resetEmailStorage, code, newPassword })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Password Updated! Please login.");
+                    location.reload();
+                } else alert(data.message);
+            } catch (err) { alert("Reset failed."); }
+            finally { btn.textContent = "Update Password"; btn.disabled = false; }
+        }
+    </script>
+    <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 </body>
+
 </html>

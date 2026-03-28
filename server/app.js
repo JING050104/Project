@@ -5,8 +5,8 @@ const session = require("express-session");
 const pgSession = require('connect-pg-simple')(session);
 const passport = require("passport");
 const path = require("path");
-const db = require("./db"); 
-const authRoutes = require('./routes/auth'); 
+const db = require("./db");
+const authRoutes = require('./routes/auth');
 const ensureAuthenticated = require("./middleware/auth");
 
 const app = express();
@@ -20,7 +20,7 @@ app.use(session({
     store: new pgSession({
         pool: db.pool,
         tableName: 'session',
-        ttl: 86400,                  
+        ttl: 86400,
         pruneSessionInterval: 60,
     }),
     key: 'fyp_session_cookie',
@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
         const userRole = String(req.user.role).trim().toLowerCase();
         console.log("User Role:", userRole);
         if (userRole === 'admin') {
-            return res.redirect("/admin.html"); 
+            return res.redirect("/admin.html");
         } else {
             return res.redirect("/dashboard.html");
         }
@@ -59,7 +59,7 @@ app.get("/admin.html", (req, res, next) => {
         return res.sendFile(path.join(__dirname, "../public/admin.html"));
     } else {
         console.log("Unauthorized access to admin.html, redirecting...");
-        return res.redirect("/"); 
+        return res.redirect("/");
     }
 });
 
@@ -157,8 +157,8 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
             ON CONFLICT (user_id) 
             DO UPDATE SET 
                 total_points = user_points.total_points + $2,
-                last_updated = CURRENT_TIMESTAMP`, 
-            [userId, points] 
+                last_updated = CURRENT_TIMESTAMP`,
+            [userId, points]
         );
 
         await db.execute(`
@@ -206,7 +206,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
 
 // D. 激活道具（已修正 userId）
 app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
-    
+
     const userId = req.user.id;
     const { inventoryId } = req.body;
 
@@ -234,15 +234,15 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
         `, [newCode, expiredAt, activatedAt, inventoryId, userId]);
 
         if (result.length === 0) {
-            return res.status(400).json({ 
-                error: "Item not found, already activated, or does not belong to you." 
+            return res.status(400).json({
+                error: "Item not found, already activated, or does not belong to you."
             });
         }
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             redeemCode: result[0].redeem_code,
-            expiredAt: result[0].expired_at 
+            expiredAt: result[0].expired_at
         });
 
     } catch (err) {
@@ -253,13 +253,13 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
 
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
-    const username = req.user.username || req.user.email || 'Unknown'; 
+    const username = req.user.username || req.user.email || 'Unknown';
     const { score, reached_level, gameType, time_used } = req.body;
-   
+
     if (!score || score <= 0) {
         return res.json({ success: true, message: "0 points, not saved." });
     }
-    
+
     try {
         await db.execute('BEGIN');
 
@@ -285,11 +285,11 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
             [userId, username, score, reached_level, gameType, time_used] // 对应 $1 到 $6
         );
 
-        await db.execute('COMMIT'); 
+        await db.execute('COMMIT');
         res.json({ success: true, message: "Scores and transactions updated!" });
     } catch (err) {
         await db.execute('ROLLBACK');
-        console.error("Save Score Error Details:", err.message); 
+        console.error("Save Score Error Details:", err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -352,7 +352,7 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
 
         await db.execute(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
-            VALUES ($1, $2, $3, 1, 'inactive')`, 
+            VALUES ($1, $2, $3, 1, 'inactive')`,
             [userId, voucherId, voucherName]
         );
 
@@ -374,12 +374,12 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
             `SELECT points_change, description, created_at 
              FROM point_transactions 
              WHERE user_id = $1 
-             ORDER BY created_at DESC`, 
+             ORDER BY created_at DESC`,
             [userId]
         );
 
-       const history = result.rows || result; 
-        
+        const history = result.rows || result;
+
         res.json(history);
     } catch (err) {
         console.error("Database Error:", err.message);
@@ -403,28 +403,29 @@ app.get("/api/admin/users", (req, res) => {
 });
 
 app.put("/api/admin/edit-user/:id", async (req, res) => {
+    const targetUserId = req.params.id;
     const { username, role } = req.body;
-    const targetId = req.params.id;
-
-    if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
 
     try {
+        if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
+        }
+
         await db.execute(
             "UPDATE users SET username = $1, role = $2 WHERE id = $3",
-            [username, role, targetId]
+            [username, role, targetUserId]
         );
-        res.json({ success: true, message: "Update successful!" });
+
+        res.json({ success: true, message: "User updated successfully!" });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Database error" });
+        console.error("Edit User Error:", err);
+        res.status(500).json({ success: false, message: "Database update failed." });
     }
 });
 
 app.delete("/api/admin/delete-user/:id", async (req, res) => {
     const targetUserId = req.params.id;
-    const adminId = req.user.id; 
+    const adminId = req.user.id;
 
     try {
         if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
@@ -458,14 +459,14 @@ setInterval(async () => {
         `);
 
         console.log(`[Cleanup] Run at: ${new Date().toLocaleString()}`);
-        
+
         const deletedCount = result ? result.rowCount : 0;
         console.log(`[Cleanup] Unverified users removed: ${deletedCount}`);
 
     } catch (err) {
         console.error("[Cleanup Error]:", err.message);
     }
-}, 30 * 60 * 1000); 
+}, 30 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {

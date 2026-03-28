@@ -1,4 +1,4 @@
-let vouchers = []; 
+let vouchers = [];
 let currentPoints = 0;
 let inventoryItems = [];
 window.activateItem = activateItem;
@@ -10,19 +10,19 @@ async function initRewards() {
     try {
         const [pointsRes, vouchersRes] = await Promise.all([
             fetch('/api/get-points'),
-            fetch('/api/get-vouchers') 
+            fetch('/api/get-vouchers')
         ]);
-        
+
         const pointsData = await pointsRes.json();
         const vouchersData = await vouchersRes.json();
-        
+
         currentPoints = pointsData.points || 0;
         document.getElementById('display-points').innerText = currentPoints;
-        
-        vouchers = vouchersData; 
-        await loadInventory();  
+
+        vouchers = vouchersData;
+        await loadInventory();
         renderAvailableVouchers(vouchers);
-        initTabSwitch();                 
+        initTabSwitch();
         renderInventoryByTab('inactive');
         await loadPointHistory();
 
@@ -41,15 +41,15 @@ function renderAvailableVouchers(voucherList) {
 
     voucherList.forEach(v => {
         const clone = template.content.cloneNode(true);
-        
+
         clone.querySelector('.v-name').innerText = v.name;
         clone.querySelector('.v-desc').innerText = v.description || 'No description';
         clone.querySelector('.v-status-badge').innerText = `${v.cost} Points`;
 
         const isOwned = inventoryItems.some(item => {
             const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
-            return item.item_name === v.name && 
-                   (item.status === 'inactive' || item.status === 'active') && (!expiryDate || expiryDate > now);
+            return item.item_name === v.name &&
+                (item.status === 'inactive' || item.status === 'active') && (!expiryDate || expiryDate > now);
         });
         const canAfford = currentPoints >= v.cost;
 
@@ -79,9 +79,9 @@ async function activateItem(inventoryId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ inventoryId })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             alert(`Activated! Your Redeem Code: ${data.redeemCode}`);
             loadInventory();
@@ -100,13 +100,13 @@ async function loadInventory() {
         if (!res.ok) throw new Error("Failed to load inventory");
 
         const data = await res.json();
-        
+
         let items = data;
         if (data.rows) items = data.rows;
         if (Array.isArray(data) && Array.isArray(data[0])) items = data[0];
 
-        inventoryItems = items; 
-        
+        inventoryItems = items;
+
         console.log("Inventory loaded successfully:", inventoryItems);
 
         renderInventoryByTab('inactive');
@@ -122,7 +122,7 @@ async function loadInventory() {
 
 function renderInventoryByTab(tab) {
     const container = document.getElementById('inventory-container');
-    const template = document.getElementById('voucher-item-template'); 
+    const template = document.getElementById('voucher-item-template');
     if (!container || !template) return;
 
     container.innerHTML = '';
@@ -142,83 +142,83 @@ function renderInventoryByTab(tab) {
     }
 
     filtered.forEach(item => {
-    const clone = template.content.cloneNode(true);
-    const card = clone.querySelector('.voucher-card');
-    const statusBadge = clone.querySelector('.v-status-badge');
-    const codeWrapper = clone.querySelector('.v-code-wrapper');
-    const codeText = clone.querySelector('.code-text');       
-    const copyBtn = clone.querySelector('.v-copy-btn');       
-    const expiryContainer = clone.querySelector('.v-expiry-container');
-    const expiryDateEl = clone.querySelector('.v-expiry-date');
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.voucher-card');
+        const statusBadge = clone.querySelector('.v-status-badge');
+        const codeWrapper = clone.querySelector('.v-code-wrapper');
+        const codeText = clone.querySelector('.code-text');
+        const copyBtn = clone.querySelector('.v-copy-btn');
+        const expiryContainer = clone.querySelector('.v-expiry-container');
+        const expiryDateEl = clone.querySelector('.v-expiry-date');
 
-    const redeemBtn = clone.querySelector('.v-redeem-btn');
-    const ownedBtn = clone.querySelector('.v-owned-btn');
-    const lowPointsBtn = clone.querySelector('.v-low-points-btn');
+        const redeemBtn = clone.querySelector('.v-redeem-btn');
+        const ownedBtn = clone.querySelector('.v-owned-btn');
+        const lowPointsBtn = clone.querySelector('.v-low-points-btn');
 
-    const now = new Date();
-    const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
-    const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
+        const now = new Date();
+        const expiryDate = item.expired_at ? new Date(item.expired_at) : null;
+        const isExpired = item.status === 'expired' || (expiryDate && expiryDate < now);
 
-    clone.querySelector('.v-name').innerText = item.item_name || 'Voucher';
-    clone.querySelector('.v-desc').innerText = item.description || '';
+        clone.querySelector('.v-name').innerText = item.item_name || 'Voucher';
+        clone.querySelector('.v-desc').innerText = item.description || '';
 
-    if (ownedBtn) ownedBtn.remove();
-    if (lowPointsBtn) lowPointsBtn.remove();
+        if (ownedBtn) ownedBtn.remove();
+        if (lowPointsBtn) lowPointsBtn.remove();
 
-    if (isExpired) {
-        if (redeemBtn) redeemBtn.remove();
-        card.classList.add('expired');
-        statusBadge.innerText = 'Expired';
-        statusBadge.className = 'v-status-badge status-expired'; 
-        if (codeWrapper) codeWrapper.style.display = 'none';
-    } else {
-        if (item.status === 'active' || item.status === 'activated') {
-            if (redeemBtn) redeemBtn.remove(); 
-            
-            statusBadge.innerText = 'Active';
-            statusBadge.className = 'v-status-badge status-active';
-            
-            if (item.redeem_code) {
-                if (codeWrapper) codeWrapper.style.display = 'flex'; 
-                if (codeText) codeText.innerText = item.redeem_code;
-                if (copyBtn) {
-                    copyBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(item.redeem_code).then(() => {
-                            const originalClass = copyBtn.className;
-                            copyBtn.className = "fa-solid fa-check"; 
-                            copyBtn.style.color = "#2ecc71";
-                            setTimeout(() => {
-                                copyBtn.className = originalClass;
-                                copyBtn.style.color = "";
-                            }, 2000);
-                        });
-                    };
+        if (isExpired) {
+            if (redeemBtn) redeemBtn.remove();
+            card.classList.add('expired');
+            statusBadge.innerText = 'Expired';
+            statusBadge.className = 'v-status-badge status-expired';
+            if (codeWrapper) codeWrapper.style.display = 'none';
+        } else {
+            if (item.status === 'active' || item.status === 'activated') {
+                if (redeemBtn) redeemBtn.remove();
+
+                statusBadge.innerText = 'Active';
+                statusBadge.className = 'v-status-badge status-active';
+
+                if (item.redeem_code) {
+                    if (codeWrapper) codeWrapper.style.display = 'flex';
+                    if (codeText) codeText.innerText = item.redeem_code;
+                    if (copyBtn) {
+                        copyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(item.redeem_code).then(() => {
+                                const originalClass = copyBtn.className;
+                                copyBtn.className = "fa-solid fa-check";
+                                copyBtn.style.color = "#2ecc71";
+                                setTimeout(() => {
+                                    copyBtn.className = originalClass;
+                                    copyBtn.style.color = "";
+                                }, 2000);
+                            });
+                        };
+                    }
+                }
+            } else {
+                statusBadge.innerText = 'Inactive';
+                statusBadge.className = 'v-status-badge status-inactive';
+                if (codeWrapper) codeWrapper.style.display = 'none';
+
+                if (redeemBtn) {
+                    redeemBtn.style.display = 'block';
+                    redeemBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Activate Now';
+                    redeemBtn.onclick = () => activateItem(item.id);
                 }
             }
-        } else {
-            statusBadge.innerText = 'Inactive'; 
-            statusBadge.className = 'v-status-badge status-inactive';
-            if (codeWrapper) codeWrapper.style.display = 'none';
+        }
 
-            if (redeemBtn) {
-                redeemBtn.style.display = 'block';
-                redeemBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Activate Now';
-                redeemBtn.onclick = () => activateItem(item.id);
+        if (expiryDate && !isExpired && (item.status === 'active' || item.status === 'activated')) {
+            const dateString = expiryDate.toLocaleDateString() + ' ' + expiryDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (expiryDateEl) {
+                expiryDateEl.innerText = dateString;
+                expiryContainer.style.display = 'block';
             }
         }
-    }
 
-    if (expiryDate && !isExpired && (item.status === 'active' || item.status === 'activated')) {
-        const dateString = expiryDate.toLocaleDateString() + ' ' + expiryDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        if (expiryDateEl) {
-            expiryDateEl.innerText = dateString;
-            expiryContainer.style.display = 'block';
-        }
-    }
-
-    container.appendChild(clone);
-});
+        container.appendChild(clone);
+    });
 
 }
 
@@ -228,7 +228,7 @@ function initTabSwitch() {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             const tabType = tab.dataset.tab;
             renderInventoryByTab(tabType);
         });
@@ -304,13 +304,13 @@ function closeVoucherModal() {
 
 function renderVouchers() {
     if (!container) return;
-    
+
     container.innerHTML = '';
     vouchers.forEach(v => {
         const canAfford = currentPoints >= v.cost;
         const card = document.createElement('div');
         card.className = 'dash-card';
-        
+
         card.innerHTML = `
             <span class="level-badge">${v.cost} Points</span>
             <h3 style="margin: 15px 0;">${v.name}</h3>
@@ -346,9 +346,9 @@ async function loadPointHistory() {
 
         history.forEach(item => {
             const clone = template.content.cloneNode(true);
-            
+
             clone.querySelector('.h-desc').innerText = item.description;
-            
+
             const date = new Date(item.created_at);
             clone.querySelector('.h-date').innerText = date.toLocaleString();
 
@@ -359,7 +359,7 @@ async function loadPointHistory() {
                 changeEl.innerText = `+${val}`;
                 changeEl.classList.add('point-plus');
             } else {
-                changeEl.innerText = `${val}`; 
+                changeEl.innerText = `${val}`;
                 changeEl.classList.add('point-minus');
             }
 
@@ -385,7 +385,7 @@ async function redeemVoucher(voucherName, cost) {
 
         if (response.ok) {
             alert(`Success! You have redeemed ${voucherName}.`);
-            await initRewards(); 
+            await initRewards();
         } else {
             alert(result.error || "Redemption failed.");
         }

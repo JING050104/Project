@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coverage Quest Admin Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
-  </head>
+</head>
+
 <body class="admin-body">
 
   <header class="admin-navbar">
     <div class="logo-section">
-      <i class="fas fa-shield-halved"></i>
       <h1>Coverage Quest <span>Admin</span></h1>
     </div>
     <div class="admin-controls">
@@ -24,20 +25,18 @@
   <main class="admin-container">
     <aside class="sidebar">
       <nav>
-        <a href="#" class="active"><i class="fas fa-users"></i> User Management</a>
-        <a href="#"><i class="fas fa-chart-line"></i> Analytics</a>
-        <a href="#"><i class="fas fa-cog"></i> System Settings</a>
+        <a href="#" onclick="showSection('analytics', event)"><i class="fas fa-chart-line"></i> Analytics</a>
+        <a href="#" class="active" onclick="showSection('users', event)"><i class="fas fa-users"></i> User
+          Management</a>
+        <a href="#" onclick="showSection('vouchers', event)"><i class="fa-solid fa-ticket"></i> Voucher Management</a>
       </nav>
     </aside>
 
-    <section class="admin-content">
+    <section id="users-section" class="admin-section active">
       <div class="content-header">
         <h2>User Management</h2>
-        <button class="btn-refresh" id="refresh-users">
-          <i class="fas fa-sync"></i> Refresh Data
-        </button>
+        <button class="btn-refresh" id="refresh-users"><i class="fas fa-sync"></i> Refresh Data</button>
       </div>
-
       <div class="admin-card">
         <table class="admin-table">
           <thead>
@@ -51,40 +50,43 @@
             </tr>
           </thead>
           <tbody id="user-table-body">
-              <tr>
-                  <td colspan="6" style="text-align:center; padding: 20px;">
-                      <i class="fas fa-spinner fa-spin"></i> Loading users from database...
-                  </td>
-              </tr>
+            <tr>
+              <td colspan="6" style="text-align:center;">Loading users...</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
-    <div id="editModal" class="modal">
-      <div class="modal-content">
-        <h3>Edit User</h3>
-        <form id="editForm">
-          <input type="hidden" id="edit-user-id">
-          
-          <label>Username:</label>
-          <input type="text" id="edit-username" required>
-          
-          <label>Role:</label>
-          <select id="edit-role">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-          
-          <div class="modal-actions">
-            <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-            <button type="submit" class="btn-save">Save Changes</button>
-          </div>
-        </form>
+    <section id="vouchers-section" class="admin-section">
+      <div class="content-header">
+        <h2>Voucher Stock Management</h2>
+        <div class="header-actions">
+          <button class="btn-add" id="add-voucher-btn"><i class="fas fa-plus"></i> Add New Voucher</button>
+          <button class="btn-refresh" id="refresh-vouchers"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
       </div>
-    </div>
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Voucher ID</th>
+              <th>Voucher Name</th>
+              <th>Stock</th>
+              <th>Cost</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="voucher-table-body">
+            <tr>
+              <td colspan="7" style="text-align:center;">Loading vouchers...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
-
   <script src="js/Admin.js"></script>
   <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 </body>
+
 </html>

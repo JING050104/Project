@@ -2,20 +2,20 @@
 const resetModal = document.getElementById("resetModal");
 const resetStep1 = document.getElementById("resetStep1");
 const resetStep2 = document.getElementById("resetStep2");
-const emailVerifyModal = document.getElementById("emailVerifyModal"); 
+const emailVerifyModal = document.getElementById("emailVerifyModal");
 const forgotLink = document.getElementById("forgotPasswordLink");
 const closeResetBtn = document.getElementById("closeResetBtn");
 const closeEmailModal = document.getElementById("closeEmailModal");
 
 let resetEmailStorage = "";
-let originalEmail = ""; 
+let originalEmail = "";
 
 // --- 1. Open/Close Modal ---
 if (forgotLink) {
     forgotLink.onclick = (e) => {
         e.preventDefault();
         const currentUserEmail = document.getElementById('editEmail').value;
-        
+
         document.getElementById("resetEmail").value = currentUserEmail;
         document.getElementById("confirmEmailDisplay").textContent = currentUserEmail;
 
@@ -65,7 +65,7 @@ document.getElementById("resetSendBtn").onclick = async () => {
             body: JSON.stringify({ email })
         });
         const data = await res.json();
-        
+
         if (data.success) {
             resetEmailStorage = email;
 
@@ -75,8 +75,8 @@ document.getElementById("resetSendBtn").onclick = async () => {
             if (s1 && s2) {
                 s1.setAttribute('style', 'display: none !important');
                 s2.setAttribute('style', 'display: block !important');
-                
-                if(document.getElementById("confirmEmailDisplay")) {
+
+                if (document.getElementById("confirmEmailDisplay")) {
                     document.getElementById("confirmEmailDisplay").textContent = email;
                 }
             }
@@ -139,7 +139,7 @@ function enableInput(inputId) {
 
 async function loadUserProfile() {
     try {
-        const response = await fetch('/auth/user'); 
+        const response = await fetch('/auth/user');
         const data = await response.json();
 
         if (data.user) {
@@ -148,7 +148,7 @@ async function loadUserProfile() {
 
             if (document.getElementById('editUsername')) document.getElementById('editUsername').value = u.username;
             if (document.getElementById('editEmail')) document.getElementById('editEmail').value = u.email;
-            
+
             const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
             if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = avatarUrl;
 
@@ -165,7 +165,7 @@ async function loadUserProfile() {
 // 统一的 Profile Update 逻辑
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const newUsername = document.getElementById('editUsername').value;
     const currentPass = document.getElementById('currPass').value;
     const newPass = document.getElementById('NewPassword').value;
@@ -231,7 +231,7 @@ async function submitFinalUpdate(updateData) {
         const result = await response.json();
         if (response.ok) {
             alert("Profile updated successfully!");
-            location.reload(); 
+            location.reload();
         } else {
             alert('Error: ' + result.message);
         }

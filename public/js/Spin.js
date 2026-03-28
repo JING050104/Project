@@ -29,7 +29,7 @@ class SpinWheel {
         // Modal Controls
         if (this.openBtn) this.openBtn.onclick = () => this.show();
         if (this.closeBtn) this.closeBtn.onclick = () => this.hide();
-        
+
         // Close modal when clicking outside the card
         window.addEventListener('click', (e) => {
             if (e.target === this.modal) this.hide();
@@ -53,69 +53,69 @@ class SpinWheel {
      * Handles the rotation animation
      */
     startSpin() {
-    if (this.isSpinning) return;
-    this.isSpinning = true;
+        if (this.isSpinning) return;
+        this.isSpinning = true;
 
-    this.wheel.style.transition = "none";
-    this.wheel.style.transform = "rotate(0deg)";
-    this.wheel.offsetWidth; 
+        this.wheel.style.transition = "none";
+        this.wheel.style.transform = "rotate(0deg)";
+        this.wheel.offsetWidth;
 
-    this.wheel.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+        this.wheel.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
 
-    const randomRotation = Math.floor(Math.random() * 360);
-    const totalRotation = 1800 + randomRotation;
+        const randomRotation = Math.floor(Math.random() * 360);
+        const totalRotation = 1800 + randomRotation;
 
-    this.wheel.style.transform = `rotate(${totalRotation}deg)`;
-    
-    this.spinBtn.disabled = true;
-    this.spinBtn.textContent = "Spinning...";
+        this.wheel.style.transform = `rotate(${totalRotation}deg)`;
 
-    setTimeout(() => {
-        this.processResult(randomRotation);
-    }, 4000);
-}
+        this.spinBtn.disabled = true;
+        this.spinBtn.textContent = "Spinning...";
+
+        setTimeout(() => {
+            this.processResult(randomRotation);
+        }, 4000);
+    }
 
     /**
      * Calculates the reward based on the final angle
      */
     async processResult(rotation) {
-    const actualAngle = rotation % 360; 
-    const rewardIndex = Math.floor(actualAngle / 60);
-    const win = this.rewards[rewardIndex];
+        const actualAngle = rotation % 360;
+        const rewardIndex = Math.floor(actualAngle / 60);
+        const win = this.rewards[rewardIndex];
 
-    if (win !== "Try Again") {
-        try {
-            const response = await fetch('/api/spin-reward', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reward: win })
-            });
+        if (win !== "Try Again") {
+            try {
+                const response = await fetch('/api/spin-reward', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reward: win })
+                });
 
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("text/html") || response.redirected) {
-                alert("Session expired. Please refresh and login again before spinning.");
-                window.location.href = "/index.html";
-                return;
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("text/html") || response.redirected) {
+                    alert("Session expired. Please refresh and login again before spinning.");
+                    window.location.href = "/index.html";
+                    return;
+                }
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert("Congratulations! Won: " + win);
+                    this.updateRewardsUI(win);
+                    if (typeof initRewards === 'function') initRewards();
+                } else {
+                    alert("Error: " + (data.error || "Unknown error"));
+                }
+            } catch (err) {
+                console.error("Sync error:", err);
+                alert("Won: " + win + " (Sync failed. Check server console for SQL errors)");
             }
-
-            const data = await response.json();
-            if (response.ok) {
-                alert("Congratulations! Won: " + win);
-                this.updateRewardsUI(win);
-                if (typeof initRewards === 'function') initRewards(); 
-            } else {
-                alert("Error: " + (data.error || "Unknown error"));
-            }
-        } catch (err) {
-            console.error("Sync error:", err);
-            alert("Won: " + win + " (Sync failed. Check server console for SQL errors)");
         }
-    }
 
-    this.isSpinning = false;
-    this.spinBtn.disabled = false;
-    this.spinBtn.textContent = "SPIN NOW";
-}
+        this.isSpinning = false;
+        this.spinBtn.disabled = false;
+        this.spinBtn.textContent = "SPIN NOW";
+    }
 
     updateRewardsUI(win) {
         if (!this.rewardsList) return;
@@ -128,7 +128,7 @@ class SpinWheel {
         // Create new list item
         const li = document.createElement("li");
         li.textContent = "⭐ " + win;
-        this.rewardsList.prepend(li); 
+        this.rewardsList.prepend(li);
     }
 }
 

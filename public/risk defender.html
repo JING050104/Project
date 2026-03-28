@@ -1,94 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Risk Defender - CoverageQuest</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-    <body class="no-scroll-page"> 
+
+<body class="no-scroll-page">
     <header class="dashboard-header">
         <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
         <div class="header-controls">
-            <button id="pause-btn" class="pause-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+            <button id="pause-btn" class="pause-btn"
+                style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-pause"></i>
             </button>
-           <button id="home-btn" class="home-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+            <button id="home-btn" class="home-btn"
+                style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-house"></i>
             </button>
     </header>
-    
+
     <main class="game-screen">
         <div class="game-hud">
-        <div class="hud-item">
-            <i class="fa-solid fa-heart" style="color: #e74c3c;"></i><span id="hud-hp">100</span>
+            <div class="hud-item">
+                <i class="fa-solid fa-heart" style="color: #e74c3c;"></i><span id="hud-hp">100</span>
+            </div>
+            <div class="hud-item">
+                <i class="fa-solid fa-coins" style="color: #f1c40f;"></i><span id="hud-gold">200</span>
+            </div>
+            <div class="hud-item">
+                🌊 Wave: <span id="hud-wave">1</span>
+            </div>
+            <div class="hud-item">
+                <i class="fa-solid fa-clock" style="color: #94a3b8;"></i>
+                <span id="hud-time">0s</span>
+            </div>
         </div>
-        <div class="hud-item">
-            <i class="fa-solid fa-coins" style="color: #f1c40f;"></i><span id="hud-gold">200</span>
-        </div>
-        <div class="hud-item">
-            🌊 Wave: <span id="hud-wave">1</span>
-        </div>
-        <div class="hud-item">
-            <i class="fa-solid fa-clock" style="color: #94a3b8;"></i>
-            <span id="hud-time">0s</span>
-        </div>
-        </div>
-            <div class="controls">
+        <div class="controls">
             <div id="shop-tooltip" class="shop-tooltip"></div>
-            <button id="btn-home"
-                class="btn-home active"
-                onclick="setTowerType('home')"
-                onmouseover="showInfo('home')"
+            <button id="btn-home" class="btn-home active" onclick="setTowerType('home')" onmouseover="showInfo('home')"
                 onmouseout="hideInfo()">
                 🏠 Property
                 <span class="cost-tag">$50</span>
             </button>
-            <button id="btn-car"
-                class="btn-car"
-                onclick="setTowerType('car')"
-                onmouseover="showInfo('car')"
+            <button id="btn-car" class="btn-car" onclick="setTowerType('car')" onmouseover="showInfo('car')"
                 onmouseout="hideInfo()">
                 🚗 Car
                 <span class="cost-tag">$40</span>
             </button>
-            <button id="btn-medical"
-                class="btn-medical"
-                onclick="setTowerType('medical')"
-                onmouseover="showInfo('medical')"
-                onmouseout="hideInfo()">
+            <button id="btn-medical" class="btn-medical" onclick="setTowerType('medical')"
+                onmouseover="showInfo('medical')" onmouseout="hideInfo()">
                 🏥 Medical
                 <span class="cost-tag">$60</span>
             </button>
-            </div>
+        </div>
         <div class="canvas-wrapper">
             <canvas id="gameCanvas"></canvas>
         </div>
         <div id="game-over-modal" class="modal-overlay" style="display: none;">
-        <div class="login-card">
-            <h1 class="logo">Wave Defeated!</h1>
-            <p class="user-email">You survived until Wave <span id="final-wave">0</span></p>
-            
-            <div class="dash-card" style="box-shadow: none; border: none;">
-                <span class="level-badge">Final Gold (Points)</span>
-                <div id="final-gold" class="stat-value">0</div>
-            </div>
-            <div class="dash-card" style="box-shadow: none; border: none;">
-                <span class="level-badge">Time Survived</span>
-                <div id="final-time" class="stat-value">0s</div>
-            </div>
-            
-            <p id="placement-status" style="margin: 10px 0; font-weight: bold;"></p>
+            <div class="login-card">
+                <h1 class="logo">Wave Defeated!</h1>
+                <p class="user-email">You survived until Wave <span id="final-wave">0</span></p>
 
-            <button onclick="window.location.href='dashboard.html'" class="submit-btn">Back to Home</button>
+                <div class="dash-card" style="box-shadow: none; border: none;">
+                    <span class="level-badge">Final Gold (Points)</span>
+                    <div id="final-gold" class="stat-value">0</div>
+                </div>
+                <div class="dash-card" style="box-shadow: none; border: none;">
+                    <span class="level-badge">Time Survived</span>
+                    <div id="final-time" class="stat-value">0s</div>
+                </div>
+
+                <p id="placement-status" style="margin: 10px 0; font-weight: bold;"></p>
+
+                <button onclick="window.location.href='dashboard.html'" class="submit-btn">Back to Home</button>
+            </div>
         </div>
-    </div>
         </div>
-    </div>
+        </div>
     </main>
 
     <script src="js/Risk_Defender.js"></script>
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 
 </body>
+
 </html>

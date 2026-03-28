@@ -60,12 +60,12 @@ document.getElementById("verifyCodeBtn").onclick = async () => {
 
     const codeInput = document.getElementById("regVerifyCode").value;
 
-    if(!codeInput) return alert("Enter verification code");
+    if (!codeInput) return alert("Enter verification code");
 
-    const res = await fetch("/auth/verify-code",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
+    const res = await fetch("/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
             email: tempEmail,
             code: codeInput
         })
@@ -73,7 +73,7 @@ document.getElementById("verifyCodeBtn").onclick = async () => {
 
     const data = await res.json();
 
-    if(data.success){
+    if (data.success) {
 
         tempCode = codeInput;
 
@@ -81,7 +81,7 @@ document.getElementById("verifyCodeBtn").onclick = async () => {
         document.getElementById("verifyModal").style.display = "flex";
         document.getElementById("verifyStep2").style.display = "block";
 
-    }else{
+    } else {
 
         alert("Invalid code");
 
@@ -94,12 +94,12 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
     const password = document.getElementById("regPassword").value;
     const confirm = document.getElementById("regConfirmPassword").value;
 
-    if(password !== confirm) return alert("Passwords do not match");
+    if (password !== confirm) return alert("Passwords do not match");
 
-    const res = await fetch("/auth/complete-registration",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
+    const res = await fetch("/auth/complete-registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
             email: tempEmail,
             code: tempCode,
             password: password,
@@ -109,12 +109,12 @@ document.getElementById("finishRegisterBtn").onclick = async () => {
 
     const data = await res.json();
 
-    if(data.success){
+    if (data.success) {
 
         alert("Account created!");
         location.reload();
 
-    }else{
+    } else {
 
         alert(data.message);
 
@@ -181,8 +181,8 @@ async function verifyResetCode() {
         const data = await res.json();
 
         if (data.success) {
-            tempResetCode = code; 
-            
+            tempResetCode = code;
+
             document.getElementById("resetCodeSection").style.display = "none";
             document.getElementById("resetPasswordSection").style.display = "block";
         } else {
@@ -206,7 +206,7 @@ async function verifyAndReset() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 email: resetEmailStorage,
-                code: tempResetCode, 
+                code: tempResetCode,
                 newPassword: password
             })
         });
@@ -215,7 +215,7 @@ async function verifyAndReset() {
 
         if (data.success) {
             alert("Password updated successfully!");
-            location.reload(); 
+            location.reload();
         } else {
             alert(data.message || "Failed to update password.");
         }

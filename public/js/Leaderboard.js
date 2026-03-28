@@ -1,7 +1,7 @@
 async function loadLeaderboard(gameType, element) {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(btn => btn.classList.remove('active'));
-    
+
     if (element) {
         element.classList.add('active');
     } else {
@@ -15,7 +15,7 @@ async function loadLeaderboard(gameType, element) {
     try {
         const response = await fetch(`/api/leaderboard?gameType=${gameType}`);
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        
+
         const data = await response.json();
 
         if (!data || data.length === 0) {
@@ -26,7 +26,7 @@ async function loadLeaderboard(gameType, element) {
         tbody.innerHTML = data.map((entry, index) => {
             const rank = index + 1;
             const unit = gameType === 'RiskDefender' ? 'Waves' : 'Photos';
-            
+
             let rankDisplay = rank;
             let rowClass = 'fade-in';
             if (rank === 1) { rankDisplay = '🥇'; rowClass += ' top-1'; }

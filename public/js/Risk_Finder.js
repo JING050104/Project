@@ -1,16 +1,16 @@
 // 1. GLOBAL STATE
 let imageList = [];
-let allData = {}; 
-let currentAnnotations = []; 
+let allData = {};
+let currentAnnotations = [];
 let currentIndex = 0;
 let chances = 3;
 let totalScore = 0;
 let isPaused = false;
 let isGameOver = false;
-let startTime;         
+let startTime;
 let totalPausedTime = 0;
 let pauseStartTime;
-let timerInterval;      
+let timerInterval;
 let timeUsedSeconds = 0;
 
 // 2. DOM ELEMENTS
@@ -18,7 +18,7 @@ const imgElement = document.getElementById('risk-image');
 const msgElement = document.getElementById('message');
 const riskCountDisplay = document.getElementById('risk-count');
 const wrapper = document.getElementById('wrapper');
-const scoreDisplay = document.getElementById('score-count'); 
+const scoreDisplay = document.getElementById('score-count');
 
 // NEW: Elements for the Game Over Modal
 const gameOverModal = document.getElementById('game-over-modal');
@@ -42,7 +42,7 @@ homeBtn.addEventListener("click", confirmAndExit);
 
 const logoLink = document.querySelector('.logo');
 if (logoLink) {
-    logoLink.style.cursor = "pointer"; 
+    logoLink.style.cursor = "pointer";
     logoLink.addEventListener("click", confirmAndExit);
 }
 
@@ -50,14 +50,14 @@ pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
 
     if (isPaused) {
-        pauseStartTime = Date.now(); 
+        pauseStartTime = Date.now();
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         wrapper.style.pointerEvents = "none";
-        imgElement.style.filter = "blur(15px)"; 
+        imgElement.style.filter = "blur(15px)";
         msgElement.innerText = "GAME PAUSED";
     } else {
-        totalPausedTime += (Date.now() - pauseStartTime); 
-        
+        totalPausedTime += (Date.now() - pauseStartTime);
+
         pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         wrapper.style.pointerEvents = "auto";
         imgElement.style.filter = "none";
@@ -70,7 +70,7 @@ setTimeout(() => {
     document.body.classList.remove("flash-red");
 }, 200);
 
-const BASE_PATH = '/image/valid'; 
+const BASE_PATH = '/image/valid';
 
 async function initGame() {
     try {
@@ -80,7 +80,7 @@ async function initGame() {
         allData = await response.json();
         imageList = allData.images.map(img => `${BASE_PATH}/${img.file_name}`);
         if (imageList.length > 0) {
-            startTime = Date.now(); 
+            startTime = Date.now();
             startRealTimeTimer();
             loadLevel();
         }
@@ -96,7 +96,7 @@ function startRealTimeTimer() {
             let currentTime = Date.now();
             let elapsed = Math.floor((currentTime - startTime - totalPausedTime) / 1000);
             timeUsedSeconds = elapsed;
-            
+
             if (timeDisplay) {
                 timeDisplay.innerText = timeUsedSeconds + "s";
             }
@@ -105,12 +105,12 @@ function startRealTimeTimer() {
 }
 
 function loadLevel() {
-    chances = 3; 
+    chances = 3;
     imgElement.src = imageList[currentIndex];
     imgElement.style.pointerEvents = "auto";
     imgElement.style.opacity = "1";
-    riskCountDisplay.innerText = chances; 
-    
+    riskCountDisplay.innerText = chances;
+
     document.querySelectorAll('.feedback-marker').forEach(m => m.remove());
 
     imgElement.onload = () => {
@@ -121,8 +121,8 @@ function loadLevel() {
     };
 }
 
-imgElement.onclick = function(e) {
-    if (isPaused || isGameOver) return; 
+imgElement.onclick = function (e) {
+    if (isPaused || isGameOver) return;
     const rect = imgElement.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -136,7 +136,7 @@ imgElement.onclick = function(e) {
 
     let found = false;
     currentAnnotations.forEach(ann => {
-        const [bx, by, bw, bh] = ann.bbox; 
+        const [bx, by, bw, bh] = ann.bbox;
         if (clickX >= bx && clickX <= bx + bw && clickY >= by && clickY <= by + bh) {
             found = true;
         }
@@ -151,13 +151,13 @@ imgElement.onclick = function(e) {
 
 function handleSuccess(x, y) {
     imgElement.style.pointerEvents = "none";
-    let pointsEarned = chances; 
+    let pointsEarned = chances;
     totalScore += pointsEarned;
 
     msgElement.innerText = `Perfect! You get ${pointsEarned} Points!`;
     msgElement.style.color = "#22c55e";
-    
-    if(scoreDisplay) scoreDisplay.innerText = totalScore;
+
+    if (scoreDisplay) scoreDisplay.innerText = totalScore;
 
     createFeedbackMarker(x, y, 'correct');
     setTimeout(goToNextLevel, 1200);
@@ -167,7 +167,7 @@ function handleFailure(x, y) {
     chances--;
     riskCountDisplay.innerText = chances;
     createFeedbackMarker(x, y, 'wrong');
-    
+
     if (chances > 0) {
         msgElement.innerText = `Try again. You still have ${chances} chances left.`;
         msgElement.style.color = "#f59e0b";
@@ -175,8 +175,8 @@ function handleFailure(x, y) {
         imgElement.style.pointerEvents = "none";
         msgElement.innerText = "Out Of Chances! Moving to next image...";
         msgElement.style.color = "#ef4444";
-        
-        setTimeout(goToNextLevel, 1500); 
+
+        setTimeout(goToNextLevel, 1500);
     }
 }
 
@@ -193,7 +193,7 @@ function endGame() {
     if (isGameOver) return;
     isGameOver = true;
     let endTime = Date.now();
-    let timeUsedMS = endTime - startTime - totalPausedTime; 
+    let timeUsedMS = endTime - startTime - totalPausedTime;
     let timeUsedSeconds = Math.floor(timeUsedMS / 1000);
 
     document.getElementById('final-score').innerText = totalScore;
@@ -202,10 +202,10 @@ function endGame() {
         finalTimeElem.innerText = timeUsedSeconds + "s";
     }
     document.getElementById('game-over-modal').style.display = 'flex';
-    
+
     const dataToSend = {
-        score: totalScore, 
-        reached_level: currentIndex, 
+        score: totalScore,
+        reached_level: currentIndex,
         gameType: 'RiskFinder',
         time_used: timeUsedSeconds,
     };
@@ -215,13 +215,13 @@ function endGame() {
     fetch('/api/save-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSend) 
+        body: JSON.stringify(dataToSend)
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Database response:", data.message);
-    })
-    .catch(err => console.error("Sync error:", err));
+        .then(res => res.json())
+        .then(data => {
+            console.log("Database response:", data.message);
+        })
+        .catch(err => console.error("Sync error:", err));
 }
 
 function createFeedbackMarker(x, y, type) {
@@ -246,7 +246,7 @@ async function redeemVoucher(voucherName, cost) {
 
         if (response.ok) {
             alert("Redemption Successful!");
-            initRewards(); 
+            initRewards();
         } else {
             alert(`Error: ${result.error}`);
         }

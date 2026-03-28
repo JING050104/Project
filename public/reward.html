@@ -1,139 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rewards - CoverageQuest</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <header class="dashboard-header">
         <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
     </header>
 
     <main class="dashboard-content">
-    <div class="rewards-top-row">
-        <div class="reward-section flex-2">
-            <h2 class="section-title"><i class="fa-solid fa-coins"></i> Total Points</h2>
-            <div class="top-full-card login-card">
-                <span class="stat-value" id="display-points">0</span>
-                <p style="color: #64748b; font-size: 0.9rem;">Available Points</p>
-            </div>
-        </div>
-        
-        <div class="reward-section flex-8">
-        <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Point History</h2>
-        <div id="history-scroll-box" class="login-card inventory-box">
-            <div id="point-history-container"></div>
-        </div>
-    </div>
-</div>
-    
-    <div class="reward-section">
-        <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
-        <div class="login-card inventory-box">
-            <div class="tab-buttons"> 
-                <button class="tab-btn active" data-tab="inactive">Inactive</button>
-                <button class="tab-btn" data-tab="activated">Activated</button>
-                <button class="tab-btn" data-tab="expired">Expired</button>
-            </div>
-            <div id="inventory-container" class="voucher-grid">
-                <p class="loading-text">Loading your vouchers...</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="reward-section">
-        <h2 class="section-title"><i class="fa-solid fa-cart-shopping"></i> Available Vouchers</h2>
-        <div class="login-card inventory-box"> 
-            <div id="voucher-container" class="voucher-grid">
+        <div class="rewards-top-row">
+            <div class="reward-section flex-2">
+                <h2 class="section-title"><i class="fa-solid fa-coins"></i> Total Points</h2>
+                <div class="top-full-card login-card">
+                    <span class="stat-value" id="display-points">0</span>
+                    <p style="color: #64748b; font-size: 0.9rem;">Available Points</p>
                 </div>
+            </div>
+
+            <div class="reward-section flex-8">
+                <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Point History</h2>
+                <div id="history-scroll-box" class="login-card inventory-box">
+                    <div id="point-history-container"></div>
+                </div>
+            </div>
         </div>
-    </div>
-</main>
+
+        <div class="reward-section">
+            <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Voucher</h2>
+            <div class="login-card inventory-box">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="inactive">Inactive</button>
+                    <button class="tab-btn" data-tab="activated">Activated</button>
+                    <button class="tab-btn" data-tab="expired">Expired</button>
+                </div>
+                <div id="inventory-container" class="voucher-grid">
+                    <p class="loading-text">Loading your vouchers...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="reward-section">
+            <h2 class="section-title"><i class="fa-solid fa-cart-shopping"></i> Available Vouchers</h2>
+            <div class="login-card inventory-box">
+                <div id="voucher-container" class="voucher-grid">
+                </div>
+            </div>
+        </div>
+    </main>
     <div id="voucher-detail-modal" class="modal-overlay">
-    <div class="login-card voucher-detail-card">
-        <span class="close-modal" onclick="closeVoucherModal()">&times;</span>
-        <div id="modal-content">
-            <h2 id="modal-title">Voucher Name</h2>
-            <div class="modal-badge" id="modal-status">Unused</div>
-            
-            <p class="modal-description" id="modal-description"></p>
+        <div class="login-card voucher-detail-card">
+            <span class="close-modal" onclick="closeVoucherModal()">&times;</span>
+            <div id="modal-content">
+                <h2 id="modal-title">Voucher Name</h2>
+                <div class="modal-badge" id="modal-status">Unused</div>
 
-            <div id="redeem-code-container" style="display:none; background:#f8fafc; padding:15px; border-radius:8px; border:2px dashed #4a90e2; margin-top:10px; text-align:center;">
-                <p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Your Redeem Code:</p>
-                <span id="redeem-code-text" style="font-size:1.5rem; font-weight:bold; color:#4a90e2; letter-spacing:2px;"></span>
-            </div>
+                <p class="modal-description" id="modal-description"></p>
 
-            <div class="modal-actions">
-                <button id="modal-action-btn" class="submit-btn">Activate Now</button>
+                <div id="redeem-code-container"
+                    style="display:none; background:#f8fafc; padding:15px; border-radius:8px; border:2px dashed #4a90e2; margin-top:10px; text-align:center;">
+                    <p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Your Redeem Code:</p>
+                    <span id="redeem-code-text"
+                        style="font-size:1.5rem; font-weight:bold; color:#4a90e2; letter-spacing:2px;"></span>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="modal-action-btn" class="submit-btn">Activate Now</button>
+                </div>
             </div>
         </div>
-    </div>
     </div>
     <script src="js/Reward.js"></script>
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
     <template id="voucher-template">
-    <div class="voucher-card">
-        <h4 class="v-name"></h4>
-        <p class="description v-desc"></p>
-        <div class="status-container">
-            <span class="v-status-badge"></span>
-            <div class="v-code-container">
-                <div class="v-code-wrapper redeem-code">
-                    <span class="code-text"></span> 
-                    <i class="v-copy-btn fa-regular fa-copy" title="Copy Code" style="cursor: pointer; display: none; font-size: 0.9rem; opacity: 0.8;"></i>
+        <div class="voucher-card">
+            <h4 class="v-name"></h4>
+            <p class="description v-desc"></p>
+            <div class="status-container">
+                <span class="v-status-badge"></span>
+                <div class="v-code-container">
+                    <div class="v-code-wrapper redeem-code">
+                        <span class="code-text"></span>
+                        <i class="v-copy-btn fa-regular fa-copy" title="Copy Code"
+                            style="cursor: pointer; display: none; font-size: 0.9rem; opacity: 0.8;"></i>
+                    </div>
                 </div>
             </div>
+            <div class="v-button-wrapper"></div>
         </div>
-        <div class="v-button-wrapper"></div>
-    </div>
-</template>
+    </template>
 
     <template id="voucher-item-template">
-    <div class="login-card voucher-card">
-        <h4 class="v-name"></h4>
-        <p class="description v-desc"></p>
-        <div class="status-container">
-            <span class="v-status-badge status-active"></span>
-        </div>
-        <div class="v-expiry-container" style="display:none; margin: 10px 0; font-size: 0.85rem; color: #64748b;">
-            <i class="fa-solid fa-clock"></i> Expired at: <span class="v-expiry-date"></span>
-        </div>
-        <div class="v-code-wrapper" style="display:none; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 6px;">
-            <code class="code-text" style="font-weight: bold; color: #1e293b;"></code>
-            <i class="fa-solid fa-copy v-copy-btn" style="cursor: pointer; color: #64748b;"></i>
-        </div>
+        <div class="login-card voucher-card">
+            <h4 class="v-name"></h4>
+            <p class="description v-desc"></p>
+            <div class="status-container">
+                <span class="v-status-badge status-active"></span>
+            </div>
+            <div class="v-expiry-container" style="display:none; margin: 10px 0; font-size: 0.85rem; color: #64748b;">
+                <i class="fa-solid fa-clock"></i> Expired at: <span class="v-expiry-date"></span>
+            </div>
+            <div class="v-code-wrapper"
+                style="display:none; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 6px;">
+                <code class="code-text" style="font-weight: bold; color: #1e293b;"></code>
+                <i class="fa-solid fa-copy v-copy-btn" style="cursor: pointer; color: #64748b;"></i>
+            </div>
             <button class="submit-btn v-redeem-btn"><i class="fa-solid fa-cart-shopping"></i>Redeem Now</button>
-            
-            <button class="submit-btn v-owned-btn" disabled 
+
+            <button class="submit-btn v-owned-btn" disabled
                 style="background: #cbd5e1; cursor: not-allowed; display: none; width:100%; border:none;">
                 Owned
             </button>
-            
-            <button class="submit-btn v-low-points-btn" disabled 
+
+            <button class="submit-btn v-low-points-btn" disabled
                 style="background: #cbd5e1; cursor: not-allowed; display: none; width:100%; border:none;">
                 Insufficient Points
             </button>
         </div>
-    </div>
-    </template> 
+        </div>
+    </template>
     <template id="history-item-template">
-    <div class="history-item">
-        <div class="h-date-column">
-            <span class="h-date"></span>
-        </div>
+        <div class="history-item">
+            <div class="h-date-column">
+                <span class="h-date"></span>
+            </div>
 
-        <div class="h-activity-column">
-            <div class="h-type"></div>
-            <div class="h-desc"></div>
-        </div>
+            <div class="h-activity-column">
+                <div class="h-type"></div>
+                <div class="h-desc"></div>
+            </div>
 
-        <div class="h-change-column">
-            <span class="h-change"></span>
+            <div class="h-change-column">
+                <span class="h-change"></span>
+            </div>
         </div>
-    </div>
     </template>
 
 </body>
+
 </html>

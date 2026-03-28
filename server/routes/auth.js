@@ -4,7 +4,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const db = require("../db");
-const axios = require("axios"); 
+const axios = require("axios");
 
 async function sendBrevoEmail(toEmail, subject, textContent, htmlContent) {
     try {
@@ -13,7 +13,7 @@ async function sendBrevoEmail(toEmail, subject, textContent, htmlContent) {
             to: [{ email: toEmail }],
             subject: subject,
             textContent: textContent,
-            htmlContent: htmlContent  
+            htmlContent: htmlContent
         }, {
             headers: {
                 'api-key': process.env.BREVO_API_KEY,
@@ -142,15 +142,15 @@ router.post('/complete-registration', async (req, res) => {
 
 // ====================== 登入 ======================
 router.post('/login', (req, res, next) => {
-    const { email, password } = req.body; 
+    const { email, password } = req.body;
 
     passport.authenticate('local', async (err, user, info) => {
-        if (err) return next(err); 
+        if (err) return next(err);
         if (!user) return res.status(400).json({ success: false, message: info.message });
 
         req.logIn(user, async (err) => {
             if (err) return next(err);
-            
+
             await db.execute("UPDATE users SET is_verified = 1 WHERE id = $1", [user.id]);
             return res.json({ success: true });
         });
@@ -168,7 +168,7 @@ router.get("/user", (req, res) => {
 // ====================== Google 登入 ======================
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-router.get("/google/callback", 
+router.get("/google/callback",
     passport.authenticate("google", { failureRedirect: "/index.html" }),
     (req, res) => {
         req.session.save((err) => {
@@ -229,7 +229,7 @@ router.post('/reset-password', async (req, res) => {
     const { email, code, newPassword } = req.body;
     try {
         const user = await db.execute(
-            "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()", 
+            "SELECT id FROM users WHERE email = $1 AND reset_code = $2 AND reset_expires > NOW()",
             [email, code]
         );
 
@@ -239,7 +239,7 @@ router.post('/reset-password', async (req, res) => {
 
         const hashedPw = await bcrypt.hash(newPassword, 10);
         await db.execute(
-            "UPDATE users SET password = $1, reset_code = NULL, reset_expires = NULL WHERE email = $2", 
+            "UPDATE users SET password = $1, reset_code = NULL, reset_expires = NULL WHERE email = $2",
             [hashedPw, email]
         );
 

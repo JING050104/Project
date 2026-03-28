@@ -1,68 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" 
-          content="default-src * 'unsafe-inline' 'unsafe-eval'; 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; 
                    script-src * 'unsafe-inline' 'unsafe-eval'; 
                    style-src * 'unsafe-inline'; 
                    font-src * data:; 
                    img-src * data: blob:; 
                    connect-src *;">
-  <title>Coverage Quest Dashboard</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <style>
-  .dashboard-content {
-      max-width: 1450px !important; 
-      margin-left: auto !important;
-      margin-right: auto !important;
-  }
+    <title>Coverage Quest Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .dashboard-content {
+            max-width: 1450px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
 
-  .dashboard-grid {
-      max-width: 1400px !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-  }
-</style>
+        .dashboard-grid {
+            max-width: 1400px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+    </style>
 </head>
+
 <body>
-  <header class="dashboard-header">
-    <h1 class="logo">Coverage Quest</h1>
-    <div class="header-profile-box">
-        <div class="profile-info">
-            <p id="userName">Hello, </p>
-            <a href="profile.html" class="profile-trigger" title="Go to Profile">
-                <img id="headerAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff" alt="Profile">
-            </a>
-            <button id="logoutBtn" class="mini-logout" title="Logout">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
+    <header class="dashboard-header">
+        <h1 class="logo">Coverage Quest</h1>
+        <div class="header-profile-box">
+            <div class="profile-info">
+                <p id="userName">Hello, </p>
+                <a href="profile.html" class="profile-trigger" title="Go to Profile">
+                    <img id="headerAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff"
+                        alt="Profile">
+                </a>
+                <button id="logoutBtn" class="mini-logout" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <main class="dashboard-content">
-    <div class="dashboard-grid">
-        <div class="dash-card clickable-card" onclick="window.location.href='risk finder.html'">
-            <h3>Risk Finder</h3>
-        </div>
-        <div class="dash-card clickable-card" onclick="window.location.href='risk defender.html'">
-            <h3>Risk Defender</h3>
-        </div>
-        <div class="dash-card clickable-card" onclick="window.location.href='reward.html'">
-            <h3>Rewards</h3>
-        </div>
-        <div class="dash-card clickable-card" onclick="window.location.href='leaderboard.html'">
-            <h3>Leaderboard</h3>
-        </div>
+        <div class="dashboard-grid">
+            <div class="dash-card clickable-card" onclick="window.location.href='risk finder.html'">
+                <h3>Risk Finder</h3>
+            </div>
+            <div class="dash-card clickable-card" onclick="window.location.href='risk defender.html'">
+                <h3>Risk Defender</h3>
+            </div>
+            <div class="dash-card clickable-card" onclick="window.location.href='reward.html'">
+                <h3>Rewards</h3>
+            </div>
+            <div class="dash-card clickable-card" onclick="window.location.href='leaderboard.html'">
+                <h3>Leaderboard</h3>
+            </div>
         </div>
     </main>
 
-      <div class="dashboard-grid">
+    <div class="dashboard-grid">
         <div class="floating-spin-btn" id="openSpinBtn">
             <div class="mini-scale-container">
-                <div class="wheel-pointer"></div> 
+                <div class="wheel-pointer"></div>
                 <div class="wheel">
                     <div class="wheel-label" style="transform: rotate(30deg);"></div>
                     <div class="wheel-label" style="transform: rotate(90deg);"></div>
@@ -74,65 +76,66 @@
             </div>
         </div>
         <div id="spinModal" class="modal-overlay">
-      <div class="login-card">
-          <span class="close-modal" id="closeSpinBtn">&times;</span>
-          <h2>Daily Spin</h2>
-          <p>Win a reward!</p>
-          <div class="wheel-container">
-              <div class="wheel-pointer"></div>
-              <div id="wheel" class="wheel">
-                  <div class="wheel-label" style="transform: rotate(30deg);">10 pts</div>
-                  <div class="wheel-label" style="transform: rotate(90deg);">20 pts</div>
-                  <div class="wheel-label" style="transform: rotate(150deg);">100 pts</div>
-                  <div class="wheel-label" style="transform: rotate(210deg);">Try Again</div>
-                  <div class="wheel-label" style="transform: rotate(270deg);">50 pts</div>
-                  <div class="wheel-label" style="transform: rotate(330deg);">5 pts</div>
-              </div>
-          </div>
+            <div class="login-card">
+                <span class="close-modal" id="closeSpinBtn">&times;</span>
+                <h2>Daily Spin</h2>
+                <p>Win a reward!</p>
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div id="wheel" class="wheel">
+                        <div class="wheel-label" style="transform: rotate(30deg);">10 pts</div>
+                        <div class="wheel-label" style="transform: rotate(90deg);">20 pts</div>
+                        <div class="wheel-label" style="transform: rotate(150deg);">100 pts</div>
+                        <div class="wheel-label" style="transform: rotate(210deg);">Try Again</div>
+                        <div class="wheel-label" style="transform: rotate(270deg);">50 pts</div>
+                        <div class="wheel-label" style="transform: rotate(330deg);">5 pts</div>
+                    </div>
+                </div>
 
-          <button class="submit-btn" id="spinActionBtn">SPIN NOW</button>
-      </div>
+                <button class="submit-btn" id="spinActionBtn">SPIN NOW</button>
+            </div>
+        </div>
     </div>
-    </div>
 
-  <script type="module">
+    <script type="module">
 
-    fetch("/auth/user")
-    .then(res => res.json())
-    .then(data => {
-        if (!data.user) {
-            window.location.href = "/index.html";
-        } else {
-            const user = data.user;
-            const userName = user.username || user.email;
-            document.getElementById("userName").textContent = "Hello, " + userName;
-            
-            const avatarImg = document.getElementById("headerAvatar");
-            if (user.profile_pic) {
-                avatarImg.src = user.profile_pic;
-            } else {
-                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=4a90e2&color=fff`;
-            }
+        fetch("/auth/user")
+            .then(res => res.json())
+            .then(data => {
+                if (!data.user) {
+                    window.location.href = "/index.html";
+                } else {
+                    const user = data.user;
+                    const userName = user.username || user.email;
+                    document.getElementById("userName").textContent = "Hello, " + userName;
+
+                    const avatarImg = document.getElementById("headerAvatar");
+                    if (user.profile_pic) {
+                        avatarImg.src = user.profile_pic;
+                    } else {
+                        avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=4a90e2&color=fff`;
+                    }
+                }
+            });
+
+        import SpinWheel from './js/Spin.js';
+
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.onclick = () => window.location.href = "/auth/logout";
         }
-    });
-    
-    import SpinWheel from './js/Spin.js';
 
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.onclick = () => window.location.href = "/auth/logout";
-    }
-
-    const dailySpin = new SpinWheel({
-        modalId: 'spinModal',
-        openBtnId: 'openSpinBtn',
-        closeBtnId: 'closeSpinBtn',
-        wheelId: 'wheel',
-        spinBtnId: 'spinActionBtn',
-        rewardsListId: 'rewardsList',
-        rewards: ["Try Again", "100 pts", "20 pts", "10 pts", "5 pts", "50 pts"]
-    });
-</script>
-<script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
+        const dailySpin = new SpinWheel({
+            modalId: 'spinModal',
+            openBtnId: 'openSpinBtn',
+            closeBtnId: 'closeSpinBtn',
+            wheelId: 'wheel',
+            spinBtnId: 'spinActionBtn',
+            rewardsListId: 'rewardsList',
+            rewards: ["Try Again", "100 pts", "20 pts", "10 pts", "5 pts", "50 pts"]
+        });
+    </script>
+    <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 </body>
+
 </html>

@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard - Coverage Quest</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body class="dashboard-body">
     <header class="dashboard-header">
         <h1 class="logo"><a href="dashboard.html" class="logo">Coverage Quest</a></h1>
     </header>
 
-        <main class="dashboard-content leaderboard-page-content">
+    <main class="dashboard-content leaderboard-page-content">
         <h2 class="section-title">
             <i class="fa-solid fa-trophy"></i> Leaderboard
-            </h2>
-            <div class="leaderboard-card-container">
+        </h2>
+        <div class="leaderboard-card-container">
 
             <div class="leaderboard-visual-header">
-                
+
             </div>
 
-            <div class="tab-switch" style= "margin-bottom: 0px !important;">
-                <button class="tab-btn" onclick="loadLeaderboard('RiskFinder', this)"><i class="fa-solid fa-magnifying-glass"></i> Risk Finder</button>
-                <button class="tab-btn active" onclick="loadLeaderboard('RiskDefender', this)"><i class="fa-solid fa-shield-halved"></i> Risk Defender</button>
+            <div class="tab-switch" style="margin-bottom: 0px !important;">
+                <button class="tab-btn" onclick="loadLeaderboard('RiskFinder', this)"><i
+                        class="fa-solid fa-magnifying-glass"></i> Risk Finder</button>
+                <button class="tab-btn active" onclick="loadLeaderboard('RiskDefender', this)"><i
+                        class="fa-solid fa-shield-halved"></i> Risk Defender</button>
             </div>
 
             <table class="leaderboard-table">
@@ -37,7 +41,7 @@
                     </tr>
                 </thead>
                 <tbody id="leaderboardBody">
-                    </tbody>
+                </tbody>
             </table>
 
         </div>
@@ -47,4 +51,5 @@
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 
 </body>
+
 </html>

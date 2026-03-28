@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Risk Finder - CoverageQuest</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-    <body class="no-scroll-page"> 
+
+<body class="no-scroll-page">
     <header class="dashboard-header">
         <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
         <div class="header-controls">
-            <button id="pause-btn" class="pause-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+            <button id="pause-btn" class="pause-btn"
+                style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-pause"></i>
             </button>
-           <button id="home-btn" class="home-btn" style="display: inline-flex; align-items: center; justify-content: center;">
+            <button id="home-btn" class="home-btn"
+                style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-house"></i>
             </button>
     </header>
@@ -37,35 +41,36 @@
                     <h3 style="color: #64748b;">Total Points</h3>
                     <span class="stat-value" id="score-count">0</span>
                 </div>
-                
-                
+
+
             </aside>
         </div>
     </main>
 
     <div id="game-over-modal" class="modal-overlay">
-    <div class="login-card">
-        <h1 class="logo">Game Over</h1>
-        <p class="user-email">Session Completed!</p>
-        
-        <div class="dash-card" style="box-shadow: none; border: none;">
-            <span class="level-badge">Final Score</span>
-            <div class="stat-value" id="final-score">0</div>
-        </div>
+        <div class="login-card">
+            <h1 class="logo">Game Over</h1>
+            <p class="user-email">Session Completed!</p>
 
-        <div class="dash-card" style="box-shadow: none; border: none;">
-            <span class="level-badge">Time Survived</span>
-            <span class="stat-value" id="final-time-display">0s</span> 
-        </div>
+            <div class="dash-card" style="box-shadow: none; border: none;">
+                <span class="level-badge">Final Score</span>
+                <div class="stat-value" id="final-score">0</div>
+            </div>
 
-        <button onclick="window.location.href='dashboard.html'" class="submit-btn">
-            Back to Home
-        </button>
+            <div class="dash-card" style="box-shadow: none; border: none;">
+                <span class="level-badge">Time Survived</span>
+                <span class="stat-value" id="final-time-display">0s</span>
+            </div>
+
+            <button onclick="window.location.href='dashboard.html'" class="submit-btn">
+                Back to Home
+            </button>
+        </div>
     </div>
-</div>
 
     <script src="js/Risk_Finder.js"></script>
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 
 </body>
+
 </html>

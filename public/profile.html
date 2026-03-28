@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Settings - Coverage Quest</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
@@ -16,101 +18,108 @@
             </button>
         </header>
 
-            <main class="login-card profile-card-wide">
-                
-                <div class="avatar-section">
-                    <div class="avatar-wrapper">
-                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff" alt="Profile">
-                        <label for="imageUpload" class="camera-icon"><i class="fa-solid fa-camera"></i></label>
-                        <input type="file" id="imageUpload" accept="image/*" hidden>
-                    </div>
+        <main class="login-card profile-card-wide">
+
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4a90e2&color=fff"
+                        alt="Profile">
+                    <label for="imageUpload" class="camera-icon"><i class="fa-solid fa-camera"></i></label>
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
                 </div>
+            </div>
 
-                <hr class="section-divider">
+            <hr class="section-divider">
 
-                <div class="settings-form-wrapper">
-                    <form id="profileUpdateForm" class="active">
-                        <div class="form-content-flex">
-                            <div class="profile-section-left">
-                                <h3 class="group-title">Profile Information</h3>
-                                <div class="input-group">
-                                    <label>Username</label>
-                                    <input type="text" id="editUsername" placeholder="Username">
-                                </div>
-                                <div class="input-group">
-                                    <label>Email Address</label>
-                                    <input type="email" id="editEmail" placeholder="Email">
-                                    <small style="color:#ff0000; display:block; margin-top:4px;">
-                                        *Verification needed after email address changed
-                                    </small>
+            <div class="settings-form-wrapper">
+                <form id="profileUpdateForm" class="active">
+                    <div class="form-content-flex">
+                        <div class="profile-section-left">
+                            <h3 class="group-title">Profile Information</h3>
+                            <div class="input-group">
+                                <label>Username</label>
+                                <input type="text" id="editUsername" placeholder="Username">
+                            </div>
+                            <div class="input-group">
+                                <label>Email Address</label>
+                                <input type="email" id="editEmail" placeholder="Email">
+                                <small style="color:#ff0000; display:block; margin-top:4px;">
+                                    *Verification needed after email address changed
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="profile-section-right">
+                            <h3 class="group-title">Change Password</h3>
+
+                            <div class="input-group">
+                                <label>Current Password</label>
+                                <div class="password-container">
+                                    <input type="password" id="currPass" placeholder="Enter current password">
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-currPass"
+                                        onclick="toggleVisibility('currPass')"></i>
                                 </div>
                             </div>
 
-                            <div class="profile-section-right">
-                                <h3 class="group-title">Change Password</h3>
-                                
-                                <div class="input-group">
-                                    <label>Current Password</label>
-                                    <div class="password-container">
-                                        <input type="password" id="currPass" placeholder="Enter current password">
-                                        <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-currPass" onclick="toggleVisibility('currPass')"></i>
-                                    </div>
-                                </div>
+                            <p class="forgot-link-container">
+                                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                            </p>
 
-                                <p class="forgot-link-container">
-                                    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
-                                </p>
-
-                                <div class="input-group">
-                                    <label>New Password</label>
-                                    <div class="password-container">
-                                        <input type="password" id="NewPassword" placeholder="New password">
-                                        <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-NewPassword" onclick="toggleVisibility('NewPassword')"></i>
-                                    </div>
+                            <div class="input-group">
+                                <label>New Password</label>
+                                <div class="password-container">
+                                    <input type="password" id="NewPassword" placeholder="New password">
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-NewPassword"
+                                        onclick="toggleVisibility('NewPassword')"></i>
                                 </div>
+                            </div>
 
-                                <div id="regPasswordRequirements" class="requirements-box">
-                                    <div id="reg-req-length" class="req-item">× 8+ Characters</div>
-                                    <div id="reg-req-upper" class="req-item">× Capital Letter</div>
-                                    <div id="reg-req-lower" class="req-item">× Small Letter</div>
-                                    <div id="reg-req-num" class="req-item">× Numeric</div>
-                                    <div id="reg-req-special" class="req-item">× Special Character</div>
-                                </div>
-                                <div class="input-group">
+                            <div id="regPasswordRequirements" class="requirements-box">
+                                <div id="reg-req-length" class="req-item">× 8+ Characters</div>
+                                <div id="reg-req-upper" class="req-item">× Capital Letter</div>
+                                <div id="reg-req-lower" class="req-item">× Small Letter</div>
+                                <div id="reg-req-num" class="req-item">× Numeric</div>
+                                <div id="reg-req-special" class="req-item">× Special Character</div>
+                            </div>
+                            <div class="input-group">
                                 <label>Confirm Password</label>
                                 <div class="password-container">
                                     <input type="password" id="regConfirmPassword" placeholder="Confirm new password">
-                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword" onclick="toggleVisibility('regConfirmPassword')"></i>
+                                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-regConfirmPassword"
+                                        onclick="toggleVisibility('regConfirmPassword')"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-                        <button type="submit" class="submit-btn update-full-btn">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            Update Profile
-                        </button>
-                    </form>
-                </div>
+                    <button type="submit" class="submit-btn update-full-btn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Update Profile
+                    </button>
+                </form>
             </div>
-    </div> <div id="resetModal" class="modal-overlay">
+    </div>
+    </div>
+    <div id="resetModal" class="modal-overlay">
         <div class="login-card modal-small">
             <span class="close-modal" id="closeResetBtn">&times;</span>
-            
+
             <div id="resetStep1">
                 <h2>Reset Password</h2>
-                <p>We will send a code to: <strong id="confirmEmailDisplay"></strong></p> 
-                <input type="hidden" id="resetEmail"> 
+                <p>We will send a code to: <strong id="confirmEmailDisplay"></strong></p>
+                <input type="hidden" id="resetEmail">
                 <button id="resetSendBtn" class="submit-btn">Send Code</button>
             </div>
-            
+
             <div id="resetStep2" class="step-hidden">
                 <h2>Enter Code</h2>
                 <p>Enter the 6-digit code sent to your email.</p>
-                <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e" maxlength="6" required>
-                
+                <input type="text" id="regVerifyCode" class="large-code-input" placeholder="6 - d i g i t  C o d e"
+                    maxlength="6" required>
+
                 <div class="password-container">
                     <input type="password" id="ModalNewPassword" placeholder="New Password">
-                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalNewPassword" onclick="toggleVisibility('ModalNewPassword')"></i>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalNewPassword"
+                        onclick="toggleVisibility('ModalNewPassword')"></i>
                 </div>
 
                 <div id="regPasswordRequirements" class="requirements-box">
@@ -123,7 +132,8 @@
 
                 <div class="password-container">
                     <input type="password" id="ModalConfirmPassword" placeholder="Confirm Password">
-                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalConfirmPassword" onclick="toggleVisibility('ModalConfirmPassword')"></i>
+                    <i class="fa-regular fa-eye-slash toggle-eye" id="toggle-icon-ModalConfirmPassword"
+                        onclick="toggleVisibility('ModalConfirmPassword')"></i>
                 </div>
                 <button id="resetFinishBtn" class="submit-btn">
                     <i class="fa-solid fa-floppy-disk"></i>
@@ -152,4 +162,5 @@
     <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
 
 </body>
+
 </html>

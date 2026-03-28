@@ -2,9 +2,9 @@
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const bcrypt = require("bcryptjs");
-const db = require("./db"); 
+const db = require("./db");
 
-module.exports = function(passport) {
+module.exports = function (passport) {
 
   // 1. Serialize User
   passport.serializeUser((user, done) => {
@@ -13,30 +13,30 @@ module.exports = function(passport) {
 
   passport.deserializeUser(async (id, done) => {
     try {
-        const result = await db.execute("SELECT * FROM users WHERE id = $1", [id]);
-        
-        const user = (result.rows && result.rows.length > 0) ? result.rows[0] : result[0];
+      const result = await db.execute("SELECT * FROM users WHERE id = $1", [id]);
 
-        console.log("------------------------------------------");
-        console.log("DEBUG: Deserializing user ID:", id);
-        console.log("DEBUG: Full User Object from DB:", user); 
-        console.log("DEBUG: Detected Role:", user ? user.role : "UNDEFINED");
-        console.log("------------------------------------------");
+      const user = (result.rows && result.rows.length > 0) ? result.rows[0] : result[0];
 
-        done(null, user);
+      console.log("------------------------------------------");
+      console.log("DEBUG: Deserializing user ID:", id);
+      console.log("DEBUG: Full User Object from DB:", user);
+      console.log("DEBUG: Detected Role:", user ? user.role : "UNDEFINED");
+      console.log("------------------------------------------");
+
+      done(null, user);
     } catch (err) {
-        console.error("Deserialize Error:", err.message);
-        done(err, null);
+      console.error("Deserialize Error:", err.message);
+      done(err, null);
     }
-});
+  });
 
   // ====================== Local Strategy ======================
   passport.use(
     new LocalStrategy(
-      { 
-        usernameField: "email", 
-        passwordField: "password" 
-      }, 
+      {
+        usernameField: "email",
+        passwordField: "password"
+      },
       async (email, password, done) => {
         try {
           const rows = await db.execute(
@@ -70,15 +70,15 @@ module.exports = function(passport) {
 
   // ====================== Google Strategy ======================
   passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback"
-    },
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback"
+  },
     async (accessToken, refreshToken, profile, done) => {
       try {
         // 檢查是否已用 Google ID 註冊
         const existingUser = await db.execute(
-          "SELECT * FROM users WHERE google_id = $1", 
+          "SELECT * FROM users WHERE google_id = $1",
           [profile.id]
         );
 
@@ -88,13 +88,13 @@ module.exports = function(passport) {
 
         // 檢查 email 是否已存在
         const emailUser = await db.execute(
-          "SELECT * FROM users WHERE email = $1", 
+          "SELECT * FROM users WHERE email = $1",
           [profile.emails[0].value]
         );
 
         if (emailUser.length > 0) {
           await db.execute(
-            "UPDATE users SET google_id = $1 WHERE email = $2", 
+            "UPDATE users SET google_id = $1 WHERE email = $2",
             [profile.id, profile.emails[0].value]
           );
           emailUser[0].google_id = profile.id;
@@ -104,7 +104,7 @@ module.exports = function(passport) {
         const newUserRows = await db.execute(
           `INSERT INTO users (username, email, google_id, password, is_verified, role) 
           VALUES ($1, $2, $3, $4, 1, 'user') 
-          RETURNING *`, 
+          RETURNING *`,
           [profile.displayName, profile.emails[0].value, profile.id, "GOOGLE_AUTH"]
         );
 
