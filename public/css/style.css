@@ -689,13 +689,13 @@ input {
 }
 
 .sidebar {
-    flex: 25;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    gap: 25px;
-    max-width: 360px;
-    min-width: 280px;
+    width: 260px;
+    flex-shrink: 0;
+    background: white;
+    height: calc(100vh - 100px);
+    position: sticky;
+    top: 90px;
+    border-radius: 12px;
 }
 
 .feedback-marker {
@@ -2002,29 +2002,40 @@ button:disabled {
 
 .admin-container {
     display: flex;
+    gap: 20px;
+    padding: 20px;
+    margin-top: none;
+    max-width: 100%;
+    width: 98%;
+    margin-left: none;
+    margin-right: auto;
     min-height: calc(100vh - 70px);
 }
 
 .sidebar {
     width: 260px;
-    background: white;
-    border-right: 1px solid var(--admin-border);
+    background-color: white;
+    flex-shrink: 0;
+    border-right: 1px solid #e2e8f0;
+    min-height: 100%;
     padding: 20px 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar nav a {
+    padding: 15px 25px;
     display: flex;
     align-items: center;
-    padding: 15px 25px;
+    gap: 12px;
     text-decoration: none;
     color: #64748b;
-    gap: 12px;
-    transition: 0.3s;
+    transition: all 0.3s;
 }
 
-.sidebar nav a:hover,
-.sidebar nav a.active {
-    background-color: var(--admin-purple-light);
+.sidebar nav a.active,
+.sidebar nav a:hover {
+    background-color: #f8fafc;
     color: var(--admin-purple);
     border-right: 4px solid var(--admin-purple);
 }
@@ -2049,26 +2060,6 @@ button:disabled {
     border: 1px solid var(--admin-border);
 }
 
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.admin-table th {
-    background-color: #f1f5f9;
-    padding: 15px 20px;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: #475569;
-}
-
-.admin-table td {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--admin-border);
-    font-size: 0.95rem;
-}
-
 .badge-admin {
     background: var(--admin-purple-light);
     color: var(--admin-purple);
@@ -2078,7 +2069,8 @@ button:disabled {
     font-size: 0.8rem;
 }
 
-.btn-refresh {
+.btn-refresh,
+.btn-add {
     background-color: var(--admin-purple);
     color: white;
     border: none;
@@ -2120,25 +2112,11 @@ button:disabled {
     margin-right: 10px;
 }
 
-.btn-cancel {
-    background: #e2e8f0;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+.edit-btn, .delete-btn {
+    display: inline-flex;
+    margin: 0 !important;           
+    padding: 8px;
     cursor: pointer;
-}
-
-.btn-save {
-    background: var(--admin-purple);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.btn-save:hover {
-    background: var(--admin-purple-hover);
 }
 
 .admin-section,
@@ -2149,4 +2127,62 @@ button:disabled {
 .admin-section.active,
 .admin-content.active {
     display: block;
+}
+
+#voucher-table-body td:nth-child(5),
+#vouchers-section thead th:nth-child(5) {
+    width: auto !important;     
+    white-space: normal;       
+    min-width: 250px;       
+}    
+
+#user-table-body td:nth-child(3),
+#users-section thead th:nth-child(3) {
+    width: auto !important;
+    white-space: normal;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: auto !important; 
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--admin-border);
+    font-size: 0.95rem;
+    white-space: nowrap; 
+    width: 1px;
+}
+
+.admin-section {
+    flex: 1;
+    min-width: 0;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.add-row-form input {
+    width: 90%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.add-save-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-save-btn:hover {
+    background-color: #218838;
 }

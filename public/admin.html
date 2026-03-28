@@ -41,11 +41,14 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th onclick="sortTable('user-table-body', 0)" style="cursor:pointer">ID <i class="fas fa-sort"></i>
+              </th>
               <th>Username</th>
               <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
+              <th onclick="sortTable('user-table-body', 3)" style="cursor:pointer">Role <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable('user-table-body', 4)" style="cursor:pointer">Status <i class="fas fa-sort"></i>
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -61,7 +64,7 @@
       <div class="content-header">
         <h2>Voucher Stock Management</h2>
         <div class="header-actions">
-          <button class="btn-add" id="add-voucher-btn"><i class="fas fa-plus"></i> Add New Voucher</button>
+          <button class="btn-add" id="add-voucher-btn" onclick="addVoucher()"><i class="fa-solid fa-plus"></i> Add New Voucher</button>
           <button class="btn-refresh" id="refresh-vouchers"><i class="fas fa-sync"></i> Refresh</button>
         </div>
       </div>
@@ -69,14 +72,28 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Voucher ID</th>
+              <th onclick="sortTable('voucher-table-body', 0)" style="cursor:pointer">ID <i class="fas fa-sort"></i>
+              </th>
               <th>Voucher Name</th>
-              <th>Stock</th>
-              <th>Cost</th>
+              <th onclick="sortTable('voucher-table-body', 2)" style="cursor:pointer">Stock <i class="fas fa-sort"></i>
+              </th>
+              <th onclick="sortTable('voucher-table-body', 3)" style="cursor:pointer">Cost <i class="fas fa-sort"></i>
+              </th>
               <th>Description</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="voucher-table-body">
+            <tr id="add-voucher-row" class="add-row-form">
+              <td>NEW</td>
+              <td><input type="text" id="new-vname" placeholder="Name"></td>
+              <td><input type="number" id="new-vstock" placeholder="Stock"></td>
+              <td><input type="number" id="new-vcost" placeholder="Cost"></td>
+              <td><input type="text" id="new-vdesc" placeholder="Description"></td>
+              <td>
+                <button class="add-save-btn" onclick="addVoucher()"><i class="fas fa-plus-circle"></i> Add</button>
+              </td>
+            </tr>
             <tr>
               <td colspan="7" style="text-align:center;">Loading vouchers...</td>
             </tr>

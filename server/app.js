@@ -447,6 +447,87 @@ app.delete("/api/admin/delete-user/:id", async (req, res) => {
     }
 });
 
+app.get("/api/admin/vouchers", (req, res) => {
+    if (req.isAuthenticated() && String(req.user.role).trim().toLowerCase() === 'admin') {
+        db.execute("SELECT id, name, stock, cost, description FROM vouchers ORDER BY id ASC")
+            .then(result => {
+                let dataToSend = [];
+                if (result.rows && Array.isArray(result.rows)) {
+                    dataToSend = result.rows;
+                } else if (Array.isArray(result)) {
+                    dataToSend = result;
+                } else if (result[0] && Array.isArray(result[0])) {
+                    dataToSend = result[0];
+                }
+
+                res.json({ success: true, vouchers: dataToSend });
+            })
+            .catch(err => {
+                console.error("Fetch Vouchers Error:", err);
+                res.status(500).json({ success: false, message: "Database error", vouchers: [] });
+            });
+    }
+    else {
+        res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+});
+
+app.post("/api/admin/add-voucher", async (req, res) => {
+    const { name, stock, cost, description } = req.body;
+    
+    try {
+        if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
+        }
+
+        await db.execute(
+            "INSERT INTO vouchers (name, stock, cost, description, created_at) VALUES ($1, $2, $3, $4, NOW())",
+            [name, stock, cost, description]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Database Insert Error:", err.message);
+        res.status(500).json({ success: false, message: "Database insert failed" });
+    }
+});
+
+app.put("/api/admin/edit-voucher/:id", async (req, res) => {
+    const targetVoucherId = req.params.id;
+    const { name, stock, cost, description } = req.body;
+
+    try {
+        if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
+        }
+
+        await db.execute(
+            "UPDATE vouchers SET name = $1, stock = $2, cost = $3 , description = $4 WHERE id = $5",
+            [name, stock, cost, description, targetVoucherId]
+        );
+
+        res.json({ success: true, message: "Voucher updated successfully!" });
+    } catch (err) {
+        console.error("Edit User Error:", err);
+        res.status(500).json({ success: false, message: "Database update failed." });
+    }
+});
+
+app.delete("/api/admin/delete-voucher/:id", async (req, res) => {
+    const targetId = req.params.id;
+
+    try {
+        if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
+        }
+
+        await db.execute("DELETE FROM vouchers WHERE id = $1", [targetId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Database delete failed" });
+    }
+});
+
 setInterval(async () => {
     try {
         const result = await db.query(`
