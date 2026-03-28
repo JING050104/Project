@@ -12,7 +12,12 @@
 
   <header class="admin-navbar">
     <div class="logo-section">
+      <button id="toggle-sidebar-btn"
+        style="background:none; border:none; cursor:pointer; font-size:20px; margin-right:15px; color:var(--primary-blue);">
+        <i class="fas fa-bars"></i>
+      </button>
       <h1>Coverage Quest <span>Admin</span></h1>
+    </div>
     </div>
     <div class="admin-controls">
       <span id="admin-name">Loading Admin...</span>
@@ -20,13 +25,15 @@
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </button>
     </div>
+
   </header>
 
   <main class="admin-container">
     <aside class="sidebar">
       <nav>
         <a href="#" onclick="showSection('analytics', event)"><i class="fas fa-chart-line"></i> Analytics</a>
-        <a href="#" class="active" onclick="showSection('users', event)"><i class="fas fa-users"></i> User Management</a>
+        <a href="#" class="active" onclick="showSection('users', event)"><i class="fas fa-users"></i> User
+          Management</a>
         <a href="#" onclick="showSection('vouchers', event)"><i class="fa-solid fa-ticket"></i> Voucher Management</a>
       </nav>
     </aside>
