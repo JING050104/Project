@@ -1467,9 +1467,21 @@ button:disabled {
 @media (max-width: 768px) {
 
     .wheel {
-        width: 80%;
-        height: 80%;
+        width: 90%;
+        height: 90%;
     }
+
+    .wheel-pointer {
+    position: absolute;
+    top: -15px;
+    left: 40%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: #333;
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    z-index: 10;
+}
 
     .dashboard-grid .dash-card.clickable-card {
         aspect-ratio: 1 / 1;
