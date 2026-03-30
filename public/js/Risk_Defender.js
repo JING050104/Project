@@ -10,6 +10,9 @@ const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
 const cellSize = 70;
 
+const towerSprite = new Image();
+towerSprite.src = 'risk-image/Tower 07.png';
+
 let startTime = Date.now();
 let totalPausedTime = 0;
 let pauseStartTime;
@@ -101,135 +104,43 @@ class Insurance {
         this.selected = false;
         this.isBuffed = false;
 
-        if (type === "home") this.cost = 50;
-        else if (type === "car") this.cost = 40;
-        else if (type === "medical") this.cost = 60;
-
+        // --- 1. 基于 192x128 尺寸的精确偏移 ---
+        // 192 / 3 = 64px 每帧
         switch (type) {
-            case 'home':
-                this.health = 800;
-                this.color = '#e67e22';
-                this.label = "Property";
-                this.attackSpeed = 30;
-                this.attackPower = 1.0;
-                this.range = 100;
-                break;
             case 'car':
-                this.health = 400;
-                this.color = '#3498db';
+                this.sx = 0;          // 蓝色：0px
                 this.label = "Car";
-                this.attackSpeed = 90;
-                this.attackPower = 3.5;
-                this.range = 75;
+                this.cost = 40; this.health = 400; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
+                break;
+            case 'home':
+                this.sx = 64;         // 橙色：64px
+                this.label = "Property";
+                this.cost = 50; this.health = 800; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
-                this.health = 250;
-                this.color = '#2ecc71';
+                this.sx = 128;        // 青色：128px
                 this.label = "Life";
-                this.attackSpeed = 60;
-                this.attackPower = 0;
-                this.range = 80;
+                this.cost = 60; this.health = 250; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
                 this.healTimer = 0;
                 break;
         }
+
         this.maxHealth = this.health;
         this.timer = 0;
+
+        // 这里的 sw/sh 是单帧的原始大小
+        this.sw = 64;  
+        this.sh = 128; 
     }
 
     draw() {
         ctx.save();
-
-        if (this.level >= 4 && this.level < 7) {
-            ctx.translate(this.x + 35, this.y + 35);
-            ctx.rotate(frames * 0.05);
-            ctx.strokeStyle = "white";
-            ctx.strokeRect(-20, -20, 40, 40);
-            ctx.restore();
-        } else if (this.level >= 7) {
-            ctx.beginPath();
-            ctx.arc(this.x + 35, this.y + 35, 40, 0, Math.PI * 2);
-            ctx.strokeStyle = "#f1c40f";
-            ctx.lineWidth = 5;
-            ctx.stroke();
-        }
-
-        ctx.beginPath();
-        ctx.arc(this.x + 35, this.y + 35, this.range, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.setLineDash([5, 5]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        if (this.selected) {
-            ctx.strokeStyle = "#f1c40f";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(this.x + 5, this.y + 5, 90, 90);
-        }
-
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x + 10, this.y + 10, 80, 80);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + 15, this.y + 80, 70, 5);
-        ctx.fillStyle = 'lime';
-        ctx.fillRect(this.x + 15, this.y + 80, (this.health / this.maxHealth) * 70, 5);
-
-        ctx.fillStyle = "white";
-        ctx.font = "12px Arial";
-        ctx.fillText("Lv." + this.level, this.x + 10, this.y + 20);
-
-        if (this.type === 'medical') {
-            ctx.beginPath();
-            let speed = 0.1 + (this.level * 0.02);
-            let maxRadius = 20 + (this.level * 5);
-            let pulse = Math.sin(frames * speed) * 10 + maxRadius;
-
-            ctx.arc(this.x + 35, this.y + 35, pulse, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        if (this.isBuffed) {
-            ctx.fillStyle = "#2ecc71";
-            ctx.font = "bold 20px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("+", this.x + 35, this.y + 40);
-        }
-
-        ctx.restore();
-    }
-
-    draw() {
-        ctx.save();
-
         const center = cellSize / 2;
-        const padding = cellSize * 0.1;
-        const innerSize = cellSize * 0.8;
 
-        if (this.level >= 4 && this.level < 7) {
-            ctx.save();
-            ctx.translate(this.x + center, this.y + center);
-            ctx.rotate(frames * 0.05);
-            ctx.strokeStyle = "white";
-            const decorSize = cellSize * 0.3;
-            ctx.strokeRect(-decorSize, -decorSize, decorSize * 2, decorSize * 2);
-            ctx.restore();
-        }
-        else if (this.level >= 7) {
-            ctx.beginPath();
-            ctx.arc(this.x + center, this.y + center, cellSize * 0.55, 0, Math.PI * 2);
-            ctx.strokeStyle = "#f1c40f";
-            ctx.lineWidth = 3;
-            ctx.stroke();
-        }
-
+        // 绘制范围圆圈
         ctx.beginPath();
         ctx.arc(this.x + center, this.y + center, this.range, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
         ctx.setLineDash([5, 5]);
         ctx.stroke();
         ctx.setLineDash([]);
@@ -240,92 +151,85 @@ class Insurance {
             ctx.strokeRect(this.x + 2, this.y + 2, cellSize - 4, cellSize - 4);
         }
 
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x + padding, this.y + padding, innerSize, innerSize);
-        ctx.shadowBlur = 0;
+        // --- 2. 核心修正：安全边距切片 ---
+        // 为了防止切到邻居，我们左右各往里缩 2 像素。
+        const padding = 2; 
+        const actualSx = this.sx + padding;
+        const actualSw = this.sw - (padding * 2); // 实际只取中间 60px 宽度
 
-        const hpBarY = this.y + innerSize + padding - 5; // 自动计算血条高度
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + padding, hpBarY, innerSize, 5);
-        ctx.fillStyle = 'lime';
-        ctx.fillRect(this.x + padding, hpBarY, (this.health / this.maxHealth) * innerSize, 5);
+        // 保持塔的原始比例 (128:64 = 2:1)
+        const drawWidth = cellSize * 0.7; // 塔占格子的宽度比例
+        const drawHeight = (this.sh / this.sw) * drawWidth; 
+        
+        const offsetX = (cellSize - drawWidth) / 2;
+        const offsetY = cellSize - drawHeight; // 底部对齐
+
+        // 执行绘制
+        ctx.drawImage(
+            towerSprite,
+            actualSx, 0, actualSw, this.sh, 
+            this.x + offsetX, this.y + offsetY, drawWidth, drawHeight
+        );
+
+        // --- 3. UI 部分 ---
+        const hpBarY = this.y + cellSize - 8;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(this.x + cellSize * 0.1, hpBarY, cellSize * 0.8, 5);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillRect(this.x + cellSize * 0.1, hpBarY, (this.health / this.maxHealth) * cellSize * 0.8, 5);
 
         ctx.fillStyle = "white";
-        ctx.font = "10px Arial";
-        ctx.fillText("Lv." + this.level, this.x + padding, this.y + padding + 10);
-
-        if (this.type === 'medical') {
-            ctx.beginPath();
-            let speed = 0.1 + (this.level * 0.02);
-            let baseRadius = cellSize * 0.3;
-            let pulse = Math.sin(frames * speed) * 5 + baseRadius;
-
-            ctx.arc(this.x + center, this.y + center, pulse, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(46, 204, 113, ${0.5 - (this.level * 0.05)})`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
+        ctx.font = "bold 12px Arial";
+        ctx.fillText("Lv." + this.level, this.x + 5, this.y + 15);
 
         if (this.isBuffed) {
             ctx.fillStyle = "#2ecc71";
             ctx.font = "bold 20px Arial";
             ctx.textAlign = "center";
-            ctx.fillText("+", this.x + center, this.y + center + 7);
+            ctx.fillText("+", this.x + center, this.y + center);
         }
-
         ctx.restore();
     }
 
-    getTowerColor() {
-        switch (this.type) {
-            case "home": return "#2563eb";
-            case "car": return "#ea580c";
-            case "medical": return "#16a34a";
-            default: return "#475569";
-        }
-    }
-
+    // 升级逻辑
     upgrade() {
-        let upgradeCost = this.cost;
-        if (gold >= upgradeCost) {
-            gold -= upgradeCost;
-            this.level++;
+    // 升级花费随等级提升：基础费用 * 等级
+    const upgradeCost = this.cost * this.level; 
 
-            if (this.type === 'medical') {
-                this.range += 10;
-                floatingTexts.push(new FloatingText("Heal +", this.x + 25, this.y + 35, "#2ecc71"));
-            } else {
-                this.attackPower *= 1.25;
-                this.range += 5;
-            }
-            this.maxHealth += 100;
-            this.health = Math.min(this.health + 100, this.maxHealth);
+    if (gold >= upgradeCost) {
+        gold -= upgradeCost;
+        this.level++;
 
-            floatingTexts.push(new FloatingText("-" + upgradeCost, this.x + 25, this.y + 35, "#e74c3c"));
-            floatingTexts.push(new FloatingText("Lv." + this.level, this.x + 25, this.y + 20, "#f1c40f"));
-        } else {
-            floatingTexts.push(new FloatingText("Insufficient Gold!", this.x + 25, this.y + 35, "#bdc3c7"));
+        this.maxHealth = Math.floor(this.maxHealth * 1.5); // 血量提升 50%
+        this.health = this.maxHealth; 
+
+        if (this.type === 'car') {
+            this.attackPower += 2;   
+            this.attackSpeed -= 5;    
+        } else if (this.type === 'home') {
+            this.attackPower *= 1.3;  
+            this.range += 10;        
+        } else if (this.type === 'medical') {
+            this.range += 15;         
         }
+
+        floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 10, this.y, "#f1c40f"));
+    } else {
+        floatingTexts.push(new FloatingText("Need More Gold!", this.x, this.y, "#e74c3c"));
     }
+}
 
     update() {
         this.isBuffed = false;
-
         if (this.type === 'medical') {
             this.healTimer++;
             if (this.healTimer >= 60) {
                 towers.forEach(t => {
                     if (t === this) return;
                     let dist = Math.hypot((t.x + 35) - (this.x + 35), (t.y + 35) - (this.y + 35));
-
                     if (dist < this.range && t.health < t.maxHealth) {
-                        let healAmount = 2 + (this.level * 3);
-                        t.health = Math.min(t.maxHealth, t.health + healAmount);
+                        t.health = Math.min(t.maxHealth, t.health + 10);
                         t.isBuffed = true;
-
-                        floatingTexts.push(new FloatingText("+" + healAmount, t.x + 35, t.y + 20, "#2ecc71"));
                     }
                 });
                 this.healTimer = 0;
@@ -333,6 +237,7 @@ class Insurance {
         }
     }
 }
+
 /* ========================
    👾 Enemy
 ======================== */

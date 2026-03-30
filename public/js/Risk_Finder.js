@@ -123,14 +123,20 @@ function loadLevel() {
 
 imgElement.onclick = function (e) {
     if (isPaused || isGameOver) return;
-    const rect = imgElement.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const imgRect = imgElement.getBoundingClientRect();
 
-    const scaleX = imgElement.naturalWidth / rect.width;
-    const scaleY = imgElement.naturalHeight / rect.height;
+    const markerX = e.clientX - wrapperRect.left;
+    const markerY = e.clientY - wrapperRect.top;
+
+    const x = e.clientX - imgRect.left;
+    const y = e.clientY - imgRect.top;
+
+    if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
+
+    const scaleX = imgElement.naturalWidth / imgRect.width;
+    const scaleY = imgElement.naturalHeight / imgRect.height;
     const clickX = x * scaleX;
     const clickY = y * scaleY;
 
@@ -143,9 +149,9 @@ imgElement.onclick = function (e) {
     });
 
     if (found) {
-        handleSuccess(x, y);
+        handleSuccess(markerX, markerY); 
     } else {
-        handleFailure(x, y);
+        handleFailure(markerX, markerY);
     }
 };
 
