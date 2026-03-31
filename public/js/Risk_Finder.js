@@ -3,7 +3,6 @@ let imageList = [];
 let allData = {};
 let currentAnnotations = [];
 let currentIndex = 0;
-let chances = 3;
 let totalScore = 0;
 let isPaused = false;
 let isGameOver = false;
@@ -12,19 +11,17 @@ let totalPausedTime = 0;
 let pauseStartTime;
 let timerInterval;
 let timeUsedSeconds = 0;
+let chances = 3;
 
 // 2. DOM ELEMENTS
+const heartsContainer = document.getElementById('hearts-container');
+const MAX_CHANCES = 3;
 const imgElement = document.getElementById('risk-image');
 const msgElement = document.getElementById('message');
-const riskCountDisplay = document.getElementById('risk-count');
 const wrapper = document.getElementById('wrapper');
 const scoreDisplay = document.getElementById('score-count');
-
-// NEW: Elements for the Game Over Modal
 const gameOverModal = document.getElementById('game-over-modal');
 const finalScoreDisplay = document.getElementById('final-score');
-
-// 3. CONFIGURATION
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const pauseIcon = document.getElementById("pause-icon");
@@ -54,7 +51,6 @@ pauseBtn.addEventListener("click", () => {
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         wrapper.style.pointerEvents = "none";
         imgElement.style.filter = "blur(15px)";
-        msgElement.innerText = "GAME PAUSED";
     } else {
         totalPausedTime += (Date.now() - pauseStartTime);
 
@@ -105,16 +101,17 @@ function startRealTimeTimer() {
 }
 
 function loadLevel() {
-    chances = 3;
+    chances = 3; 
     imgElement.src = imageList[currentIndex];
     imgElement.style.pointerEvents = "auto";
     imgElement.style.opacity = "1";
-    riskCountDisplay.innerText = chances;
+    
+    updateHeartsUI();
 
     document.querySelectorAll('.feedback-marker').forEach(m => m.remove());
 
     imgElement.onload = () => {
-        msgElement.innerText = ``;
+        msgElement.innerText = `Level ${currentIndex + 1}`;
         msgElement.style.color = "";
         const currentImageObj = allData.images[currentIndex];
         currentAnnotations = allData.annotations.filter(ann => ann.image_id === currentImageObj.id);
@@ -124,19 +121,16 @@ function loadLevel() {
 imgElement.onclick = function (e) {
     if (isPaused || isGameOver) return;
 
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const imgRect = imgElement.getBoundingClientRect();
+    const x = e.offsetX;
+    const y = e.offsetY;
 
-    const markerX = e.clientX - wrapperRect.left;
-    const markerY = e.clientY - wrapperRect.top;
+    const rect = imgElement.getBoundingClientRect();
+    const markerX = x + (imgElement.offsetLeft); 
+    const markerY = y + (imgElement.offsetTop);
 
-    const x = e.clientX - imgRect.left;
-    const y = e.clientY - imgRect.top;
-
-    if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
-
-    const scaleX = imgElement.naturalWidth / imgRect.width;
-    const scaleY = imgElement.naturalHeight / imgRect.height;
+    const scaleX = imgElement.naturalWidth / imgElement.clientWidth;
+    const scaleY = imgElement.naturalHeight / imgElement.clientHeight;
+    
     const clickX = x * scaleX;
     const clickY = y * scaleY;
 
@@ -169,20 +163,40 @@ function handleSuccess(x, y) {
     setTimeout(goToNextLevel, 1200);
 }
 
+
+function updateHeartsUI() {
+    if (!heartsContainer) return;
+    
+    let heartsHTML = '';
+    for (let i = 0; i < MAX_CHANCES; i++) {
+        if (i < chances) {
+            heartsHTML += '<i class="fa-solid fa-heart"></i>';
+        } else {
+            heartsHTML += '<i class="fa-regular fa-heart"></i>';
+        }
+    }
+    heartsContainer.innerHTML = heartsHTML;
+}
+
 function handleFailure(x, y) {
-    chances--;
-    riskCountDisplay.innerText = chances;
+    chances--; 
+    updateHeartsUI(); 
     createFeedbackMarker(x, y, 'wrong');
 
     if (chances > 0) {
-        msgElement.innerText = `Try again. You still have ${chances} chances left.`;
-        msgElement.style.color = "#f59e0b";
+        if (msgElement) {
+            msgElement.innerText = `Try again. ${chances} lives left.`;
+            msgElement.style.color = "#f59e0b";
+        }
     } else {
-        imgElement.style.pointerEvents = "none";
-        msgElement.innerText = "Out Of Chances! Moving to next image...";
-        msgElement.style.color = "#ef4444";
-
-        setTimeout(goToNextLevel, 1500);
+        imgElement.style.pointerEvents = "none"; 
+        
+        if (msgElement) {
+            msgElement.innerText = "Game Over! No more chances.";
+            msgElement.style.color = "#ef4444";
+        }
+        
+        setTimeout(endGame, 1000); 
     }
 }
 
@@ -198,36 +212,38 @@ function goToNextLevel() {
 function endGame() {
     if (isGameOver) return;
     isGameOver = true;
+    
+    clearInterval(timerInterval); 
+
     let endTime = Date.now();
     let timeUsedMS = endTime - startTime - totalPausedTime;
-    let timeUsedSeconds = Math.floor(timeUsedMS / 1000);
+    let finalSeconds = Math.floor(timeUsedMS / 1000);
 
+    let progressPercent = imageList.length > 0 ? Math.floor((currentIndex / imageList.length) * 100) : 0;
+    let beatPercent = Math.min(99, progressPercent + Math.floor(Math.random() * 10)); 
+    
     document.getElementById('final-score').innerText = totalScore;
+    document.getElementById('final-level').innerText = currentIndex; 
+    
     const finalTimeElem = document.getElementById('final-time-display');
-    if (finalTimeElem) {
-        finalTimeElem.innerText = timeUsedSeconds + "s";
-    }
+    if (finalTimeElem) finalTimeElem.innerText = finalSeconds + "s";
+
+    const feedbackText = document.getElementById('game-feedback-text');
+    feedbackText.innerHTML = `You reached level <b>${currentIndex}</b> <br>surpassing <b>${beatPercent}%</b> player！`;
+
     document.getElementById('game-over-modal').style.display = 'flex';
 
     const dataToSend = {
         score: totalScore,
         reached_level: currentIndex,
         gameType: 'RiskFinder',
-        time_used: timeUsedSeconds,
+        time_used: finalSeconds,
     };
-
-    console.log("Saving final score...", dataToSend);
-
     fetch('/api/save-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)
-    })
-        .then(res => res.json())
-        .then(data => {
-            console.log("Database response:", data.message);
-        })
-        .catch(err => console.error("Sync error:", err));
+    }).catch(err => console.error("Sync error:", err));
 }
 
 function createFeedbackMarker(x, y, type) {

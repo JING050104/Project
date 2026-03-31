@@ -9,8 +9,8 @@
 </head>
 <style>
     .dash-card {
-        box-shadow: none !important;    
-        border: none !important;  
+        box-shadow: none !important;
+        border: none !important;
     }
 </style>
 
@@ -18,6 +18,10 @@
     <header class="dashboard-header">
         <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
         <div class="header-controls">
+            <div class="header-timer" style="margin-right: 15px; font-weight: bold; color: #1f2937;">
+                <i class="fa-solid fa-clock" style="color: #94a3b8;"></i>
+                <span id="time-spent">0s</span>
+            </div>
             <button id="pause-btn" class="pause-btn"
                 style="display: inline-flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-pause"></i>
@@ -29,36 +33,41 @@
     </header>
 
     <main class="game-screen">
-        <div class="main-layout">
+        <div class="main-layout" style="display: flex; flex-direction: column; align-items: center;">
+
             <div id="wrapper">
                 <img id="risk-image" alt="Safety Scene">
+
+                <div class="points-overlay">
+                    <i class="fa-solid fa-coins" style="color: #f1c40f;"></i>
+                    <span id="score-count" class="overlay-value">0</span>
+                </div>
+
+                <div class="hearts-overlay">
+                    <div id="hearts-container"></div>
+                </div>
             </div>
-            <aside class="sidebar">
-                <div class="dash-card">
-                    <h3 style="color: #64748b;">Time Spent</h3>
-                    <span class="stat-value" id="time-spent">0s</span>
-                </div>
-                <div class="dash-card">
-                    <h3 style="color: #64748b;">Chances</h3>
-                    <span class="stat-value" id="risk-count">3</span>
-                    <p id="message">Locate the hazard...</p>
-                </div>
-                <div class="dash-card">
-                    <h3 style="color: #64748b;">Total Points</h3>
-                    <span class="stat-value" id="score-count">0</span>
-                </div>
-            </aside>
+
+            <div class="message-container" style="width: 100%; max-width: 800px; padding: 10px;">
+                <p id="message"
+                    style="text-align: center; font-weight: bold; color: #475569; font-size: 1.1rem; margin: 0;"></p>
+            </div>
+
         </div>
     </main>
 
     <div id="game-over-modal" class="modal-overlay">
         <div class="login-card">
             <h1 class="logo">Game Over</h1>
-            <p class="user-email">Session Completed!</p>
-
+            <p class="user-email" id="game-feedback-text">Session Completed!</p>
             <div class="dash-card" style="box-shadow: none; border: none;">
                 <span class="level-badge">Final Score</span>
                 <div class="stat-value" id="final-score">0</div>
+            </div>
+
+            <div class="dash-card" style="box-shadow: none; border: none;">
+                <span class="level-badge">Levels Cleared</span>
+                <div class="stat-value" id="final-level">0</div>
             </div>
 
             <div class="dash-card" style="box-shadow: none; border: none;">

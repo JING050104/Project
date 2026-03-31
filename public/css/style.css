@@ -668,17 +668,71 @@ input {
 }
 
 #wrapper {
-    display: flex;
+    max-width: 100%;
+    display: inline-block;
     justify-content: center;
-    align-items: center;
     position: relative;
     width: auto;
     height: auto;
-    overflow: hidden;
     touch-action: none;
+    line-height: 0;
+    display: inline-block;
+}
+
+.points-overlay, .hearts-overlay {
+    position: absolute !important;
+    top: 15px !important;    
+    z-index: 999;          
+    pointer-events: none;    
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+#hearts-container {
+    display: flex;
+    gap: 5px;
+    pointer-events: none !important;
+}
+
+.hearts-overlay {
+    right: 15px !important;
+}
+
+.points-overlay {
+    top: 15px;
+    left: 15px !important;
+}
+
+.overlay-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: bold;
+    margin: 0 8px;
+}
+
+.overlay-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.fa-solid.fa-heart {
+    color: #ef4444; 
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+}
+
+.fa-regular.fa-heart {
+    color: #cbd5e1;
+    font-size: 1.2rem;
 }
 
 #risk-image {
+    max-width: 100%;
     width: 100%;
     height: auto;
     display: block;
@@ -686,8 +740,6 @@ input {
     user-select: none;
     -webkit-user-drag: none;
 }
-
-
 
 .sidebar.collapsed {
     width: 70px;
@@ -1464,7 +1516,26 @@ button:disabled {
     animation: modalPop 0.3s ease-out;
 }
 
+.header-timer {
+    background: #ffffff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
 @media (max-width: 768px) {
+
+    .hearts-overlay {
+        top: 10px;
+        right: 10px !important;
+        padding: 5px 10px;
+    }
+
+    .fa-solid.fa-heart, .fa-regular.fa-heart {
+        font-size: 1rem;
+    }
+    
 
     .wheel {
         width: 90%;
@@ -1481,8 +1552,16 @@ button:disabled {
     background: #333;
     clip-path: polygon(50% 100%, 0 0, 100% 0);
     z-index: 10;
-}
+    }
 
+    .stat-value {
+        font-size: 1.5rem !important; 
+    }
+    
+    .sidebar .dash-card h3 {
+        font-size: 0.9rem !important;  
+    }
+    
     .dashboard-grid .dash-card.clickable-card {
         aspect-ratio: 1 / 1;
     }
@@ -1568,6 +1647,8 @@ button:disabled {
         flex-direction: column !important;
         align-items: center;
         flex-direction: column !important;
+        gap: 15px !important;
+        padding: 10px !important;
     }
 
     #wrapper {
@@ -1583,9 +1664,8 @@ button:disabled {
     }
 
     .sidebar .dash-card {
-        flex: 1;
-        margin-bottom: 0 !important;
-        padding: 10px !important;
+        padding: 15px !important;    
+        border-radius: 20px !important;
     }
 }
 
