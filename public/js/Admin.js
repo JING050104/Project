@@ -3,6 +3,7 @@ let loadVouchers;
 let loadAnalytics;
 let sortDirection = true;
 let levelChartInstance = null;
+let trendChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     const userTableBody = document.getElementById("user-table-body");
@@ -24,6 +25,95 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+    loadAnalytics = async function () {
+        try {
+            const response = await fetch("/api/admin/analytics-data");
+            const data = await response.json();
+
+            if (!data.success) {
+                console.error("Failed to load analytics:", data.message);
+                return;
+            }
+
+            document.getElementById('stat-total-users').innerText = data.summary.users;
+            document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
+            document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
+
+            const finderEl = document.getElementById('stat-finder-games');
+            const defenderEl = document.getElementById('stat-defender-games');
+            if (finderEl) finderEl.innerText = data.summary.finderGames;
+            if (defenderEl) defenderEl.innerText = data.summary.defenderGames;
+
+            const levelCtx = document.getElementById('levelChart').getContext('2d');
+            if (levelChartInstance) levelChartInstance.destroy();
+            levelChartInstance = new Chart(levelCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.levels.map(l => `Level ${l.reached_level}`),
+                    datasets: [{
+                        label: 'Number of Users',
+                        data: data.levels.map(l => l.count),
+                        backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                        borderColor: '#4a90e2',
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            const allDates = [...new Set(data.trends.map(t => new Date(t.date).toLocaleDateString()))];
+
+            const finderData = allDates.map(date => {
+                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskFinder');
+                return entry ? entry.count : 0;
+            });
+
+            const defenderData = allDates.map(date => {
+                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskDefender');
+                return entry ? entry.count : 0;
+            });
+
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: allDates,
+                    datasets: [
+                        {
+                            label: 'RiskFinder',
+                            data: finderData,
+                            borderColor: '#4a90e2',
+                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'RiskDefender',
+                            data: defenderData,
+                            borderColor: '#cc2e2e', 
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+        } catch (err) {
+            console.error("Analytics Load Error:", err);
+        }
+    };
     //users
     loadUsers = async function () {
         try {
@@ -63,25 +153,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //voucher
     loadVouchers = async function () {
-    try {
-        const oldRows = voucherTableBody.querySelectorAll("tr:not(#add-voucher-row)");
-        oldRows.forEach(row => row.remove());
+        try {
+            const oldRows = voucherTableBody.querySelectorAll("tr:not(#add-voucher-row)");
+            oldRows.forEach(row => row.remove());
 
-        const loadingTr = document.createElement("tr");
-        loadingTr.id = "v-loading-temp"; 
-        loadingTr.innerHTML = '<td colspan="6" style="text-align:center;">Loading vouchers...</td>';
-        voucherTableBody.appendChild(loadingTr);
+            const loadingTr = document.createElement("tr");
+            loadingTr.id = "v-loading-temp";
+            loadingTr.innerHTML = '<td colspan="6" style="text-align:center;">Loading vouchers...</td>';
+            voucherTableBody.appendChild(loadingTr);
 
-        const response = await fetch("/api/admin/vouchers");
-        const data = await response.json();
+            const response = await fetch("/api/admin/vouchers");
+            const data = await response.json();
 
-        const tempLoading = document.getElementById("v-loading-temp");
-        if (tempLoading) tempLoading.remove();
+            const tempLoading = document.getElementById("v-loading-temp");
+            if (tempLoading) tempLoading.remove();
 
-        if (data.success && Array.isArray(data.vouchers)) {
-            data.vouchers.forEach(voucher => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
+            if (data.success && Array.isArray(data.vouchers)) {
+                data.vouchers.forEach(voucher => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
                     <td>${voucher.id}</td>
                     <td id="td-v-name-${voucher.id}">${voucher.name}</td>
                     <td>${voucher.stock}</td>
@@ -92,18 +182,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button class="delete-btn" onclick="deleteVoucher(${voucher.id})"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
-                voucherTableBody.appendChild(tr);
-            });
-        } else {
-            console.error("Expected array but got:", data.vouchers);
-            const errorTr = document.createElement("tr");
-            errorTr.innerHTML = `<td colspan="6" style="color:red; text-align:center;">Data Format Error</td>`;
-            voucherTableBody.appendChild(errorTr);
+                    voucherTableBody.appendChild(tr);
+                });
+            } else {
+                console.error("Expected array but got:", data.vouchers);
+                const errorTr = document.createElement("tr");
+                errorTr.innerHTML = `<td colspan="6" style="color:red; text-align:center;">Data Format Error</td>`;
+                voucherTableBody.appendChild(errorTr);
+            }
+        } catch (error) {
+            console.error("Load Vouchers Error:", error);
         }
-    } catch (error) {
-        console.error("Load Vouchers Error:", error);
-    }
-};
+    };
 
     if (refreshUsersBtn) refreshUsersBtn.onclick = loadUsers;
     if (refreshVouchersBtn) refreshVouchersBtn.onclick = loadVouchers;
@@ -322,90 +412,31 @@ async function handleExcelUpload(input) {
         const btn = document.getElementById('add-voucher-list-btn');
         btn.innerHTML = '<i class="fa-solid fa-file-import"></i> Upload Excel';
         btn.disabled = false;
-        input.value = ""; 
+        input.value = "";
     }
 }
 
-loadAnalytics = async function() {
-    try {
-        const response = await fetch("/api/admin/analytics-data");
-        const data = await response.json();
-
-        if (!data.success) return;
-
-        document.getElementById('stat-total-users').innerText = data.summary.users;
-        document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
-        document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
-
-        const levelCtx = document.getElementById('levelChart').getContext('2d');
-        if (levelChartInstance) levelChartInstance.destroy(); // 销毁旧实例防止重叠
-        
-        levelChartInstance = new Chart(levelCtx, {
-            type: 'bar',
-            data: {
-                labels: data.levels.map(l => `Level ${l.reached_level}`),
-                datasets: [{
-                    label: 'Number of Users',
-                    data: data.levels.map(l => l.count),
-                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
-                    borderColor: '#4a90e2',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        if (trendChartInstance) trendChartInstance.destroy();
-
-        trendChartInstance = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: data.trends.map(t => new Date(t.date).toLocaleDateString()),
-                datasets: [{
-                    label: 'Games Played',
-                    data: data.trends.map(t => t.count),
-                    fill: true,
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    borderColor: '#2ecc71',
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-    } catch (err) {
-        console.error("Analytics Load Error:", err);
-    }
-};
-
-document.getElementById('download-template').onclick = function(e) {
+document.getElementById('download-template').onclick = function (e) {
     e.preventDefault();
-    
+
     const headers = [["Name", "Stock", "Cost", "Description"]];
-    
+
     const sampleData = [
         ["Welcome Gift", 100, 50, "Special voucher for new users"],
         ["Holiday Sale", 200, 150, "Valid until end of the month"]
     ];
-    
+
     const content = headers.concat(sampleData);
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(content);
-    
+
     ws['!cols'] = [
-        { wch: 20 }, 
-        { wch: 10 }, 
-        { wch: 10 }, 
-        { wch: 30 }  
+        { wch: 20 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 30 }
     ];
-    
+
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, "Voucher_Import_Template.xlsx");
 };
@@ -426,7 +457,7 @@ function showSection(sectionId, ev) {
         ev.currentTarget.classList.add('active');
     }
 
-    switch(sectionId.toLowerCase()) {
+    switch (sectionId.toLowerCase()) {
         case 'users':
             if (typeof loadUsers === 'function') loadUsers();
             break;
@@ -489,7 +520,7 @@ function updateSortIcons(tableBodyId, columnIndex, isAscending) {
     });
 }
 
-document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+document.getElementById('toggle-sidebar-btn').addEventListener('click', function () {
     const sidebar = document.querySelector('.sidebar');
     sidebar.classList.toggle('collapsed');
 });

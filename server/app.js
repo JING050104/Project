@@ -15,12 +15,12 @@ const app = express();
 const toTitleCase = (str) => {
     if (str === null || str === undefined) return "";
     return str.toString()
-        .trim()                       
-        .toLowerCase()                
-        .split(/\s+/)                 
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
         .filter(word => word.length > 0)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
-        .join(' ');                  
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 };
 
 require('./passport')(passport);
@@ -599,12 +599,19 @@ app.post("/api/admin/upload-vouchers-excel", upload.single("excelFile"), async (
 });
 
 app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
-    if (req.user.role !== 'admin') return res.status(403).json({ success: false });
+    if (!req.user || String(req.user.role).trim().toLowerCase() !== 'admin') {
+        return res.status(403).json({ success: false, message: "No access." });
+    }
 
     try {
-        const totalUsers = await db.query("SELECT COUNT(*) FROM users");
-        const totalScores = await db.query("SELECT COUNT(*) FROM scores");
-        const totalVouchers = await db.query("SELECT SUM(stock) as remaining_stock FROM vouchers");
+        const userRes = await db.query("SELECT COUNT(*) as count FROM users");
+        const voucherRes = await db.query("SELECT SUM(stock) as remaining_stock FROM vouchers");
+
+        const scoreTypeRes = await db.query(`
+            SELECT game_type, COUNT(*) as count 
+            FROM scores 
+            GROUP BY game_type
+        `);
 
         const levelStats = await db.query(`
             SELECT reached_level, COUNT(*) as count 
@@ -614,25 +621,44 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
         `);
 
         const trendStats = await db.query(`
-            SELECT DATE(created_at) as date, COUNT(*) as count 
+            SELECT 
+                DATE(created_at) as date, 
+                game_type, 
+                COUNT(*) as count 
             FROM scores 
             WHERE created_at > NOW() - INTERVAL '7 days'
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
+            GROUP BY DATE(created_at), game_type
+            ORDER BY DATE(created_at) ASC
         `);
+
+        const getRows = (res) => res.rows || res;
+
+        const scoreRows = getRows(scoreTypeRes);
+        let totalGames = 0;
+        let finderGames = 0;
+        let defenderGames = 0;
+
+        scoreRows.forEach(row => {
+            const count = parseInt(row.count) || 0;
+            totalGames += count;
+            if (row.game_type === 'RiskFinder') finderGames = count;
+            if (row.game_type === 'RiskDefender') defenderGames = count;
+        });
 
         res.json({
             success: true,
             summary: {
-                users: totalUsers.rows[0].count,
-                gamesPlayed: totalScores.rows[0].count,
-                vouchersLeft: totalVouchers.rows[0].remaining_stock || 0
+                users: getRows(userRes)[0]?.count || 0,
+                gamesPlayed: totalGames,
+                finderGames: finderGames,
+                defenderGames: defenderGames,
+                vouchersLeft: getRows(voucherRes)[0]?.remaining_stock || 0
             },
-            levels: levelStats.rows,
-            trends: trendStats.rows
+            levels: getRows(levelStats),
+            trends: getRows(trendStats)
         });
     } catch (err) {
-        console.error(err);
+        console.error("Analytics API Error:", err);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
