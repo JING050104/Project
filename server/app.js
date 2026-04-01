@@ -598,6 +598,45 @@ app.post("/api/admin/upload-vouchers-excel", upload.single("excelFile"), async (
     }
 });
 
+app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ success: false });
+
+    try {
+        const totalUsers = await db.query("SELECT COUNT(*) FROM users");
+        const totalScores = await db.query("SELECT COUNT(*) FROM scores");
+        const totalVouchers = await db.query("SELECT SUM(stock) as remaining_stock FROM vouchers");
+
+        const levelStats = await db.query(`
+            SELECT reached_level, COUNT(*) as count 
+            FROM scores 
+            GROUP BY reached_level 
+            ORDER BY reached_level
+        `);
+
+        const trendStats = await db.query(`
+            SELECT DATE(created_at) as date, COUNT(*) as count 
+            FROM scores 
+            WHERE created_at > NOW() - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY DATE(created_at)
+        `);
+
+        res.json({
+            success: true,
+            summary: {
+                users: totalUsers.rows[0].count,
+                gamesPlayed: totalScores.rows[0].count,
+                vouchersLeft: totalVouchers.rows[0].remaining_stock || 0
+            },
+            levels: levelStats.rows,
+            trends: trendStats.rows
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
 //H. 定时清理
 setInterval(async () => {
     try {

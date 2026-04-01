@@ -31,14 +31,14 @@
   <main class="admin-container">
     <aside class="sidebar">
       <nav>
-        <a href="#" onclick="showSection('analytics', event)"><i class="fas fa-chart-line"></i> Analytics</a>
-        <a href="#" class="active" onclick="showSection('users', event)"><i class="fas fa-users"></i> User
-          Management</a>
+        <a href="#" class="active" onclick="showSection('analytics', event)"><i class="fas fa-chart-line"></i>
+          Analytics</a>
+        <a href="#" onclick="showSection('users', event)"><i class="fas fa-users"></i> UserManagement</a>
         <a href="#" onclick="showSection('vouchers', event)"><i class="fa-solid fa-ticket"></i> Voucher Management</a>
       </nav>
     </aside>
 
-    <section id="users-section" class="admin-section active">
+    <section id="users-section" class="admin-section">
       <div class="content-header">
         <h2>User Management</h2>
         <button class="btn-refresh" id="refresh-users"><i class="fas fa-sync"></i> Refresh</button>
@@ -115,11 +115,41 @@
           </tbody>
         </table>
       </div>
-    </section>
+      <section id="analytics-section" class="admin-section active">
+        <div class="admin-header">
+          <h2><i class="fas fa-chart-pie"></i> Game Analytics</h2>
+        </div>
+
+        <div class="stats-grid">
+          <div class="dash-card stat-card">
+            <h4>Total Players</h4>
+            <p id="stat-total-users" class="stat-value players-color">0</p>
+          </div>
+          <div class="dash-card stat-card">
+            <h4>Total Games Played</h4>
+            <p id="stat-total-games" class="stat-value games-color">0</p>
+          </div>
+          <div class="dash-card stat-card">
+            <h4>Voucher Stock</h4>
+            <p id="stat-voucher-stock" class="stat-value stock-color">0</p>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-container">
+            <h4 class="chart-title">User Progression (Where players stop)</h4>
+            <canvas id="levelChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4 class="chart-title">7-Day Activity Trend</h4>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </section>
   </main>
   <script src="js/Admin.js"></script>
   <script src="https://kit.fontawesome.com/9f78b93a41.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
-
 </html>

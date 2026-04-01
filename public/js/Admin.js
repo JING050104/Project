@@ -2,6 +2,7 @@ let loadUsers;
 let loadVouchers;
 let loadAnalytics;
 let sortDirection = true;
+let levelChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     const userTableBody = document.getElementById("user-table-body");
@@ -325,6 +326,65 @@ async function handleExcelUpload(input) {
     }
 }
 
+loadAnalytics = async function() {
+    try {
+        const response = await fetch("/api/admin/analytics-data");
+        const data = await response.json();
+
+        if (!data.success) return;
+
+        document.getElementById('stat-total-users').innerText = data.summary.users;
+        document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
+        document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
+
+        const levelCtx = document.getElementById('levelChart').getContext('2d');
+        if (levelChartInstance) levelChartInstance.destroy(); // 销毁旧实例防止重叠
+        
+        levelChartInstance = new Chart(levelCtx, {
+            type: 'bar',
+            data: {
+                labels: data.levels.map(l => `Level ${l.reached_level}`),
+                datasets: [{
+                    label: 'Number of Users',
+                    data: data.levels.map(l => l.count),
+                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                    borderColor: '#4a90e2',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        if (trendChartInstance) trendChartInstance.destroy();
+
+        trendChartInstance = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: data.trends.map(t => new Date(t.date).toLocaleDateString()),
+                datasets: [{
+                    label: 'Games Played',
+                    data: data.trends.map(t => t.count),
+                    fill: true,
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderColor: '#2ecc71',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+    } catch (err) {
+        console.error("Analytics Load Error:", err);
+    }
+};
+
 document.getElementById('download-template').onclick = function(e) {
     e.preventDefault();
     
@@ -351,7 +411,7 @@ document.getElementById('download-template').onclick = function(e) {
 };
 
 function showSection(sectionId, ev) {
-    const sections = document.querySelectorAll('.admin-section');
+    const sections = document.querySelectorAll('.admin-content, .admin-section');
     sections.forEach(sec => sec.classList.remove('active'));
 
     const target = document.getElementById(sectionId + '-section');
@@ -366,14 +426,16 @@ function showSection(sectionId, ev) {
         ev.currentTarget.classList.add('active');
     }
 
-    if (sectionId === 'users') {
-        loadUsers();
-    } else if (sectionId === 'vouchers') {
-        loadVouchers();
-    } else if (sectionId === 'analytics') {
-        loadAnalytics();
-    } else {
-        return;
+    switch(sectionId.toLowerCase()) {
+        case 'users':
+            if (typeof loadUsers === 'function') loadUsers();
+            break;
+        case 'vouchers':
+            if (typeof loadVouchers === 'function') loadVouchers();
+            break;
+        case 'analytics':
+            if (typeof loadAnalytics === 'function') loadAnalytics();
+            break;
     }
 }
 
