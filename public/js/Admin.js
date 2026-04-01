@@ -26,94 +26,93 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     loadAnalytics = async function () {
-        try {
-            const response = await fetch("/api/admin/analytics-data");
-            const data = await response.json();
+    try {
+        const rangeSelector = document.getElementById('analytics-range');
+        const days = rangeSelector ? rangeSelector.value : 30; // 如果找不到，默认 30 天
 
-            if (!data.success) {
-                console.error("Failed to load analytics:", data.message);
-                return;
-            }
+        const response = await fetch(`/api/admin/analytics-data?range=${days}`);
+        const data = await response.json();
 
-            document.getElementById('stat-total-users').innerText = data.summary.users;
-            document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
-            document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
-
-            const finderEl = document.getElementById('stat-finder-games');
-            const defenderEl = document.getElementById('stat-defender-games');
-            if (finderEl) finderEl.innerText = data.summary.finderGames;
-            if (defenderEl) defenderEl.innerText = data.summary.defenderGames;
-
-            const levelCtx = document.getElementById('levelChart').getContext('2d');
-            if (levelChartInstance) levelChartInstance.destroy();
-            levelChartInstance = new Chart(levelCtx, {
-                type: 'bar',
-                data: {
-                    labels: data.levels.map(l => `Level ${l.reached_level}`),
-                    datasets: [{
-                        label: 'Number of Users',
-                        data: data.levels.map(l => l.count),
-                        backgroundColor: 'rgba(74, 144, 226, 0.7)',
-                        borderColor: '#4a90e2',
-                        borderWidth: 1
-                    }]
-                },
-                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-            });
-
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            if (trendChartInstance) trendChartInstance.destroy();
-
-            const allDates = [...new Set(data.trends.map(t => new Date(t.date).toLocaleDateString()))];
-
-            const finderData = allDates.map(date => {
-                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskFinder');
-                return entry ? entry.count : 0;
-            });
-
-            const defenderData = allDates.map(date => {
-                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskDefender');
-                return entry ? entry.count : 0;
-            });
-
-            trendChartInstance = new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: allDates,
-                    datasets: [
-                        {
-                            label: 'RiskFinder',
-                            data: finderData,
-                            borderColor: '#4a90e2',
-                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                            fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'RiskDefender',
-                            data: defenderData,
-                            borderColor: '#cc2e2e', 
-                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                            fill: true,
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                    }
-                }
-            });
-
-        } catch (err) {
-            console.error("Analytics Load Error:", err);
+        if (!data.success) {
+            console.error("Failed to load analytics:", data.message);
+            return;
         }
-    };
+
+        document.getElementById('stat-total-users').innerText = data.summary.users;
+        document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
+        document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
+
+        const finderEl = document.getElementById('stat-finder-games');
+        const defenderEl = document.getElementById('stat-defender-games');
+        if (finderEl) finderEl.innerText = data.summary.finderGames;
+        if (defenderEl) defenderEl.innerText = data.summary.defenderGames;
+
+        const levelCtx = document.getElementById('levelChart').getContext('2d');
+        if (window.levelChartInstance) window.levelChartInstance.destroy();
+        window.levelChartInstance = new Chart(levelCtx, {
+            type: 'bar',
+            data: {
+                labels: data.levels.map(l => `Level ${l.reached_level}`),
+                datasets: [{
+                    label: 'Number of Users',
+                    data: data.levels.map(l => l.count),
+                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                    borderColor: '#4a90e2',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        if (window.trendChartInstance) window.trendChartInstance.destroy();
+
+        const allDates = [...new Set(data.trends.map(t => new Date(t.date).toLocaleDateString()))];
+
+        const finderData = allDates.map(date => {
+            const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskFinder');
+            return entry ? parseInt(entry.count) : 0;
+        });
+
+        const defenderData = allDates.map(date => {
+            const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskDefender');
+            return entry ? parseInt(entry.count) : 0;
+        });
+
+        window.trendChartInstance = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: allDates,
+                datasets: [
+                    {
+                        label: 'RiskFinder',
+                        data: finderData,
+                        borderColor: '#4a90e2',
+                        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'RiskDefender',
+                        data: defenderData,
+                        borderColor: '#cc2e2e',
+                        backgroundColor: 'rgba(204, 46, 46, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+    } catch (err) {
+        console.error("Analytics Load Error:", err);
+    }
+};
+
     //users
     loadUsers = async function () {
         try {

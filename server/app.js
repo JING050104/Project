@@ -604,6 +604,7 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
     }
 
     try {
+        const range = parseInt(req.query.range) || 30;
         const userRes = await db.query("SELECT COUNT(*) as count FROM users");
         const voucherRes = await db.query("SELECT SUM(stock) as remaining_stock FROM vouchers");
 
@@ -622,13 +623,15 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
 
         const trendStats = await db.query(`
             SELECT 
-                DATE(created_at) as date, 
-                game_type, 
-                COUNT(*) as count 
-            FROM scores 
-            WHERE created_at > NOW() - INTERVAL '7 days'
-            GROUP BY DATE(created_at), game_type
-            ORDER BY DATE(created_at) ASC
+                DATE(d.day) as date, 
+                s.game_type, 
+                COUNT(s.id) as count 
+            FROM (
+                SELECT generate_series(CURRENT_DATE - INTERVAL '${range} days', CURRENT_DATE, '1 day') as day
+            ) d
+            LEFT JOIN scores s ON DATE(s.created_at) = DATE(d.day)
+            GROUP BY DATE(d.day), s.game_type
+            ORDER BY DATE(d.day) ASC
         `);
 
         const getRows = (res) => res.rows || res;
