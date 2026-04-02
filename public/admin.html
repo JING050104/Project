@@ -44,7 +44,7 @@
         <select id="analytics-range" onchange="loadAnalytics()" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc;">
           <option value="7">Last 7 Days</option>
           <option value="14">Last 14 Days</option>
-          <option value="30" selected>Last Month</option>
+          <option value="30" selected>Last 30 Days</option>
         </select>
       </div>
       <div class="stats-grid">
@@ -70,11 +70,11 @@
 
       <div class="charts-row">
         <div class="chart-container">
-          <h4 class="chart-title">User Progression (Where players stop)</h4>
+          <h4 class="chart-title">User Progression</h4>
           <canvas id="levelChart"></canvas>
         </div>
         <div class="chart-container">
-          <h4 class="chart-title">7-Day Activity Trend</h4>
+          <h4 class="chart-title">Activity Trend</h4>
           <canvas id="trendChart"></canvas>
         </div>
       </div>

@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             data: {
                 labels: data.levels.map(l => `Level ${l.reached_level}`),
                 datasets: [{
-                    label: 'Number of Users',
+                    label: 'Players in last ${days} days',
                     data: data.levels.map(l => l.count),
                     backgroundColor: 'rgba(74, 144, 226, 0.7)',
                     borderColor: '#4a90e2',

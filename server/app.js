@@ -617,6 +617,7 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
         const levelStats = await db.query(`
             SELECT reached_level, COUNT(*) as count 
             FROM scores 
+            WHERE created_at > NOW() - INTERVAL '${range} days'
             GROUP BY reached_level 
             ORDER BY reached_level
         `);

@@ -595,7 +595,6 @@ function showGameOver() {
 
 function handleWave() {
     if (!waveInProgress || gameState !== "playing") return;
-
     totalEnemiesThisWave = wave * 5;
     let currentSpawnRate = Math.max(40, 120 - (wave * 5));
 
