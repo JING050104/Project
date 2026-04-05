@@ -667,7 +667,6 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
     }
 });
 
-//H. 定时清理
 setInterval(async () => {
     try {
         const result = await db.query(`
