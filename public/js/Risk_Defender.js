@@ -2,7 +2,6 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const hudHp = document.getElementById("hud-hp");
 const hudGold = document.getElementById("hud-gold");
-const hudWave = document.getElementById("hud-wave");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
 const mouse = { x: 0, y: 0 };
@@ -11,8 +10,21 @@ const PLACEMENT_COOLDOWN = 2000;
 const cellSize = 70;
 
 const towerSprite = new Image();
-towerSprite.src = 'risk-image/Tower 07.png';
+towerSprite.src = 'risk-image/Tower.png';
 
+const cleanTiles = [];
+const TILE_CONFIG = {
+    cleanCount: 4,
+    path: 'risk-image/'
+};
+
+for (let i = 1; i <= TILE_CONFIG.cleanCount; i++) {
+    const img = new Image();
+    img.src = `${TILE_CONFIG.path}clean (${i}).png`; 
+    cleanTiles.push(img);
+}
+
+let gameMapLayout = [];
 let startTime = Date.now();
 let totalPausedTime = 0;
 let pauseStartTime;
@@ -637,6 +649,50 @@ function handleWave() {
 }
 
 /* ========================
+        Map
+======================== */
+function initMapLayout() {
+    gameMapLayout = [];
+    const cols = Math.ceil(canvas.width / cellSize);
+    const rows = Math.ceil(canvas.height / cellSize);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const cleanIdx = Math.floor(Math.random() * cleanTiles.length);
+            
+            gameMapLayout.push({
+                x: c * cellSize,
+                y: r * cellSize,
+                cleanIdx: cleanIdx
+            });
+        }
+    }
+}
+
+function drawGrid() {
+    if (gameMapLayout.length === 0) initMapLayout();
+
+    gameMapLayout.forEach(cell => {
+        const cImg = cleanTiles[cell.cleanIdx];
+        
+        if (cImg && cImg.complete && cImg.naturalWidth > 0) {
+            ctx.drawImage(cImg, cell.x, cell.y, cellSize, cellSize);
+        } else {
+            ctx.fillStyle = '#2d4d2a'; 
+            ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
+        }
+
+        ctx.save(); 
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+        ctx.lineWidth = 1; 
+        
+        ctx.strokeRect(cell.x, cell.y, cellSize, cellSize);
+        
+        ctx.restore(); 
+    });
+}
+
+/* ========================
    🎮 Game Logic
 ======================== */
 
@@ -709,7 +765,6 @@ function handleLogic() {
         });
 
         en.update();
-        en.draw();
 
         if (en.health <= 0 && !en.isDying) {
             en.isDying = true;
@@ -751,58 +806,9 @@ function handleLogic() {
     /* ========= HUD ========= */
 
     towers = towers.filter(t => t.health > 0);
-
     hudHp.textContent = baseHealth;
     hudGold.textContent = gold;
-    hudWave.textContent = wave;
 }
-
-/* ========================
-    ℹ️ Information Tooltip
-======================== */
-window.showInfo = function (type) {
-    const tooltip = document.getElementById('shop-tooltip');
-
-    const temp = new Insurance(0, 0, type);
-    let details = "";
-
-    if (type === 'medical') {
-        details = `
-            <strong>🏥 Medical Insurance</strong><br>
-            💚 Heal: 10 HP/pulse<br>
-            🎯 Range: ${temp.range}<br>
-            🛡️ Tower HP: ${temp.health}
-        `;
-    } else {
-        const icon = type === 'home' ? '🏠' : '🚗';
-        const name = type === 'home' ? 'Property' : 'Car';
-        const speed = (60 / temp.attackSpeed).toFixed(1);
-
-        details = `
-            <strong>${icon} ${name} Insurance</strong><br>
-            💥 Damage: ${temp.attackPower.toFixed(1)}<br>
-            ⏱ Speed: ${speed} hits/sec<br>
-            🎯 Range: ${temp.range}
-        `;
-    }
-
-    tooltip.innerHTML = details;
-    tooltip.style.display = 'block';
-};
-
-window.hideInfo = function () {
-    const tooltip = document.getElementById('shop-tooltip');
-    tooltip.style.display = 'none';
-};
-
-// Make the tooltip follow the mouse cursor
-document.addEventListener('mousemove', (e) => {
-    const tooltip = document.getElementById('shop-tooltip');
-    if (tooltip && tooltip.style.display === 'block') {
-        tooltip.style.left = (e.pageX + 15) + 'px';
-        tooltip.style.top = (e.pageY + 15) + 'px';
-    }
-});
 
 /* ========================
    ✨ Particle System
@@ -855,37 +861,18 @@ function drawHoverEffect() {
     }
 }
 
-function drawGrid() {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)"; // 浅白色半透明边框
-    ctx.lineWidth = 1;
-
-    for (let x = 0; x <= canvas.width; x += cellSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-    }
-    for (let y = 0; y <= canvas.height; y += cellSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-    }
-    ctx.restore();
-}
-
 function animate() {
     if (gameState === "submitted") return;
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
     if (gameState === "playing" && !isPaused) {
         timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
         const hudTime = document.getElementById("hud-time");
         if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
+    drawGrid(); 
 
     if (isPaused) {
         towers.forEach(t => t.draw());
@@ -906,9 +893,10 @@ function animate() {
         return;
     }
 
-    towers.forEach(t => t.draw());
     handleLogic();
-
+    towers.forEach(t => t.draw());
+    enemies.forEach(e => e.draw()); 
+    bullets.forEach(b => b.draw());
     if (bossWarningTimer > 0) {
         drawBossWarning();
         bossWarningTimer--;

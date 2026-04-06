@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAnalytics = async function () {
     try {
         const rangeSelector = document.getElementById('analytics-range');
-        const days = rangeSelector ? rangeSelector.value : 30; // 如果找不到，默认 30 天
+        const days = rangeSelector ? rangeSelector.value : 30; 
 
         const response = await fetch(`/api/admin/analytics-data?range=${days}`);
         const data = await response.json();
@@ -49,19 +49,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const levelCtx = document.getElementById('levelChart').getContext('2d');
         if (window.levelChartInstance) window.levelChartInstance.destroy();
+
+        const allLevels = [...new Set(data.levels.map(l => parseInt(l.reached_level)))].sort((a, b) => a - b);
+        const finderLevelData = allLevels.map(lvl => {
+            const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskFinder');
+            return entry ? parseInt(entry.count) : 0;
+        });
+
+        const defenderLevelData = allLevels.map(lvl => {
+            const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskDefender');
+            return entry ? parseInt(entry.count) : 0;
+        });
+
         window.levelChartInstance = new Chart(levelCtx, {
             type: 'bar',
             data: {
-                labels: data.levels.map(l => `Level ${l.reached_level}`),
-                datasets: [{
-                    label: 'Players in last ${days} days',
-                    data: data.levels.map(l => l.count),
-                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
-                    borderColor: '#4a90e2',
-                    borderWidth: 1
-                }]
+                labels: allLevels.map(lvl => `Level ${lvl}`),
+                datasets: [
+                    {
+                        label: 'RiskFinder',
+                        data: finderLevelData,
+                        backgroundColor: '#4a90e2',
+                        borderRadius: 4, 
+                    },
+                    {
+                        label: 'RiskDefender',
+                        data: defenderLevelData,
+                        backgroundColor: '#cc2e2e',
+                        borderRadius: 4,
+                    }
+                ]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false } 
+                },
+                scales: {
+                    x: { 
+                        stacked: true, 
+                        grid: { display: false } 
+                    },
+                    y: { 
+                        stacked: true, 
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
         });
 
         const trendCtx = document.getElementById('trendChart').getContext('2d');
