@@ -20,7 +20,7 @@ const TILE_CONFIG = {
 
 for (let i = 1; i <= TILE_CONFIG.cleanCount; i++) {
     const img = new Image();
-    img.src = `${TILE_CONFIG.path}clean (${i}).png`; 
+    img.src = `${TILE_CONFIG.path}clean (${i}).png`;
     cleanTiles.push(img);
 }
 
@@ -141,8 +141,8 @@ class Insurance {
         this.timer = 0;
 
         // 这里的 sw/sh 是单帧的原始大小
-        this.sw = 64;  
-        this.sh = 128; 
+        this.sw = 64;
+        this.sh = 128;
     }
 
     draw() {
@@ -165,21 +165,21 @@ class Insurance {
 
         // --- 2. 核心修正：安全边距切片 ---
         // 为了防止切到邻居，我们左右各往里缩 2 像素。
-        const padding = 2; 
+        const padding = 2;
         const actualSx = this.sx + padding;
         const actualSw = this.sw - (padding * 2); // 实际只取中间 60px 宽度
 
         // 保持塔的原始比例 (128:64 = 2:1)
         const drawWidth = cellSize * 0.7; // 塔占格子的宽度比例
-        const drawHeight = (this.sh / this.sw) * drawWidth; 
-        
+        const drawHeight = (this.sh / this.sw) * drawWidth;
+
         const offsetX = (cellSize - drawWidth) / 2;
         const offsetY = cellSize - drawHeight; // 底部对齐
 
         // 执行绘制
         ctx.drawImage(
             towerSprite,
-            actualSx, 0, actualSw, this.sh, 
+            actualSx, 0, actualSw, this.sh,
             this.x + offsetX, this.y + offsetY, drawWidth, drawHeight
         );
 
@@ -205,31 +205,31 @@ class Insurance {
 
     // 升级逻辑
     upgrade() {
-    // 升级花费随等级提升：基础费用 * 等级
-    const upgradeCost = this.cost * this.level; 
+        // 升级花费随等级提升：基础费用 * 等级
+        const upgradeCost = this.cost * this.level;
 
-    if (gold >= upgradeCost) {
-        gold -= upgradeCost;
-        this.level++;
+        if (gold >= upgradeCost) {
+            gold -= upgradeCost;
+            this.level++;
 
-        this.maxHealth = Math.floor(this.maxHealth * 1.5); // 血量提升 50%
-        this.health = this.maxHealth; 
+            this.maxHealth = Math.floor(this.maxHealth * 1.5); // 血量提升 50%
+            this.health = this.maxHealth;
 
-        if (this.type === 'car') {
-            this.attackPower += 2;   
-            this.attackSpeed -= 5;    
-        } else if (this.type === 'home') {
-            this.attackPower *= 1.3;  
-            this.range += 10;        
-        } else if (this.type === 'medical') {
-            this.range += 15;         
+            if (this.type === 'car') {
+                this.attackPower += 2;
+                this.attackSpeed -= 5;
+            } else if (this.type === 'home') {
+                this.attackPower *= 1.3;
+                this.range += 10;
+            } else if (this.type === 'medical') {
+                this.range += 15;
+            }
+
+            floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 10, this.y, "#f1c40f"));
+        } else {
+            floatingTexts.push(new FloatingText("Need More Gold!", this.x, this.y, "#e74c3c"));
         }
-
-        floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 10, this.y, "#f1c40f"));
-    } else {
-        floatingTexts.push(new FloatingText("Need More Gold!", this.x, this.y, "#e74c3c"));
     }
-}
 
     update() {
         this.isBuffed = false;
@@ -659,7 +659,7 @@ function initMapLayout() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const cleanIdx = Math.floor(Math.random() * cleanTiles.length);
-            
+
             gameMapLayout.push({
                 x: c * cellSize,
                 y: r * cellSize,
@@ -674,21 +674,21 @@ function drawGrid() {
 
     gameMapLayout.forEach(cell => {
         const cImg = cleanTiles[cell.cleanIdx];
-        
+
         if (cImg && cImg.complete && cImg.naturalWidth > 0) {
             ctx.drawImage(cImg, cell.x, cell.y, cellSize, cellSize);
         } else {
-            ctx.fillStyle = '#2d4d2a'; 
+            ctx.fillStyle = '#2d4d2a';
             ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
         }
 
-        ctx.save(); 
+        ctx.save();
         ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
-        ctx.lineWidth = 1; 
-        
+        ctx.lineWidth = 1;
+
         ctx.strokeRect(cell.x, cell.y, cellSize, cellSize);
-        
-        ctx.restore(); 
+
+        ctx.restore();
     });
 }
 
@@ -782,6 +782,13 @@ function handleLogic() {
         if (en.escaped) {
             baseHealth -= 10;
             floatingTexts.push(new FloatingText("-10 HP", en.x, en.y, "red"));
+
+            if (en.type === 'thief') {
+                const moneyLost = 20; 
+                gold = Math.max(0, gold - moneyLost);
+                floatingTexts.push(new FloatingText(`-$${moneyLost}`, en.x, en.y - 25, "#e74c3c"));
+            }
+
             enemies.splice(i, 1);
 
             if (baseHealth <= 0) {
@@ -792,6 +799,7 @@ function handleLogic() {
             continue;
         }
     }
+    
     /* ========= Stage 3 ========= */
     bullets.forEach((b, i) => {
 
@@ -865,14 +873,14 @@ function animate() {
     if (gameState === "submitted") return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
     if (gameState === "playing" && !isPaused) {
         timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
         const hudTime = document.getElementById("hud-time");
         if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
     }
 
-    drawGrid(); 
+    drawGrid();
 
     if (isPaused) {
         towers.forEach(t => t.draw());
@@ -895,7 +903,7 @@ function animate() {
 
     handleLogic();
     towers.forEach(t => t.draw());
-    enemies.forEach(e => e.draw()); 
+    enemies.forEach(e => e.draw());
     bullets.forEach(b => b.draw());
     if (bossWarningTimer > 0) {
         drawBossWarning();
