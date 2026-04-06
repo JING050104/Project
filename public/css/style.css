@@ -35,6 +35,7 @@ body.no-scroll-page {
     align-items: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     position: fixed;
+    height: 70px;
     top: 0;
     left: 0;
     width: 100%;
@@ -797,12 +798,13 @@ input {
 
 .dashboard-content {
     max-width: 1250px !important;
-    margin: 100px auto 40px !important;
+    margin: 120px auto 40px !important;
     padding: 20px !important;
     display: flex !important;
+    align-items: stretch !important;
     flex-direction: column !important;
     gap: 30px !important;
-    margin: 0 auto;
+    margin: 0 auto !important;
     margin-top: 40px !important;
 }
 
@@ -834,6 +836,13 @@ input {
     margin-bottom: 40px;
     overflow-y: auto;
     border-radius: 32px;
+    max-height: 210px;
+}
+
+#point-history-container {
+    overflow-y: auto; 
+    flex-grow: 1;
+    padding-right: 10px;
 }
 
 .history-item {
@@ -2135,7 +2144,7 @@ button:disabled {
 
 .settings-menu {
     position: absolute;
-    top: 100%; /* 出现在按钮正下方 */
+    top: 100%;
     right: 0;
     background: #1e293b;
     border: 1px solid #475569;

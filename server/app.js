@@ -383,7 +383,7 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
 
     try {
         const result = await db.execute(
-            `SELECT points_change, description, created_at 
+            `SELECT points_change, description, created_at
              FROM point_transactions 
              WHERE user_id = $1 
              ORDER BY created_at DESC`,

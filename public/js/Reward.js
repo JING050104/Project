@@ -344,7 +344,7 @@ async function loadPointHistory() {
             return;
         }
 
-        history.forEach(item => {
+        history.forEach((item, index) => {
             const clone = template.content.cloneNode(true);
 
             clone.querySelector('.h-desc').innerText = item.description;
@@ -353,7 +353,7 @@ async function loadPointHistory() {
             clone.querySelector('.h-date').innerText = date.toLocaleString();
 
             const changeEl = clone.querySelector('.h-change');
-            const val = item.points_change;
+            const val = Number(item.points_change);
 
             if (val > 0) {
                 changeEl.innerText = `+${val}`;
