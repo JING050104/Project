@@ -4,6 +4,11 @@ const hudHp = document.getElementById("hud-hp");
 const hudGold = document.getElementById("hud-gold");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
+const settingsToggleBtn = document.getElementById("settings-toggle-btn");
+const settingsMenu = document.getElementById("settings-menu");
+const tutorialBtn = document.getElementById("tutorial-btn");
+const tutorialModal = document.getElementById("tutorial-modal");
+const closeTutorial = document.getElementById("close-tutorial");
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
@@ -911,19 +916,15 @@ floatingTexts.push(
 );
 
 pauseBtn.addEventListener("click", () => {
-
     isPaused = !isPaused;
 
     if (isPaused) {
         pauseStartTime = Date.now();
-        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        document.getElementById("wrapper").style.pointerEvents = "none";
+        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
     } else {
-        if (pauseStartTime) {
-            totalPausedTime += (Date.now() - pauseStartTime);
-        }
-        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        document.getElementById("wrapper").style.pointerEvents = "auto";
+        if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause Game</span>';
+        settingsMenu.style.display = "none";
     }
 });
 
@@ -938,10 +939,34 @@ function confirmAndExit() {
 
 homeBtn.addEventListener("click", confirmAndExit);
 
-const logoLink = document.querySelector('.logo');
-if (logoLink) {
-    logoLink.style.cursor = "pointer";
-    logoLink.addEventListener("click", confirmAndExit);
-}
+settingsToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); 
+    const isVisible = settingsMenu.style.display === "block";
+    settingsMenu.style.display = isVisible ? "none" : "block";
+});
+
+document.addEventListener("click", () => {
+    settingsMenu.style.display = "none";
+});
+
+settingsMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
+
+tutorialBtn.addEventListener("click", () => {
+    isPaused = true;
+    pauseStartTime = Date.now();
+    document.getElementById("tutorial-content").innerHTML = `
+        • <b>Build Towers:</b> Click an insurance type then click the map.<br>
+        • <b>Upgrade:</b> Click an existing tower to level it up.<br>
+        • <b>Thief (👤):</b> They steal gold and HP if they escape!<br>
+        • <b>Goal:</b> Survive as many waves as possible.`;
+    tutorialModal.style.display = "flex";
+});
+
+closeTutorial.addEventListener("click", () => {
+    isPaused = false;
+    tutorialModal.style.display = "none";
+});
 
 animate();

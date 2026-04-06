@@ -10,17 +10,38 @@
 
 <body class="no-scroll-page">
     <header class="dashboard-header">
-        <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</a></h1>
-        <div class="header-controls">
-            <button id="pause-btn" class="pause-btn"
-                style="display: inline-flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-pause"></i>
+        <h1 class="logo" id="logo-link" style="cursor: pointer;">Coverage Quest</h1>
+
+        <div class="header-controls" style="display: flex; align-items: center; gap: 15px;">
+            <button id="tutorial-btn" class="settings-btn" title="How to Play">
+                <i class="fa-solid fa-circle-question"></i>
             </button>
-            <button id="home-btn" class="home-btn"
-                style="display: inline-flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-house"></i>
-            </button>
+
+            <div class="settings-container">
+                <button id="settings-toggle-btn" class="settings-btn">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+
+                <div id="settings-menu" class="settings-menu" style="display: none;">
+                    <button id="pause-btn" class="menu-item">
+                        <i class="fa-solid fa-pause"></i> <span>Pause Game</span>
+                    </button>
+                    <button id="home-btn" class="menu-item" onclick="confirmAndExit()">
+                        <i class="fa-solid fa-house"></i> <span>Back Home</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </header>
+
+    <div id="tutorial-modal" class="modal-overlay" style="display: none; z-index: 2000;">
+        <div class="login-card" style="max-width: 400px; text-align: left;">
+            <h1 class="logo">How to Play</h1>
+            <div id="tutorial-content" style="color: #94a3b8; font-size: 0.9rem; line-height: 1.6; margin: 15px 0;">
+            </div>
+            <button id="close-tutorial" class="submit-btn">Got it!</button>
+        </div>
+    </div>
 
     <main class="game-screen">
         <div class="game-hud">

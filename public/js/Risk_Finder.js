@@ -22,9 +22,13 @@ const wrapper = document.getElementById('wrapper');
 const scoreDisplay = document.getElementById('score-count');
 const gameOverModal = document.getElementById('game-over-modal');
 const finalScoreDisplay = document.getElementById('final-score');
-const pauseBtn = document.getElementById("pause-btn");
+const settingsToggleBtn = document.getElementById("settings-toggle-btn");
+const settingsMenu = document.getElementById("settings-menu");
 const homeBtn = document.getElementById("home-btn");
-const pauseIcon = document.getElementById("pause-icon");
+const pauseBtn = document.getElementById("pause-btn");
+const tutorialBtn = document.getElementById("tutorial-btn");
+const tutorialModal = document.getElementById("tutorial-modal");
+const closeTutorial = document.getElementById("close-tutorial");
 
 function confirmAndExit() {
     const confirmLeave = confirm(
@@ -37,28 +41,50 @@ function confirmAndExit() {
 
 homeBtn.addEventListener("click", confirmAndExit);
 
-const logoLink = document.querySelector('.logo');
-if (logoLink) {
-    logoLink.style.cursor = "pointer";
-    logoLink.addEventListener("click", confirmAndExit);
-}
-
 pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
-
     if (isPaused) {
         pauseStartTime = Date.now();
-        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
         wrapper.style.pointerEvents = "none";
-        imgElement.style.filter = "blur(15px)";
+        imgElement.style.filter = "blur(15px)"; 
     } else {
         totalPausedTime += (Date.now() - pauseStartTime);
-
-        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause</span>';
         wrapper.style.pointerEvents = "auto";
         imgElement.style.filter = "none";
-        msgElement.innerText = "";
+        settingsMenu.style.display = "none";
     }
+});
+
+tutorialBtn.addEventListener("click", () => {
+    isPaused = true;
+    pauseStartTime = Date.now();
+    imgElement.style.filter = "blur(15px)";
+    wrapper.style.pointerEvents = "none";
+    
+    document.getElementById("tutorial-content").innerHTML = `
+        • <b>Find Risks:</b> Look for hazards and click them.<br>
+        • <b>Lives (❤️):</b> You have 3 lives. Don't click wrong!<br>
+        • <b>Anti-Cheat:</b> Image is blurred when paused.<br>
+        • <b>Goal:</b> Find all risks to reach the next level.`;
+        
+    tutorialModal.style.display = "flex";
+    settingsMenu.style.display = "none";
+});
+
+closeTutorial.addEventListener("click", () => {
+    tutorialModal.style.display = "none";
+});
+
+settingsToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isVisible = settingsMenu.style.display === "block";
+    settingsMenu.style.display = isVisible ? "none" : "block";
+});
+
+document.addEventListener("click", () => {
+    settingsMenu.style.display = "none";
 });
 
 document.body.classList.add("flash-red");
@@ -254,27 +280,5 @@ function createFeedbackMarker(x, y, type) {
     wrapper.appendChild(marker);
 }
 
-async function redeemVoucher(voucherName, cost) {
-    if (!confirm(`Spend ${cost} points for ${voucherName}?`)) return;
-
-    try {
-        const response = await fetch('/api/redeem-voucher', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ voucherName, cost }) //
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            alert("Redemption Successful!");
-            initRewards();
-        } else {
-            alert(`Error: ${result.error}`);
-        }
-    } catch (err) {
-        console.error("Redeem request failed:", err);
-    }
-}
 
 initGame();
