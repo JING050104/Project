@@ -878,12 +878,6 @@ function animate() {
     if (isPaused) {
         towers.forEach(t => t.draw());
         enemies.forEach(e => e.draw());
-        ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.font = "50px Arial";
-        ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
         requestAnimationFrame(animate);
         return;
     }
@@ -921,20 +915,25 @@ pauseBtn.addEventListener("click", () => {
     if (isPaused) {
         pauseStartTime = Date.now();
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
+        
+        canvas.style.filter = "blur(10px)"; 
+        canvas.style.pointerEvents = "none"; 
     } else {
         if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
         pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause Game</span>';
         settingsMenu.style.display = "none";
+        
+        canvas.style.filter = "none";
+        canvas.style.pointerEvents = "auto";
     }
 });
 
 function confirmAndExit() {
-    const confirmLeave = confirm(
-        "Your game progress will be lost. Are you sure?"
-    );
-    if (confirmLeave) {
-        window.location.href = "dashboard.html";
-    }
+    if (gameState === "playing") {
+        isPaused = true; 
+        timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+        showGameOver(); 
+    } 
 }
 
 homeBtn.addEventListener("click", confirmAndExit);

@@ -30,59 +30,6 @@ const tutorialBtn = document.getElementById("tutorial-btn");
 const tutorialModal = document.getElementById("tutorial-modal");
 const closeTutorial = document.getElementById("close-tutorial");
 
-function confirmAndExit() {
-    const confirmLeave = confirm(
-        "Your game progress will be lost. Are you sure?"
-    );
-    if (confirmLeave) {
-        window.location.href = "dashboard.html";
-    }
-}
-
-homeBtn.addEventListener("click", confirmAndExit);
-
-pauseBtn.addEventListener("click", () => {
-    isPaused = !isPaused;
-    if (isPaused) {
-        pauseStartTime = Date.now();
-        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
-        wrapper.style.pointerEvents = "none";
-        imgElement.style.filter = "blur(15px)"; 
-    } else {
-        totalPausedTime += (Date.now() - pauseStartTime);
-        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause</span>';
-        wrapper.style.pointerEvents = "auto";
-        imgElement.style.filter = "none";
-        settingsMenu.style.display = "none";
-    }
-});
-
-tutorialBtn.addEventListener("click", () => {
-    isPaused = true;
-    pauseStartTime = Date.now();
-    imgElement.style.filter = "blur(15px)";
-    wrapper.style.pointerEvents = "none";
-    
-    document.getElementById("tutorial-content").innerHTML = `
-        • <b>Find Risks:</b> Look for hazards and click them.<br>
-        • <b>Lives (❤️):</b> You have 3 lives. Don't click wrong!<br>
-        • <b>Anti-Cheat:</b> Image is blurred when paused.<br>
-        • <b>Goal:</b> Find all risks to reach the next level.`;
-        
-    tutorialModal.style.display = "flex";
-    settingsMenu.style.display = "none";
-});
-
-closeTutorial.addEventListener("click", () => {
-    tutorialModal.style.display = "none";
-});
-
-settingsToggleBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isVisible = settingsMenu.style.display === "block";
-    settingsMenu.style.display = isVisible ? "none" : "block";
-});
-
 document.addEventListener("click", () => {
     settingsMenu.style.display = "none";
 });
@@ -127,11 +74,11 @@ function startRealTimeTimer() {
 }
 
 function loadLevel() {
-    chances = 3; 
+    chances = 3;
     imgElement.src = imageList[currentIndex];
     imgElement.style.pointerEvents = "auto";
     imgElement.style.opacity = "1";
-    
+
     updateHeartsUI();
 
     document.querySelectorAll('.feedback-marker').forEach(m => m.remove());
@@ -151,12 +98,12 @@ imgElement.onclick = function (e) {
     const y = e.offsetY;
 
     const rect = imgElement.getBoundingClientRect();
-    const markerX = x + (imgElement.offsetLeft); 
+    const markerX = x + (imgElement.offsetLeft);
     const markerY = y + (imgElement.offsetTop);
 
     const scaleX = imgElement.naturalWidth / imgElement.clientWidth;
     const scaleY = imgElement.naturalHeight / imgElement.clientHeight;
-    
+
     const clickX = x * scaleX;
     const clickY = y * scaleY;
 
@@ -169,7 +116,7 @@ imgElement.onclick = function (e) {
     });
 
     if (found) {
-        handleSuccess(markerX, markerY); 
+        handleSuccess(markerX, markerY);
     } else {
         handleFailure(markerX, markerY);
     }
@@ -192,7 +139,7 @@ function handleSuccess(x, y) {
 
 function updateHeartsUI() {
     if (!heartsContainer) return;
-    
+
     let heartsHTML = '';
     for (let i = 0; i < MAX_CHANCES; i++) {
         if (i < chances) {
@@ -205,8 +152,8 @@ function updateHeartsUI() {
 }
 
 function handleFailure(x, y) {
-    chances--; 
-    updateHeartsUI(); 
+    chances--;
+    updateHeartsUI();
     createFeedbackMarker(x, y, 'wrong');
 
     if (chances > 0) {
@@ -215,14 +162,14 @@ function handleFailure(x, y) {
             msgElement.style.color = "#f59e0b";
         }
     } else {
-        imgElement.style.pointerEvents = "none"; 
-        
+        imgElement.style.pointerEvents = "none";
+
         if (msgElement) {
             msgElement.innerText = "Game Over! No more chances.";
             msgElement.style.color = "#ef4444";
         }
-        
-        setTimeout(endGame, 1000); 
+
+        setTimeout(endGame, 1000);
     }
 }
 
@@ -238,19 +185,19 @@ function goToNextLevel() {
 function endGame() {
     if (isGameOver) return;
     isGameOver = true;
-    
-    clearInterval(timerInterval); 
+
+    clearInterval(timerInterval);
 
     let endTime = Date.now();
     let timeUsedMS = endTime - startTime - totalPausedTime;
     let finalSeconds = Math.floor(timeUsedMS / 1000);
 
     let progressPercent = imageList.length > 0 ? Math.floor((currentIndex / imageList.length) * 100) : 0;
-    let beatPercent = Math.min(99, progressPercent + Math.floor(Math.random() * 10)); 
-    
+    let beatPercent = Math.min(99, progressPercent + Math.floor(Math.random() * 10));
+
     document.getElementById('final-score').innerText = totalScore;
-    document.getElementById('final-level').innerText = currentIndex; 
-    
+    document.getElementById('final-level').innerText = currentIndex;
+
     const finalTimeElem = document.getElementById('final-time-display');
     if (finalTimeElem) finalTimeElem.innerText = finalSeconds + "s";
 
@@ -280,5 +227,55 @@ function createFeedbackMarker(x, y, type) {
     wrapper.appendChild(marker);
 }
 
+function confirmAndExit() {
+
+    if (!isGameOver) {
+        endGame();
+    }
+}
+
+homeBtn.addEventListener("click", confirmAndExit);
+
+pauseBtn.addEventListener("click", () => {
+    isPaused = !isPaused;
+    if (isPaused) {
+        pauseStartTime = Date.now();
+        pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
+        wrapper.style.pointerEvents = "none";
+        imgElement.style.filter = "blur(15px)";
+    } else {
+        totalPausedTime += (Date.now() - pauseStartTime);
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause</span>';
+        wrapper.style.pointerEvents = "auto";
+        imgElement.style.filter = "none";
+        settingsMenu.style.display = "none";
+    }
+});
+
+tutorialBtn.addEventListener("click", () => {
+    isPaused = true;
+    pauseStartTime = Date.now();
+    imgElement.style.filter = "blur(10px)";
+    wrapper.style.pointerEvents = "none";
+
+    document.getElementById("tutorial-content").innerHTML = `
+        • <b>Find Risks:</b> Look for hazards and click them.<br>
+        • <b>Lives (❤️):</b> You have 3 lives. Don't click wrong!<br>
+        • <b>Anti-Cheat:</b> Image is blurred when paused.<br>
+        • <b>Goal:</b> Find all risks to reach the next level.`;
+
+    tutorialModal.style.display = "flex";
+    settingsMenu.style.display = "none";
+});
+
+closeTutorial.addEventListener("click", () => {
+    tutorialModal.style.display = "none";
+});
+
+settingsToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isVisible = settingsMenu.style.display === "block";
+    settingsMenu.style.display = isVisible ? "none" : "block";
+});
 
 initGame();
