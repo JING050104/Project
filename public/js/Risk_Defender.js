@@ -116,21 +116,19 @@ class Insurance {
         this.selected = false;
         this.isBuffed = false;
 
-        // --- 1. 基于 192x128 尺寸的精确偏移 ---
-        // 192 / 3 = 64px 每帧
         switch (type) {
             case 'car':
-                this.sx = 0;          // 蓝色：0px
+                this.sx = 0;         
                 this.label = "Car";
                 this.cost = 40; this.health = 400; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
                 break;
             case 'home':
-                this.sx = 64;         // 橙色：64px
+                this.sx = 64;         
                 this.label = "Property";
                 this.cost = 50; this.health = 800; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
-                this.sx = 128;        // 青色：128px
+                this.sx = 128;        
                 this.label = "Life";
                 this.cost = 60; this.health = 250; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
                 this.healTimer = 0;
@@ -140,7 +138,6 @@ class Insurance {
         this.maxHealth = this.health;
         this.timer = 0;
 
-        // 这里的 sw/sh 是单帧的原始大小
         this.sw = 64;
         this.sh = 128;
     }
@@ -149,7 +146,6 @@ class Insurance {
         ctx.save();
         const center = cellSize / 2;
 
-        // 绘制范围圆圈
         ctx.beginPath();
         ctx.arc(this.x + center, this.y + center, this.range, 0, Math.PI * 2);
         ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
@@ -163,27 +159,22 @@ class Insurance {
             ctx.strokeRect(this.x + 2, this.y + 2, cellSize - 4, cellSize - 4);
         }
 
-        // --- 2. 核心修正：安全边距切片 ---
-        // 为了防止切到邻居，我们左右各往里缩 2 像素。
         const padding = 2;
         const actualSx = this.sx + padding;
-        const actualSw = this.sw - (padding * 2); // 实际只取中间 60px 宽度
+        const actualSw = this.sw - (padding * 2); 
 
-        // 保持塔的原始比例 (128:64 = 2:1)
-        const drawWidth = cellSize * 0.7; // 塔占格子的宽度比例
+        const drawWidth = cellSize * 0.7; 
         const drawHeight = (this.sh / this.sw) * drawWidth;
 
         const offsetX = (cellSize - drawWidth) / 2;
-        const offsetY = cellSize - drawHeight; // 底部对齐
+        const offsetY = cellSize - drawHeight; 
 
-        // 执行绘制
         ctx.drawImage(
             towerSprite,
             actualSx, 0, actualSw, this.sh,
             this.x + offsetX, this.y + offsetY, drawWidth, drawHeight
         );
 
-        // --- 3. UI 部分 ---
         const hpBarY = this.y + cellSize - 8;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(this.x + cellSize * 0.1, hpBarY, cellSize * 0.8, 5);
@@ -203,16 +194,14 @@ class Insurance {
         ctx.restore();
     }
 
-    // 升级逻辑
     upgrade() {
-        // 升级花费随等级提升：基础费用 * 等级
         const upgradeCost = this.cost * this.level;
 
         if (gold >= upgradeCost) {
             gold -= upgradeCost;
             this.level++;
 
-            this.maxHealth = Math.floor(this.maxHealth * 1.5); // 血量提升 50%
+            this.maxHealth = Math.floor(this.maxHealth * 1.5); 
             this.health = this.maxHealth;
 
             if (this.type === 'car') {
@@ -363,9 +352,9 @@ class Risk {
         }
 
         ctx.fillStyle = 'black';
-        ctx.fillRect(this.x + 30, this.y + 15, 40, 4); // Background
+        ctx.fillRect(this.x + 30, this.y + 15, 40, 4); 
         ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); // Health fill
+        ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); 
 
         ctx.fillStyle = "white";
         ctx.font = "20px Arial";
@@ -535,7 +524,6 @@ canvas.addEventListener("click", (e) => {
         hasPlacedTower = true;
         lastPlacementTime = now;
 
-        // 更新 UI
         if (typeof updateHUD === "function") updateHUD();
         console.log("Tower placed successfully!");
     } else {
@@ -560,12 +548,12 @@ function showGameOver() {
         finalPoints = 0;
         if (placementStatusTxt) {
             placementStatusTxt.textContent = "Warning: No towers were placed! 0 Points earned.";
-            placementStatusTxt.style.color = "#e74c3c"; // 红色
+            placementStatusTxt.style.color = "#e74c3c";
         }
     } else {
         if (placementStatusTxt) {
             placementStatusTxt.textContent = "Towers successfully deployed.";
-            placementStatusTxt.style.color = "#2ecc71"; // 绿色
+            placementStatusTxt.style.color = "#2ecc71"; 
         }
     }
 
@@ -799,7 +787,7 @@ function handleLogic() {
             continue;
         }
     }
-    
+
     /* ========= Stage 3 ========= */
     bullets.forEach((b, i) => {
 
