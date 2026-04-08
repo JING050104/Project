@@ -615,7 +615,6 @@ function handleWave() {
 
     if (frames % currentSpawnRate === 0 && enemiesSpawned < totalEnemiesThisWave) {
         const enemySize = 60;
-        const offset = (cellSize - enemySize) / 2;
 
         if (gameMode === 'horizontal') {
             let maxCols = Math.floor(canvas.width / cellSize);
@@ -770,11 +769,11 @@ function handleLogic() {
 
         en.update();
 
-        let outOfBounds = false;
+        let forceEscape = false;
         if (gameMode === 'horizontal') {
-            if (en.y > canvas.height) outOfBounds = true;
+            if (en.y > canvas.height) forceEscape = true;
         } else {
-            if (en.x > canvas.width) outOfBounds = true;
+            if (en.x > canvas.width) forceEscape = true;
         }
 
         if (en.health <= 0 && !en.isDying) {
@@ -790,7 +789,7 @@ function handleLogic() {
             continue;
         }
 
-        if (outOfBounds || en.escaped) {
+        if (forceEscape || en.escaped) {
             baseHealth -= 10;
             if (hudHp) hudHp.innerText = baseHealth;
             floatingTexts.push(new FloatingText("-10 HP", en.x, en.y, "red"));
