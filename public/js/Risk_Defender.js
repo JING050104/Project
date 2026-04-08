@@ -769,11 +769,10 @@ function handleLogic() {
 
         en.update();
 
-        let outOfBounds = false;
         if (gameMode === 'horizontal') {
-            if (en.x > canvas.width) outOfBounds = true;
-        } else {
             if (en.y > canvas.height) outOfBounds = true;
+        } else {
+            if (en.x > canvas.width) outOfBounds = true;
         }
 
         if (en.health <= 0 && !en.isDying) {
