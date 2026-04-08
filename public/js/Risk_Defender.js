@@ -619,8 +619,8 @@ function handleWave() {
         if (gameMode === 'horizontal') {
             let maxCols = Math.floor(canvas.width / cellSize);
             let col = Math.floor(Math.random() * (maxCols - 1));
-            let startX = col * cellSize + 15;
-            if (startX > canvas.width - 60) startX = canvas.width - 75;
+            let startX = col * cellSize + 10;
+            if (startX > canvas.width - 60) startX = canvas.width - 70;
             enemies.push(new Risk(startX, wave));
         } else {
             let maxCols = Math.floor(GAME_WIDTH / cellSize);
@@ -776,19 +776,6 @@ function handleLogic() {
             if (en.x > canvas.width) forceEscape = true;
         }
 
-        if (en.health <= 0 && !en.isDying) {
-            en.isDying = true;
-            gold += 5;
-            floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
-            for (let j = 0; j < 10; j++) particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
-        }
-
-        if (en.isDying) {
-            en.size -= 2;
-            if (en.size <= 0) enemies.splice(i, 1);
-            continue;
-        }
-
         if (forceEscape || en.escaped) {
             baseHealth -= 10;
             if (hudHp) hudHp.innerText = baseHealth;
@@ -808,6 +795,19 @@ function handleLogic() {
                 gameState = "gameover";
                 showGameOver();
             }
+            continue;
+        }
+
+        if (en.health <= 0 && !en.isDying) {
+            en.isDying = true;
+            gold += 5;
+            floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
+            for (let j = 0; j < 10; j++) particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
+        }
+
+        if (en.isDying) {
+            en.size -= 2;
+            if (en.size <= 0) enemies.splice(i, 1);
             continue;
         }
     }
