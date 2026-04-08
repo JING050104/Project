@@ -260,7 +260,7 @@ class Risk {
             const targetCol = Math.floor(pos / cellSize);
             this.spawnCol = targetCol;
             this.x = targetCol * cellSize + (cellSize / 4);
-            this.y = 0;
+            this.y = -30;
         }
 
         this.size = 30;
@@ -387,9 +387,6 @@ class Bullet {
             this.target.health -= this.damage;
 
             floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 40, this.target.y + 40, "yellow"));
-            for (let i = 0; i < 5; i++) {
-                floatingTexts.push(new Particle(this.target.x, this.target.y));
-            }
             this.hit = true;
             return;
         }
@@ -541,7 +538,7 @@ function showGameOver() {
     const placementStatusTxt = document.getElementById("placement-status");
     const finalTimeDisplay = document.getElementById("final-time");
 
-    const feedbackText = document.getElementById('game-feedback-text'); // 确保HTML有这个ID
+    const feedbackText = document.getElementById('game-feedback-text'); 
 
     let basePercent = Math.min(90, wave * 10);
     let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
@@ -608,7 +605,7 @@ function handleWave() {
     let currentSpawnRate = Math.max(40, 120 - (wave * 5));
 
     if (frames % currentSpawnRate === 0 && enemiesSpawned < totalEnemiesThisWave) {
-        const enemySize = 60;
+        enemiesSpawned++;
 
         if (gameMode === 'horizontal') {
             let maxCols = Math.floor(canvas.width / cellSize);
@@ -618,11 +615,14 @@ function handleWave() {
             enemies.push(new Risk(startX, wave));
         } else {
             let maxCols = Math.floor(GAME_WIDTH / cellSize);
-            let col = Math.floor(Math.random() * (maxCols - 0.5));
+            let col = Math.floor(Math.random() * maxCols);
             let startX = col * cellSize + (cellSize * 0.1);
+            if (startX > GAME_WIDTH - 40) {
+                startX = GAME_WIDTH - 45;
+            }
+
             enemies.push(new Risk(startX, wave));
         }
-        enemiesSpawned++;
     }
 
     if (enemiesSpawned >= totalEnemiesThisWave && enemies.length === 0) {
@@ -796,7 +796,9 @@ function handleLogic() {
             en.isDying = true;
             gold += 5;
             floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
-            for (let j = 0; j < 10; j++) particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
+            for (let j = 0; j < 10; j++) {
+                particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
+            }
         }
 
         if (en.isDying) {
@@ -888,6 +890,14 @@ function animate() {
 
     drawGrid();
 
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].alpha <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+
     if (isPaused) {
         towers.forEach(t => t.draw());
         enemies.forEach(e => e.draw());
@@ -971,6 +981,7 @@ tutorialBtn.addEventListener("click", () => {
     document.getElementById("tutorial-content").innerHTML = `
         • <b>Build Towers:</b> Click an insurance type then click the map.<br>
         • <b>Upgrade:</b> Click an existing tower to level it up.<br>
+        • <b>Final Points:</b> To avoid cheating, final points get will be deducted 200.<br>
         • <b>Thief (👤):</b> They steal gold and HP if they escape!<br>
         • <b>Goal:</b> Survive as many waves as possible.`;
     tutorialModal.style.display = "flex";

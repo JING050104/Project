@@ -1,4 +1,3 @@
-// 1. GLOBAL STATE
 let imageList = [];
 let allData = {};
 let currentAnnotations = [];
@@ -13,7 +12,6 @@ let timerInterval;
 let timeUsedSeconds = 0;
 let chances = 3;
 
-// 2. DOM ELEMENTS
 const heartsContainer = document.getElementById('hearts-container');
 const MAX_CHANCES = 3;
 const imgElement = document.getElementById('risk-image');
