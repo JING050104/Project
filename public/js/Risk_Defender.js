@@ -881,6 +881,7 @@ function animate() {
     if (gameState === "submitted") return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
 
     if (gameState === "playing" && !isPaused) {
         timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);

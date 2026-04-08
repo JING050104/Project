@@ -636,7 +636,7 @@ app.get("/api/admin/analytics-data", ensureAuthenticated, async (req, res) => {
             SELECT reached_level, game_type, COUNT(*) as count 
             FROM scores 
             WHERE created_at > NOW() - INTERVAL '${range} days'
-            GROUP BY reached_level, game_type  -- 必须同时对关卡和游戏类型分组
+            GROUP BY reached_level, game_type
             ORDER BY reached_level ASC
         `);
 
