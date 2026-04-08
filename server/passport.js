@@ -76,7 +76,6 @@ module.exports = function (passport) {
   },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // 檢查是否已用 Google ID 註冊
         const existingUser = await db.execute(
           "SELECT * FROM users WHERE google_id = $1",
           [profile.id]
@@ -86,7 +85,6 @@ module.exports = function (passport) {
           return done(null, existingUser[0]);
         }
 
-        // 檢查 email 是否已存在
         const emailUser = await db.execute(
           "SELECT * FROM users WHERE email = $1",
           [profile.emails[0].value]
