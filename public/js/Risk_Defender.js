@@ -252,15 +252,13 @@ class Risk {
     constructor(pos, wave) {
 
         if (gameMode === 'horizontal') {
-            const targetRow = Math.floor(pos / cellSize);
-            this.spawnRow = targetRow;
-            this.x = GAME_WIDTH;
-            this.y = targetRow * cellSize + (cellSize / 4);
+            this.x = pos;
+            this.y = -60;
+            this.spawnCol = Math.floor(pos / cellSize);
         } else {
-            const targetCol = Math.floor(pos / cellSize);
-            this.spawnCol = targetCol;
-            this.x = targetCol * cellSize + (cellSize / 4);
-            this.y = 0;
+            this.x = -60;
+            this.y = pos;
+            this.spawnRow = Math.floor(pos / cellSize);
         }
 
         this.size = 30;
@@ -306,8 +304,14 @@ class Risk {
         if (this.isDying) { this.size -= 2; return; }
         if (this.blocked) return;
 
-        let targetX = (gameMode === 'horizontal') ? - 35 : (this.spawnCol * cellSize + 35);
-        let targetY = (gameMode === 'horizontal') ? (this.spawnRow * cellSize + 35) : (canvas.height + 35);
+        let targetX, targetY;
+        if (gameMode === 'horizontal') {
+            targetX = this.x;
+            targetY = canvas.height + 100;
+        } else {
+            targetX = canvas.width + 100;
+            targetY = this.y;
+        }
         let attractionTarget = null;
         let minDist = 180;
 
@@ -335,9 +339,9 @@ class Risk {
         }
 
         if (gameMode === 'horizontal') {
-            if (this.x < 0) this.escaped = true;
-        } else {
             if (this.y > canvas.height) this.escaped = true;
+        } else {
+            if (this.x > canvas.width) this.escaped = true;
         }
     }
 
@@ -619,14 +623,15 @@ function handleWave() {
         if (gameMode === 'horizontal') {
             let maxCols = Math.floor(canvas.width / cellSize);
             let col = Math.floor(Math.random() * (maxCols - 1));
-            let startX = col * cellSize + 10;
-            if (startX > canvas.width - 60) startX = canvas.width - 70;
+            let startX = col * cellSize + 15;
+            if (startX > canvas.width - 60) startX = canvas.width - 75;
             enemies.push(new Risk(startX, wave));
         } else {
-            let maxCols = Math.floor(GAME_WIDTH / cellSize);
-            let col = Math.floor(Math.random() * (maxCols - 0.5));
-            let startX = col * cellSize + (cellSize * 0.1);
-            enemies.push(new Risk(startX, wave));
+            let maxRows = Math.floor(canvas.height / cellSize);
+            let row = Math.floor(Math.random() * (maxRows - 1));
+            let startY = row * cellSize + 15;
+            if (startY > canvas.height - 60) startY = canvas.height - 75;
+            enemies.push(new Risk(startY, wave));
         }
         enemiesSpawned++;
     }
