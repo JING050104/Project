@@ -771,9 +771,9 @@ function handleLogic() {
 
         let forceEscape = false;
         if (gameMode === 'horizontal') {
-            if (en.y > canvas.height) forceEscape = true;
+            if (en.x < -50 || en.y > GAME_HEIGHT) forceEscape = true;
         } else {
-            if (en.x > canvas.width) forceEscape = true;
+            if (en.y > GAME_HEIGHT + 50 || en.x > GAME_WIDTH) forceEscape = true;
         }
 
         if (forceEscape || en.escaped) {
