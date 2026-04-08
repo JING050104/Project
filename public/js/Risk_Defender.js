@@ -265,13 +265,11 @@ class Risk {
 
         this.size = 30;
         this.speed = 1.5;
-        this.hitFlash = 0;
         this.escaped = false;
         this.size = 30;
         this.speed = 1.5;
         this.health = 5 + (wave * 5);
         this.maxHealth = this.health;
-        this.hitFlash = 0;
         this.escaped = false;
 
         const types = ['fire', 'flood', 'thief', 'virus'];
@@ -350,12 +348,7 @@ class Risk {
 
     draw() {
 
-        if (this.hitFlash > 0) {
-            ctx.fillStyle = "white";
-            this.hitFlash--;
-        } else {
-            ctx.fillStyle = '#c0392b';
-        }
+        ctx.save();
 
         ctx.fillStyle = 'black';
         ctx.fillRect(this.x + 30, this.y + 15, 40, 4);
@@ -392,6 +385,7 @@ class Bullet {
 
         if (dist < 10) {
             this.target.health -= this.damage;
+
             floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 40, this.target.y + 40, "yellow"));
             for (let i = 0; i < 5; i++) {
                 floatingTexts.push(new Particle(this.target.x, this.target.y));
