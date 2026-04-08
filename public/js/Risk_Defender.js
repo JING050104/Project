@@ -618,14 +618,15 @@ function handleWave() {
         const offset = (cellSize - enemySize) / 2;
 
         if (gameMode === 'horizontal') {
-            let maxRows = Math.floor(GAME_HEIGHT / cellSize);
-            let row = Math.floor(Math.random() * (maxRows - 1));
-            let startY = row * cellSize + offset;
-            enemies.push(new Risk(startY, wave));
+            let maxCols = Math.floor(canvas.width / cellSize);
+            let col = Math.floor(Math.random() * (maxCols - 1));
+            let startX = col * cellSize + 15;
+            if (startX > canvas.width - 60) startX = canvas.width - 75;
+            enemies.push(new Risk(startX, wave));
         } else {
             let maxCols = Math.floor(GAME_WIDTH / cellSize);
             let col = Math.floor(Math.random() * (maxCols - 0.5));
-            let startX = col * cellSize + (cellSize * 0.1); // 额外加点偏移量远离边缘
+            let startX = col * cellSize + (cellSize * 0.1);
             enemies.push(new Risk(startX, wave));
         }
         enemiesSpawned++;
