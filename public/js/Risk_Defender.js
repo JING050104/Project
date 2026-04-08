@@ -769,6 +769,7 @@ function handleLogic() {
 
         en.update();
 
+        let outOfBounds = false;
         if (gameMode === 'horizontal') {
             if (en.y > canvas.height) outOfBounds = true;
         } else {
