@@ -153,7 +153,6 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { reward } = req.body;
 
-    // 1. 验证奖励格式
     if (!reward || !reward.includes("pts")) {
         return res.json({ success: false, error: "No points earned" });
     }
@@ -161,6 +160,25 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
     const points = parseInt(reward);
 
     try {
+        const checkResult = await db.execute(`
+            SELECT created_at FROM point_transactions 
+            WHERE user_id = $1 AND activity_type = 'Daily Spin' 
+            ORDER BY created_at DESC LIMIT 1`, 
+            [userId]
+        );
+
+        if (checkResult.length > 0) {
+            const lastSpinDate = new Date(checkResult[0].created_at).toDateString();
+            const today = new Date().toDateString();
+
+            if (lastSpinDate === today) {
+                return res.status(403).json({ 
+                    success: false, 
+                    error: "You have already spun the wheel today. Come back tomorrow!" 
+                });
+            }
+        }
+
         await db.execute('BEGIN');
 
         await db.execute(`
@@ -183,7 +201,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         res.json({ success: true, type: 'points' });
 
     } catch (err) {
-        if (db && db.execute) await db.execute('ROLLBACK');
+        try { await db.execute('ROLLBACK'); } catch (e) {}
         console.error("Spin Reward Error Details:", err.message);
         res.status(500).json({ success: false, error: err.message });
     }
