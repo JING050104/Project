@@ -250,16 +250,6 @@ class Insurance {
 
 class Risk {
     constructor(pos, wave) {
-        this.size = 30;
-        this.speed = 1.5;
-        this.hitFlash = 0;
-        this.escaped = false;
-        this.size = 30;
-        this.speed = 1.5;
-        this.health = 5 + (wave * 5);
-        this.maxHealth = this.health;
-        this.hitFlash = 0;
-        this.escaped = false;
 
         if (gameMode === 'horizontal') {
             const targetRow = Math.floor(pos / cellSize);
@@ -272,6 +262,17 @@ class Risk {
             this.x = targetCol * cellSize + (cellSize / 4);
             this.y = 0;
         }
+        
+        this.size = 30;
+        this.speed = 1.5;
+        this.hitFlash = 0;
+        this.escaped = false;
+        this.size = 30;
+        this.speed = 1.5;
+        this.health = 5 + (wave * 5);
+        this.maxHealth = this.health;
+        this.hitFlash = 0;
+        this.escaped = false;
 
         const types = ['fire', 'flood', 'thief', 'virus'];
         this.type = types[Math.floor(Math.random() * types.length)];
@@ -545,6 +546,15 @@ function showGameOver() {
     const finalGoldTxt = document.getElementById("final-gold");
     const placementStatusTxt = document.getElementById("placement-status");
     const finalTimeDisplay = document.getElementById("final-time");
+
+    const feedbackText = document.getElementById('game-feedback-text'); // 确保HTML有这个ID
+
+    let basePercent = Math.min(90, wave * 10); 
+    let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
+
+    if (feedbackText) {
+        feedbackText.innerHTML = `You reached Wave <b>${wave}</b>, surpassing <b>${beatPercent}%</b> people!`;
+    }
 
     let finalPoints = gold - 200;
     if (finalPoints < 0) finalPoints = 0;

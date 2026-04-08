@@ -569,7 +569,7 @@ input {
     border-radius: 12px;
 }
 
-.sidebar.collapsed + .admin-section {
+.sidebar.collapsed+.admin-section {
     width: calc(100% - 70px);
 }
 
@@ -645,17 +645,18 @@ input {
     display: inline-block;
 }
 
-.points-overlay, .hearts-overlay {
+.points-overlay,
+.hearts-overlay {
     position: absolute !important;
-    top: 15px !important;    
-    z-index: 999;          
-    pointer-events: none;    
+    top: 15px !important;
+    z-index: 999;
+    pointer-events: none;
     background: rgba(255, 255, 255, 0.9);
     padding: 6px 12px;
     border-radius: 20px;
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 #hearts-container {
@@ -687,7 +688,7 @@ input {
 }
 
 .fa-solid.fa-heart {
-    color: #ef4444; 
+    color: #ef4444;
     font-size: 1.2rem;
     text-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
 }
@@ -714,17 +715,18 @@ input {
 }
 
 .sidebar.collapsed nav a {
-    padding: 12px 22px; /* 居中图标 */
+    padding: 12px 22px;
+    /* 居中图标 */
     justify-content: flex-start;
 }
 
-.sidebar.collapsed nav a span, 
+.sidebar.collapsed nav a span,
 .sidebar.collapsed nav a {
     white-space: nowrap;
 }
 
 .sidebar.collapsed nav a i {
-    margin-right: 30px; 
+    margin-right: 30px;
 }
 
 .feedback-marker {
@@ -840,7 +842,7 @@ input {
 }
 
 #point-history-container {
-    overflow-y: auto; 
+    overflow-y: auto;
     flex-grow: 1;
     padding-right: 10px;
 }
@@ -1461,7 +1463,7 @@ button:disabled {
     padding: 20px;
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .stat-card h4 {
@@ -1474,9 +1476,17 @@ button:disabled {
     font-weight: bold;
 }
 
-.players-color { color: #4a90e2; }
-.games-color   { color: #2ecc71; }
-.stock-color   { color: #f1c40f; }
+.players-color {
+    color: #4a90e2;
+}
+
+.games-color {
+    color: #2ecc71;
+}
+
+.stock-color {
+    color: #f1c40f;
+}
 
 .charts-row {
     display: flex;
@@ -1490,7 +1500,7 @@ button:disabled {
     background: #fff;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .chart-title {
@@ -1936,8 +1946,8 @@ button:disabled {
     top: 90px;
     border-radius: 12px;
     transition: width 0.3s ease, padding 0.3s ease;
-    overflow: hidden; 
-    white-space: nowrap; 
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .sidebar nav a {
@@ -1947,14 +1957,14 @@ button:disabled {
     text-decoration: none;
     color: #5a6c7d;
     transition: all 0.3s ease;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 .sidebar nav a i {
     min-width: 25px;
     font-size: 18px;
     margin-right: 15px;
-    flex-shrink: 0;   
+    flex-shrink: 0;
     text-align: center;
 }
 
@@ -2038,9 +2048,10 @@ button:disabled {
     margin-right: 10px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
     display: inline-flex;
-    margin: 0 !important;           
+    margin: 0 !important;
     padding: 8px;
     cursor: pointer;
 }
@@ -2057,10 +2068,10 @@ button:disabled {
 
 #voucher-table-body td:nth-child(5),
 #vouchers-section thead th:nth-child(5) {
-    width: auto !important;     
-    white-space: normal;       
-    min-width: 250px;       
-}    
+    width: auto !important;
+    white-space: normal;
+    min-width: 250px;
+}
 
 #user-table-body td:nth-child(3),
 #users-section thead th:nth-child(3) {
@@ -2072,7 +2083,7 @@ button:disabled {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    table-layout: auto !important; 
+    table-layout: auto !important;
 }
 
 .admin-table th,
@@ -2080,7 +2091,7 @@ button:disabled {
     padding: 15px 20px;
     border-bottom: 1px solid var(--admin-border);
     font-size: 0.95rem;
-    white-space: nowrap; 
+    white-space: nowrap;
     width: 1px;
 }
 
@@ -2152,7 +2163,7 @@ button:disabled {
     min-width: 160px;
     margin-top: 8px;
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .menu-item {
@@ -2186,36 +2197,42 @@ button:disabled {
         padding: 5px 10px;
     }
 
-    .fa-solid.fa-heart, .fa-regular.fa-heart {
+    .fa-solid.fa-heart,
+    .fa-regular.fa-heart {
         font-size: 1rem;
     }
-    
+
 
     .wheel {
         width: 90%;
         height: 90%;
     }
 
+    #gameCanvas {
+        width: 90%;
+        height: 90%;
+    }
+
     .wheel-pointer {
-    position: absolute;
-    top: -15px;
-    left: 45%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 40px;
-    background: #333;
-    clip-path: polygon(50% 100%, 0 0, 100% 0);
-    z-index: 10;
+        position: absolute;
+        top: -15px;
+        left: 45%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        background: #333;
+        clip-path: polygon(50% 100%, 0 0, 100% 0);
+        z-index: 10;
     }
 
     .stat-value {
-        font-size: 1.5rem !important; 
+        font-size: 1.5rem !important;
     }
-    
+
     .sidebar .dash-card h3 {
-        font-size: 0.9rem !important;  
+        font-size: 0.9rem !important;
     }
-    
+
     .dashboard-grid .dash-card.clickable-card {
         aspect-ratio: 1 / 1;
     }
@@ -2318,7 +2335,7 @@ button:disabled {
     }
 
     .sidebar .dash-card {
-        padding: 15px !important;    
+        padding: 15px !important;
         border-radius: 20px !important;
     }
 }
