@@ -123,17 +123,17 @@ class Insurance {
 
         switch (type) {
             case 'car':
-                this.sx = 0;         
+                this.sx = 0;
                 this.label = "Car";
                 this.cost = 40; this.health = 400; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
                 break;
             case 'home':
-                this.sx = 64;         
+                this.sx = 64;
                 this.label = "Property";
                 this.cost = 50; this.health = 800; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
-                this.sx = 128;        
+                this.sx = 128;
                 this.label = "Life";
                 this.cost = 60; this.health = 250; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
                 this.healTimer = 0;
@@ -166,13 +166,13 @@ class Insurance {
 
         const padding = 2;
         const actualSx = this.sx + padding;
-        const actualSw = this.sw - (padding * 2); 
+        const actualSw = this.sw - (padding * 2);
 
-        const drawWidth = cellSize * 0.7; 
+        const drawWidth = cellSize * 0.7;
         const drawHeight = (this.sh / this.sw) * drawWidth;
 
         const offsetX = (cellSize - drawWidth) / 2;
-        const offsetY = cellSize - drawHeight; 
+        const offsetY = cellSize - drawHeight;
 
         ctx.drawImage(
             towerSprite,
@@ -206,7 +206,7 @@ class Insurance {
             gold -= upgradeCost;
             this.level++;
 
-            this.maxHealth = Math.floor(this.maxHealth * 1.5); 
+            this.maxHealth = Math.floor(this.maxHealth * 1.5);
             this.health = this.maxHealth;
 
             if (this.type === 'car') {
@@ -262,7 +262,7 @@ class Risk {
             this.x = targetCol * cellSize + (cellSize / 4);
             this.y = 0;
         }
-        
+
         this.size = 30;
         this.speed = 1.5;
         this.hitFlash = 0;
@@ -358,9 +358,9 @@ class Risk {
         }
 
         ctx.fillStyle = 'black';
-        ctx.fillRect(this.x + 30, this.y + 15, 40, 4); 
+        ctx.fillRect(this.x + 30, this.y + 15, 40, 4);
         ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4); 
+        ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4);
 
         ctx.fillStyle = "white";
         ctx.font = "20px Arial";
@@ -549,7 +549,7 @@ function showGameOver() {
 
     const feedbackText = document.getElementById('game-feedback-text'); // 确保HTML有这个ID
 
-    let basePercent = Math.min(90, wave * 10); 
+    let basePercent = Math.min(90, wave * 10);
     let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
 
     if (feedbackText) {
@@ -568,7 +568,7 @@ function showGameOver() {
     } else {
         if (placementStatusTxt) {
             placementStatusTxt.textContent = "Towers successfully deployed.";
-            placementStatusTxt.style.color = "#2ecc71"; 
+            placementStatusTxt.style.color = "#2ecc71";
         }
     }
 
@@ -619,13 +619,13 @@ function handleWave() {
 
         if (gameMode === 'horizontal') {
             let maxRows = Math.floor(GAME_HEIGHT / cellSize);
-            let row = Math.floor(Math.random() * maxRows);
+            let row = Math.floor(Math.random() * (maxRows - 1));
             let startY = row * cellSize + offset;
             enemies.push(new Risk(startY, wave));
         } else {
             let maxCols = Math.floor(GAME_WIDTH / cellSize);
-            let col = Math.floor(Math.random() * maxCols);
-            let startX = col * cellSize + offset;
+            let col = Math.floor(Math.random() * (maxCols - 0.5));
+            let startX = col * cellSize + (cellSize * 0.1); // 额外加点偏移量远离边缘
             enemies.push(new Risk(startX, wave));
         }
         enemiesSpawned++;
@@ -769,6 +769,13 @@ function handleLogic() {
 
         en.update();
 
+        let outOfBounds = false;
+        if (gameMode === 'horizontal') {
+            if (en.x > canvas.width) outOfBounds = true;
+        } else {
+            if (en.y > canvas.height) outOfBounds = true;
+        }
+
         if (en.health <= 0 && !en.isDying) {
             en.isDying = true;
             gold += 5;
@@ -782,14 +789,16 @@ function handleLogic() {
             continue;
         }
 
-        if (en.escaped) {
+        if (outOfBounds || en.escaped) {
             baseHealth -= 10;
+            if (hudHp) hudHp.innerText = baseHealth;
             floatingTexts.push(new FloatingText("-10 HP", en.x, en.y, "red"));
 
             if (en.type === 'thief') {
-                const moneyLost = 20; 
+                const moneyLost = 20;
                 gold = Math.max(0, gold - moneyLost);
                 floatingTexts.push(new FloatingText(`-$${moneyLost}`, en.x, en.y - 25, "#e74c3c"));
+                if (hudGold) hudGold.innerText = gold;
             }
 
             enemies.splice(i, 1);
@@ -925,14 +934,14 @@ pauseBtn.addEventListener("click", () => {
     if (isPaused) {
         pauseStartTime = Date.now();
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
-        
-        canvas.style.filter = "blur(10px)"; 
-        canvas.style.pointerEvents = "none"; 
+
+        canvas.style.filter = "blur(10px)";
+        canvas.style.pointerEvents = "none";
     } else {
         if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
         pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause Game</span>';
         settingsMenu.style.display = "none";
-        
+
         canvas.style.filter = "none";
         canvas.style.pointerEvents = "auto";
     }
@@ -940,16 +949,16 @@ pauseBtn.addEventListener("click", () => {
 
 function confirmAndExit() {
     if (gameState === "playing") {
-        isPaused = true; 
+        isPaused = true;
         timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-        showGameOver(); 
-    } 
+        showGameOver();
+    }
 }
 
 homeBtn.addEventListener("click", confirmAndExit);
 
 settingsToggleBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     const isVisible = settingsMenu.style.display === "block";
     settingsMenu.style.display = isVisible ? "none" : "block";
 });
