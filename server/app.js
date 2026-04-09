@@ -207,7 +207,7 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
     }
 });
 
-// C. 獲取背包（已修正）
+// C. 獲取背包
 app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     const query = `
         SELECT 
@@ -234,7 +234,7 @@ app.get('/api/get-inventory', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// D. 激活道具（已修正 userId）
+// D. 激活道具
 app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
 
     const userId = req.user.id;
