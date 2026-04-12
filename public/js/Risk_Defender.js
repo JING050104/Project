@@ -14,9 +14,11 @@ const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
 const cellSize = 70;
 
+//tower
 const towerSprite = new Image();
 towerSprite.src = 'risk-image/Tower.png';
 
+//map
 const cleanTiles = [];
 const TILE_CONFIG = {
     cleanCount: 4,
@@ -27,6 +29,34 @@ for (let i = 1; i <= TILE_CONFIG.cleanCount; i++) {
     const img = new Image();
     img.src = `${TILE_CONFIG.path}clean (${i}).png`;
     cleanTiles.push(img);
+}
+
+const fireReadyFrames = [];
+for (let i = 1; i <= 2; i++) {
+    let img = new Image();
+    img.src = `risk-image/fireready (${i}).png`;
+    fireReadyFrames.push(img);
+}
+
+const fireAttackFrames = [];
+for (let i = 1; i <= 2; i++) {
+    let img = new Image();
+    img.src = `risk-image/fire (${i}).png`;
+    fireAttackFrames.push(img);
+}
+
+const floodReadyFrames = [];
+for (let i = 1; i <= 2; i++) {
+    let img = new Image();
+    img.src = `risk-image/floodready (${i}).png`;
+    floodReadyFrames.push(img);
+}
+
+const floodAttackFrames = [];
+for (let i = 1; i <= 2; i++) {
+    let img = new Image();
+    img.src = `risk-image/flood (${i}).png`;
+    floodAttackFrames.push(img);
 }
 
 let gameMapLayout = [];
@@ -53,7 +83,6 @@ let gameState = "playing";
 let closestTower = null;
 let minDist = Infinity;
 let rewardGiven = false;
-let bossWarningTimer = 0;
 let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical';
 
@@ -219,7 +248,7 @@ class Insurance {
                 this.range += 15;
             }
 
-            floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 10, this.y, "#f1c40f"));
+            floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 35, this.y + 20, "#f1c40f"));
         } else {
             floatingTexts.push(new FloatingText("Need More Gold!", this.x, this.y, "#e74c3c"));
         }
@@ -250,6 +279,17 @@ class Insurance {
 
 class Risk {
     constructor(pos, wave) {
+        this.size = 30;
+        this.speed = 1.5;
+        this.escaped = false;
+        this.size = 30;
+        this.speed = 1.5;
+        this.escaped = false;
+        this.isAttacking = false;
+        this.currentFrames = fireReadyFrames;
+        this.frameIndex = 0;
+        this.frameTimer = 0;
+        this.frameInterval = 15;
 
         if (gameMode === 'horizontal') {
             const targetRow = Math.floor(pos / cellSize);
@@ -263,17 +303,10 @@ class Risk {
             this.y = -30;
         }
 
-        this.size = 30;
-        this.speed = 1.5;
-        this.escaped = false;
-        this.size = 30;
-        this.speed = 1.5;
-        this.health = 5 + (wave * 5);
-        this.maxHealth = this.health;
-        this.escaped = false;
-
         const types = ['fire', 'flood', 'thief', 'virus'];
         this.type = types[Math.floor(Math.random() * types.length)];
+        this.health = 5 + (wave * 5);
+        this.maxHealth = this.health;
 
         if (this.type === 'virus') {
             this.speed = 1.8;
@@ -283,10 +316,12 @@ class Risk {
             this.speed = 0.8;
             this.damage = 1.8;
             this.label = "🔥";
+            this.currentFrames = fireReadyFrames;
         } else if (this.type === 'flood') {
             this.speed = 0.6;
             this.damage = 1.2;
             this.label = "🌊";
+            this.currentFrames = floodReadyFrames;
         } else {
             this.speed = 1.3;
             this.damage = 0.5;
@@ -297,12 +332,51 @@ class Risk {
         this.blocked = false;
 
         this.attackTimer = 0;
-        this.attackSpeed = 30;
+        this.attackSpeed = 100;
     }
 
     update() {
         if (this.isDying) { this.size -= 2; return; }
-        if (this.blocked) return;
+
+        this.frameTimer++;
+        if (this.frameTimer >= this.frameInterval) {
+            this.frameTimer = 0;
+            this.frameIndex = (this.frameIndex + 1) % this.currentFrames.length;
+        }
+
+        if (this.blocked) {
+            if (!this.isAttacking) {
+                if (this.type === 'fire') {
+                    this.currentFrames = fireAttackFrames;
+                } else if (this.type === 'flood') {
+                    this.currentFrames = floodAttackFrames;
+                }
+                this.frameIndex = 0;
+                this.isAttacking = true;
+            }
+
+            this.attackTimer++;
+            if (this.attackTimer >= this.attackSpeed) {
+                if (this.targetTower) {
+                    this.targetTower.health -= this.damage;
+                    floatingTexts.push(new FloatingText("-" + this.damage, this.targetTower.x + 35, this.targetTower.y, "red"));
+                }
+                this.attackTimer = 0;
+            }
+
+            return;
+
+        } else {
+            if (this.isAttacking) {
+                if (this.type === 'fire') {
+                    this.currentFrames = fireReadyFrames;
+                } else if (this.type === 'flood') {
+                    this.currentFrames = floodReadyFrames;
+                }
+                this.frameIndex = 0;
+                this.isAttacking = false;
+            }
+        }
 
         let targetX = (gameMode === 'horizontal') ? - 35 : (this.spawnCol * cellSize + 35);
         let targetY = (gameMode === 'horizontal') ? (this.spawnRow * cellSize + 35) : (canvas.height + 35);
@@ -349,15 +423,38 @@ class Risk {
     draw() {
 
         ctx.save();
+        const centerX = this.x + 35;
+        const centerY = this.y + 35;
 
+        const barWidth = 40;
+        const barHeight = 4;
+        const topY = this.y - 15;
         ctx.fillStyle = 'black';
-        ctx.fillRect(this.x + 30, this.y + 15, 40, 4);
+        ctx.fillRect(centerX - barWidth / 2, topY, barWidth, barHeight);
         ctx.fillStyle = 'red';
-        ctx.fillRect(this.x + 30, this.y + 15, (this.health / this.maxHealth) * 40, 4);
+        ctx.fillRect(centerX - barWidth / 2, topY, (this.health / this.maxHealth) * barWidth, barHeight);
 
-        ctx.fillStyle = "white";
-        ctx.font = "20px Arial";
-        ctx.fillText(this.label, this.x + 40, this.y + 60);
+        ctx.translate(centerX, centerY);
+        ctx.scale(-1, 1);
+
+        const imgToDraw = this.currentFrames[this.frameIndex];
+
+        if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
+            const size = 32;
+            ctx.drawImage(
+                imgToDraw,
+                -size / 2,
+                -size / 2,
+                size,
+                size
+            );
+        } else {
+            ctx.fillStyle = this.type === 'fire' ? 'orange' : 'cyan';
+            ctx.beginPath();
+            ctx.arc(centerX, this.y + 30, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
 }
 
@@ -386,7 +483,7 @@ class Bullet {
         if (dist < 10) {
             this.target.health -= this.damage;
 
-            floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 40, this.target.y + 40, "yellow"));
+            floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 35, this.target.y + 35, "yellow"));
             this.hit = true;
             return;
         }
@@ -403,22 +500,6 @@ class Bullet {
     }
 }
 
-
-/* ========================
-   👑 Boss 
-======================== */
-class Boss extends Risk {
-    constructor(x, wave) {
-        super(x, wave);
-        this.offsetX = (Math.random() - 0.5) * 10;
-        this.offsetY = (Math.random() - 0.5) * 10;
-        this.health = 50 + (wave * 30);
-        this.maxHealth = this.health;
-        this.speed = 0.6;
-        this.damage = 5 + Math.floor(wave / 5);
-        this.label = "👑";
-    }
-}
 
 /* ========================
    ✨ Floating Text
@@ -705,6 +786,7 @@ function handleLogic() {
         let minDist = Infinity;
 
         enemies.forEach(enemy => {
+            if (enemy.isDying) return;
             let enemyCenterX = enemy.x + 15;
             let enemyCenterY = enemy.y + 15;
             let towerCenterX = tower.x + 35;
@@ -721,22 +803,16 @@ function handleLogic() {
         });
 
         if (target && tower.timer >= tower.attackSpeed) {
-
-            bullets.push(
-                new Bullet(
-                    tower.x + 35,
-                    tower.y + 35,
-                    target,
-                    tower.attackPower
-                )
-            );
+            bullets.push(new Bullet(tower.x + 35, tower.y + 35, target, tower.attackPower));
             tower.timer = 0;
 
-            ctx.strokeStyle = "yellow";
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 0, 0.5)";
             ctx.beginPath();
             ctx.moveTo(tower.x + 35, tower.y + 35);
             ctx.lineTo(target.x + 35, target.y + 35);
             ctx.stroke();
+            ctx.restore();
         }
     });
 
@@ -747,13 +823,9 @@ function handleLogic() {
 
         towers.forEach(tower => {
             let dist = Math.hypot((en.x + 35) - (tower.x + 35), (en.y + 35) - (tower.y + 35));
-            if (dist < 45) {
+            if (dist < 35) {
                 en.blocked = true;
-                en.attackTimer++;
-                if (en.attackTimer >= en.attackSpeed) {
-                    tower.health -= en.damage;
-                    en.attackTimer = 0;
-                }
+                en.targetTower = tower;
             }
         });
 
@@ -769,12 +841,12 @@ function handleLogic() {
         if (forceEscape || en.escaped) {
             baseHealth -= 10;
             if (hudHp) hudHp.innerText = baseHealth;
-            floatingTexts.push(new FloatingText("-10 HP", en.x, en.y, "red"));
+            floatingTexts.push(new FloatingText("-10 HP", en.x + 35, en.y + 35, "red"));
 
             if (en.type === 'thief') {
                 const moneyLost = 20;
                 gold = Math.max(0, gold - moneyLost);
-                floatingTexts.push(new FloatingText(`-$${moneyLost}`, en.x, en.y - 25, "#e74c3c"));
+                floatingTexts.push(new FloatingText(`-$${moneyLost}`, en.x + 35, en.y + 10, "#e74c3c"));
                 if (hudGold) hudGold.innerText = gold;
             }
 
@@ -791,7 +863,7 @@ function handleLogic() {
         if (en.health <= 0 && !en.isDying) {
             en.isDying = true;
             gold += 5;
-            floatingTexts.push(new FloatingText("+$5", en.x, en.y, "#FFD700"));
+            floatingTexts.push(new FloatingText("+$5", en.x + 35, en.y + 35, "#FFD700"));
             for (let j = 0; j < 10; j++) {
                 particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
             }
@@ -912,10 +984,6 @@ function animate() {
     towers.forEach(t => t.draw());
     enemies.forEach(e => e.draw());
     bullets.forEach(b => b.draw());
-    if (bossWarningTimer > 0) {
-        drawBossWarning();
-        bossWarningTimer--;
-    }
     floatingTexts.forEach((text, i) => {
         text.update(); text.draw();
         if (text.alpha <= 0) floatingTexts.splice(i, 1);
