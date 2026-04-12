@@ -255,11 +255,11 @@ class Risk {
             const targetRow = Math.floor(pos / cellSize);
             this.spawnRow = targetRow;
             this.x = GAME_WIDTH;
-            this.y = targetRow * cellSize + (cellSize / 4);
+            this.y = targetRow * cellSize + (cellSize / 2);
         } else {
             const targetCol = Math.floor(pos / cellSize);
             this.spawnCol = targetCol;
-            this.x = targetCol * cellSize + (cellSize / 4);
+            this.x = targetCol * cellSize + (cellSize / 2);
             this.y = -30;
         }
 
@@ -538,7 +538,7 @@ function showGameOver() {
     const placementStatusTxt = document.getElementById("placement-status");
     const finalTimeDisplay = document.getElementById("final-time");
 
-    const feedbackText = document.getElementById('game-feedback-text'); 
+    const feedbackText = document.getElementById('game-feedback-text');
 
     let basePercent = Math.min(90, wave * 10);
     let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
@@ -608,19 +608,15 @@ function handleWave() {
         enemiesSpawned++;
 
         if (gameMode === 'horizontal') {
-            let maxCols = Math.floor(canvas.width / cellSize);
-            let col = Math.floor(Math.random() * (maxCols - 1));
-            let startX = col * cellSize + 10;
-            if (startX > canvas.width - 60) startX = canvas.width - 70;
-            enemies.push(new Risk(startX, wave));
+            let maxRows = Math.floor(GAME_HEIGHT / cellSize);
+            let row = Math.floor(Math.random() * (maxRows - 2)) + 1;
+            let startY = row * cellSize + cellSize / 2;
+            enemies.push(new Risk(startY, wave));
+
         } else {
             let maxCols = Math.floor(GAME_WIDTH / cellSize);
-            let col = Math.floor(Math.random() * maxCols);
-            let startX = col * cellSize + (cellSize * 0.1);
-            if (startX > GAME_WIDTH - 40) {
-                startX = GAME_WIDTH - 45;
-            }
-
+            let col = Math.floor(Math.random() * (maxCols - 2)) + 1;
+            let startX = col * cellSize + cellSize / 2;
             enemies.push(new Risk(startX, wave));
         }
     }
@@ -881,7 +877,7 @@ function animate() {
     if (gameState === "submitted") return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
 
     if (gameState === "playing" && !isPaused) {
         timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
