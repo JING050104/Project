@@ -38,7 +38,7 @@ class SpinWheel {
             const data = await response.json();
             
             if (data.canSpin === false || data.alreadySpun === true) {
-                this.lockWheel("Tomorrow Again");
+                this.lockWheel("Come back Tomorrow!");
             }
             
         } catch (err) {
