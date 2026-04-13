@@ -9,6 +9,7 @@ const settingsMenu = document.getElementById("settings-menu");
 const tutorialBtn = document.getElementById("tutorial-btn");
 const tutorialModal = document.getElementById("tutorial-modal");
 const closeTutorial = document.getElementById("close-tutorial");
+
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
 const PLACEMENT_COOLDOWN = 2000;
@@ -30,6 +31,7 @@ for (let i = 1; i <= TILE_CONFIG.cleanCount; i++) {
     img.src = `${TILE_CONFIG.path}clean (${i}).png`;
     cleanTiles.push(img);
 }
+
 //fire
 const fireReadyFrames = [];
 for (let i = 1; i <= 2; i++) {
@@ -68,6 +70,7 @@ thiefSprite.src = 'risk-image/StreetThief.png';
 const virusSprite = new Image();
 virusSprite.src = 'risk-image/virus.png';
 
+let totalTowersPlaced = 0;
 let gameMapLayout = [];
 let startTime = Date.now();
 let totalPausedTime = 0;
@@ -163,17 +166,17 @@ class Insurance {
             case 'car':
                 this.sx = 0;
                 this.label = "Car";
-                this.cost = 40; this.health = 400; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
+                this.cost = 40; this.health = 50; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
                 break;
             case 'home':
                 this.sx = 64;
                 this.label = "Property";
-                this.cost = 50; this.health = 800; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
+                this.cost = 50; this.health = 100; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
                 this.sx = 128;
                 this.label = "Life";
-                this.cost = 60; this.health = 250; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
+                this.cost = 60; this.health = 25; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
                 this.healTimer = 0;
                 break;
         }
@@ -652,6 +655,7 @@ canvas.addEventListener("click", (e) => {
         gold -= cost;
         towers.push(new Insurance(towerX, towerY, selectedType));
 
+        totalTowersPlaced++;
         hasPlacedTower = true;
         lastPlacementTime = now;
 
@@ -671,8 +675,10 @@ function showGameOver() {
     const finalGoldTxt = document.getElementById("final-gold");
     const placementStatusTxt = document.getElementById("placement-status");
     const finalTimeDisplay = document.getElementById("final-time");
-
     const feedbackText = document.getElementById('game-feedback-text');
+
+    let finalPoints = gold;
+    if (finalPoints < 0) finalPoints = 0;
 
     let basePercent = Math.min(90, wave * 10);
     let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
@@ -681,13 +687,10 @@ function showGameOver() {
         feedbackText.innerHTML = `You reached Wave <b>${wave}</b>, surpassing <b>${beatPercent}%</b> people!`;
     }
 
-    let finalPoints = gold - 200;
-    if (finalPoints < 0) finalPoints = 0;
-
-    if (!hasPlacedTower) {
+    if (totalTowersPlaced < 3) {
         finalPoints = 0;
         if (placementStatusTxt) {
-            placementStatusTxt.textContent = "Warning: No towers were placed! 0 Points earned.";
+            placementStatusTxt.textContent = "Not enough towers placed throughout the game (Need 3).";
             placementStatusTxt.style.color = "#e74c3c";
         }
     } else {
@@ -695,6 +698,10 @@ function showGameOver() {
             placementStatusTxt.textContent = "Towers successfully deployed.";
             placementStatusTxt.style.color = "#2ecc71";
         }
+    }
+
+    if (!hasPlacedTower) {
+        finalPoints = 0;
     }
 
     if (finalWaveTxt) finalWaveTxt.innerText = wave;
@@ -1100,12 +1107,32 @@ settingsMenu.addEventListener("click", (e) => {
 tutorialBtn.addEventListener("click", () => {
     isPaused = true;
     pauseStartTime = Date.now();
+
+    const imgStyle = "width:30px; height:30px; vertical-align:middle; margin:0 5px; border-radius:4px;";
+
     document.getElementById("tutorial-content").innerHTML = `
-        • <b>Build Towers:</b> Click an insurance type then click the map.<br>
-        • <b>Upgrade:</b> Click an existing tower to level it up.<br>
-        • <b>Final Points:</b> To avoid cheating, final points get will be deducted 200.<br>
-        • <b>Thief (👤):</b> They steal gold and HP if they escape!<br>
-        • <b>Goal:</b> Survive as many waves as possible.`;
+        <div style="line-height: 1.6;">
+            • <b>Build Towers:</b> Click an insurance type then click the map.<br>
+            • <b>Upgrade:</b> Click an existing tower to level it up.<br>
+            • <b>Points:</b> You need to place at least <b>3 towers</b> to earn points.<br><br>
+            
+            <b>Counter Relationships:</b><br>
+            <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; margin-top: 5px;">
+                <img src="risk-image/StreetThief.png" style="${imgStyle} object-fit:none; object-position: 0px -64px;"> 
+                <b>Thief</b> is countered by <b>Car/Home</b><br>
+                
+                <img src="risk-image/virus.png" style="${imgStyle} object-fit:none; object-position: 0px 0px;"> 
+                <b>Virus</b> is countered by <b>Medical</b><br>
+                
+                <img src="risk-image/fireready (1).png" style="${imgStyle}"> 
+                <b>Fire</b> is countered by <b>Home</b><br>
+                
+                <img src="risk-image/floodready (1).png" style="${imgStyle}"> 
+                <b>Flood</b> is countered by <b>Car/Home</b>
+            </div>
+            <br>
+            • <b>Goal:</b> Survive as many waves as possible.
+        </div>`;
     tutorialModal.style.display = "flex";
 });
 
