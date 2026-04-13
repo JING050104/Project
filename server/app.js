@@ -424,7 +424,21 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
 // G. 管理员权限
 app.get("/api/admin/users", (req, res) => {
     if (req.isAuthenticated() && String(req.user.role).trim().toLowerCase() === 'admin') {
-        db.execute("SELECT id, username, email, role, is_verified FROM users ORDER BY id ASC")
+
+        const sql = `
+            SELECT 
+                u.id, 
+                u.username, 
+                u.email, 
+                u.role, 
+                u.is_verified,
+                COALESCE(up.total_points, 0) AS total_points
+            FROM users u
+            LEFT JOIN user_points up ON u.id = up.user_id
+            ORDER BY u.id ASC
+        `;
+
+        db.execute(sql)
             .then(users => {
                 res.json({ success: true, users: users });
             })
@@ -434,6 +448,30 @@ app.get("/api/admin/users", (req, res) => {
             });
     } else {
         res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+});
+
+app.get("/api/admin/user-history/:userId", ensureAuthenticated, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ success: false });
+
+    const userId = Number(req.params.userId);
+
+    if (isNaN(userId)) {
+        return res.status(400).json({ success: false, message: "Invalid user ID" });
+    }
+
+    try {
+        const history = await db.query(
+            `SELECT points_change, activity_type, description, created_at 
+             FROM point_transactions 
+             WHERE user_id = $1 
+             ORDER BY created_at DESC`,
+            [userId]
+        );
+
+        res.json({ success: true, history: history });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 

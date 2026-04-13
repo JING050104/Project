@@ -18,7 +18,6 @@
       </button>
       <h1>Coverage Quest <span>Admin</span></h1>
     </div>
-    </div>
     <div class="admin-controls">
       <span id="admin-name">Loading Admin...</span>
       <button id="logoutBtn" class="mini-logout" title="Logout">
@@ -41,7 +40,8 @@
     <section id="analytics-section" class="admin-section active">
       <div class="content-header">
         <h2><i class="fas fa-chart-pie"></i>Analytics</h2>
-        <select id="analytics-range" onchange="loadAnalytics()" style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc;">
+        <select id="analytics-range" onchange="loadAnalytics()"
+          style="padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc;">
           <option value="7">Last 7 Days</option>
           <option value="14">Last 14 Days</option>
           <option value="30" selected>Last 30 Days</option>
@@ -89,25 +89,26 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th onclick="sortTable('user-table-body', 0)" style="cursor:pointer">ID <i class="fas fa-sort"></i>
-              </th>
+              <th onclick="sortTable('user-table-body', 0)" style="cursor:pointer">ID <i class="fas fa-sort"></i></th>
               <th>Username</th>
               <th>Email</th>
-              <th onclick="sortTable('user-table-body', 3)" style="cursor:pointer">Role <i class="fas fa-sort"></i>
-              </th>
-              <th onclick="sortTable('user-table-body', 4)" style="cursor:pointer">Status <i class="fas fa-sort"></i>
+              <th onclick="sortTable('user-table-body', 3)" style="cursor:pointer">Role <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('user-table-body', 4)" style="cursor:pointer">Total Points <i
+                  class="fas fa-sort"></i></th>
+              <th onclick="sortTable('user-table-body', 5)" style="cursor:pointer">Status <i class="fas fa-sort"></i>
               </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="user-table-body">
             <tr>
-              <td colspan="6" style="text-align:center;">Loading users...</td>
+              <td colspan="7" style="text-align:center;">Loading users...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
+
     <section id="vouchers-section" class="admin-section">
       <div class="content-header">
         <h2>Voucher Management</h2>
@@ -158,6 +159,28 @@
         </table>
       </div>
     </section>
+    <div id="history-modal" class="modal"
+      style="display:none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+      <div class="modal-content"
+        style="background: white; width: 80%; max-width: 700px; padding: 20px; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+          <h2 id="history-user-title" style="margin:0;">User History</h2>
+          <span onclick="closeHistoryModal()" style="cursor:pointer; font-size: 24px;">&times;</span>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Points</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
+      </div>
+    </div>
 
   </main>
   <script src="js/Admin.js"></script>

@@ -6,7 +6,6 @@ let levelChartInstance = null;
 let trendChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const userTableBody = document.getElementById("user-table-body");
     const voucherTableBody = document.getElementById("voucher-table-body");
     const adminNameSpan = document.getElementById("admin-name");
     const refreshUsersBtn = document.getElementById("refresh-users");
@@ -26,163 +25,176 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     loadAnalytics = async function () {
-    try {
-        const rangeSelector = document.getElementById('analytics-range');
-        const days = rangeSelector ? rangeSelector.value : 30; 
+        try {
+            const rangeSelector = document.getElementById('analytics-range');
+            const days = rangeSelector ? rangeSelector.value : 30;
 
-        const response = await fetch(`/api/admin/analytics-data?range=${days}`);
-        const data = await response.json();
+            const response = await fetch(`/api/admin/analytics-data?range=${days}`);
+            const data = await response.json();
 
-        if (!data.success) {
-            console.error("Failed to load analytics:", data.message);
-            return;
-        }
+            if (!data.success) {
+                console.error("Failed to load analytics:", data.message);
+                return;
+            }
 
-        document.getElementById('stat-total-users').innerText = data.summary.users;
-        document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
-        document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
+            document.getElementById('stat-total-users').innerText = data.summary.users;
+            document.getElementById('stat-total-games').innerText = data.summary.gamesPlayed;
+            document.getElementById('stat-voucher-stock').innerText = data.summary.vouchersLeft;
 
-        const finderEl = document.getElementById('stat-finder-games');
-        const defenderEl = document.getElementById('stat-defender-games');
-        if (finderEl) finderEl.innerText = data.summary.finderGames;
-        if (defenderEl) defenderEl.innerText = data.summary.defenderGames;
+            const finderEl = document.getElementById('stat-finder-games');
+            const defenderEl = document.getElementById('stat-defender-games');
+            if (finderEl) finderEl.innerText = data.summary.finderGames;
+            if (defenderEl) defenderEl.innerText = data.summary.defenderGames;
 
-        const levelCtx = document.getElementById('levelChart').getContext('2d');
-        if (window.levelChartInstance) window.levelChartInstance.destroy();
+            const levelCtx = document.getElementById('levelChart').getContext('2d');
+            if (window.levelChartInstance) window.levelChartInstance.destroy();
 
-        const allLevels = [...new Set(data.levels.map(l => parseInt(l.reached_level)))].sort((a, b) => a - b);
-        const finderLevelData = allLevels.map(lvl => {
-            const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskFinder');
-            return entry ? parseInt(entry.count) : 0;
-        });
+            const allLevels = [...new Set(data.levels.map(l => parseInt(l.reached_level)))].sort((a, b) => a - b);
+            const finderLevelData = allLevels.map(lvl => {
+                const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskFinder');
+                return entry ? parseInt(entry.count) : 0;
+            });
 
-        const defenderLevelData = allLevels.map(lvl => {
-            const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskDefender');
-            return entry ? parseInt(entry.count) : 0;
-        });
+            const defenderLevelData = allLevels.map(lvl => {
+                const entry = data.levels.find(l => parseInt(l.reached_level) === lvl && l.game_type === 'RiskDefender');
+                return entry ? parseInt(entry.count) : 0;
+            });
 
-        window.levelChartInstance = new Chart(levelCtx, {
-            type: 'bar',
-            data: {
-                labels: allLevels.map(lvl => `Level ${lvl}`),
-                datasets: [
-                    {
-                        label: 'RiskFinder',
-                        data: finderLevelData,
-                        backgroundColor: '#4a90e2',
-                        borderRadius: 4, 
-                    },
-                    {
-                        label: 'RiskDefender',
-                        data: defenderLevelData,
-                        backgroundColor: '#cc2e2e',
-                        borderRadius: 4,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { mode: 'index', intersect: false } 
+            window.levelChartInstance = new Chart(levelCtx, {
+                type: 'bar',
+                data: {
+                    labels: allLevels.map(lvl => `Level ${lvl}`),
+                    datasets: [
+                        {
+                            label: 'RiskFinder',
+                            data: finderLevelData,
+                            backgroundColor: '#4a90e2',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'RiskDefender',
+                            data: defenderLevelData,
+                            backgroundColor: '#cc2e2e',
+                            borderRadius: 4,
+                        }
+                    ]
                 },
-                scales: {
-                    x: { 
-                        stacked: true, 
-                        grid: { display: false } 
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { mode: 'index', intersect: false }
                     },
-                    y: { 
-                        stacked: true, 
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        if (window.trendChartInstance) window.trendChartInstance.destroy();
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if (window.trendChartInstance) window.trendChartInstance.destroy();
 
-        const allDates = [...new Set(data.trends.map(t => new Date(t.date).toLocaleDateString()))];
+            const allDates = [...new Set(data.trends.map(t => new Date(t.date).toLocaleDateString()))];
 
-        const finderData = allDates.map(date => {
-            const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskFinder');
-            return entry ? parseInt(entry.count) : 0;
-        });
+            const finderData = allDates.map(date => {
+                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskFinder');
+                return entry ? parseInt(entry.count) : 0;
+            });
 
-        const defenderData = allDates.map(date => {
-            const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskDefender');
-            return entry ? parseInt(entry.count) : 0;
-        });
+            const defenderData = allDates.map(date => {
+                const entry = data.trends.find(t => new Date(t.date).toLocaleDateString() === date && t.game_type === 'RiskDefender');
+                return entry ? parseInt(entry.count) : 0;
+            });
 
-        window.trendChartInstance = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: allDates,
-                datasets: [
-                    {
-                        label: 'RiskFinder',
-                        data: finderData,
-                        borderColor: '#4a90e2',
-                        backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'RiskDefender',
-                        data: defenderData,
-                        borderColor: '#cc2e2e',
-                        backgroundColor: 'rgba(204, 46, 46, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
+            window.trendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: allDates,
+                    datasets: [
+                        {
+                            label: 'RiskFinder',
+                            data: finderData,
+                            borderColor: '#4a90e2',
+                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'RiskDefender',
+                            data: defenderData,
+                            borderColor: '#cc2e2e',
+                            backgroundColor: 'rgba(204, 46, 46, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
 
-    } catch (err) {
-        console.error("Analytics Load Error:", err);
-    }
-};
+        } catch (err) {
+            console.error("Analytics Load Error:", err);
+        }
+    };
 
     //users
     loadUsers = async function () {
         try {
-            userTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>';
             const response = await fetch("/api/admin/users");
             const data = await response.json();
 
-            if (!data.success) {
-                userTableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">Error: ${data.message}</td></tr>`;
-                return;
-            }
-
+            const userTableBody = document.getElementById("user-table-body");
+            if (!userTableBody) return;
             userTableBody.innerHTML = "";
-            data.users.forEach(user => {
-                const tr = document.createElement("tr");
-                const statusText = user.is_verified ? "Verified" : "Unverified";
-                const statusClass = user.is_verified ? "v-status-badge status-active" : "v-status-badge status-pending";
 
-                tr.innerHTML = `
+            if (data.success && Array.isArray(data.users)) {
+                data.users.forEach(user => {
+                    const row = document.createElement("tr");
+
+                    const statusText = user.is_verified ? "Verified" : "Pending";
+                    const statusClass = user.is_verified ? "status-verified" : "status-pending";
+
+                    row.innerHTML = `
                     <td>${user.id}</td>
                     <td id="td-username-${user.id}">${user.username}</td>
                     <td>${user.email}</td>
-                    <td id="td-role-${user.id}"><span class="badge ${user.role === 'admin' ? 'badge-admin' : ''}">${user.role}</span></td>
+                    <td id="td-role-${user.id}"><span class="badge">${user.role}</span></td>
+                    <td style="font-weight:bold; color:#27ae60;">${user.total_points}</td>
                     <td><span class="${statusClass}">${statusText}</span></td>
                     <td id="td-actions-${user.id}">
-                        <button class="edit-btn" title="Edit" onclick="startEdit(${user.id}, this)"><i class="fas fa-edit"></i></button>
-                        <button class="delete-btn" title="Delete" onclick="deleteUser(${user.id})"><i class="fas fa-trash"></i></button>
+                        <button class="edit-btn" onclick="viewHistory(${user.id}, '${user.username}')" title="History">
+                            <i class="fas fa-history"></i>
+                        </button>
+                        <button class="edit-btn" onclick="startEdit(${user.id}, this)" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" onclick="deleteUser(${user.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
-                userTableBody.appendChild(tr);
-            });
-        } catch (error) {
-            console.error("Load Users Error:", error);
-            userTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Connection Error.</td></tr>';
+                    userTableBody.appendChild(row);
+                });
+            }
+        } catch (err) {
+            console.error("Load Users Error:", err);
+            const userTableBody = document.getElementById("user-table-body");
+            if (userTableBody) {
+                userTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">
+                Failed to connect to server.
+            </td></tr>`;
+            }
         }
     };
 
@@ -386,7 +398,6 @@ async function saveEditVoucherAction(id) {
     }
 }
 
-
 async function deleteVoucher(id) {
     if (!confirm(`Are you sure you want to delete Voucher ID: ${id}?`)) return;
 
@@ -553,6 +564,51 @@ function updateSortIcons(tableBodyId, columnIndex, isAscending) {
             icon.style.color = '#ccc';
         }
     });
+}
+
+async function viewHistory(userId, username) {
+    console.log("History button clicked！User ID:", userId);
+    const modal = document.getElementById("history-modal");
+    const tableBody = document.getElementById("history-table-body");
+    document.getElementById("history-user-title").innerText = `Point History: ${username}`;
+
+    if (modal) {
+        modal.style.display = "flex";
+        document.getElementById("history-user-title").innerText = `Point History: ${username}`;
+        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+    }
+
+    try {
+        const res = await fetch(`/api/admin/user-history/${userId}`);
+        const data = await res.json();
+        console.log("🔥 NEW VERSION USER HISTORY API");
+        tableBody.innerHTML = "";
+        if (!data.success || !Array.isArray(data.history) || data.history.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found.</td></tr>';
+            return;
+        }
+
+        data.history.forEach(item => {
+            const tr = document.createElement("tr");
+            const val = parseFloat(item.points_change) || 0;
+            const color = val >= 0 ? "#27ae60" : "#e74c3c";
+            const displayAmount = val > 0 ? `+${val}` : val;
+
+            tr.innerHTML = `
+        <td>${new Date(item.created_at).toLocaleString()}</td>
+        <td>${item.activity_type}</td>
+        <td style="color:${color}; font-weight:bold;">${displayAmount}</td>
+        <td>${item.description || '-'}</td>
+    `;
+            tableBody.appendChild(tr);
+        });
+    } catch (err) {
+        tableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
+    }
+}
+
+function closeHistoryModal() {
+    document.getElementById("history-modal").style.display = "none";
 }
 
 document.getElementById('toggle-sidebar-btn').addEventListener('click', function () {
