@@ -246,6 +246,7 @@ class Insurance {
         if (gold >= upgradeCost) {
             gold -= upgradeCost;
             this.level++;
+            totalTowersPlaced++;
 
             this.maxHealth = Math.floor(this.maxHealth * 1.5);
             this.health = this.maxHealth;
@@ -258,6 +259,7 @@ class Insurance {
                 this.range += 10;
             } else if (this.type === 'medical') {
                 this.range += 15;
+                floatingTexts.push(new FloatingText("Heal UP!", this.x + 35, this.y - 10, "#2ecc71"));
             }
 
             floatingTexts.push(new FloatingText("Level " + this.level + "!", this.x + 35, this.y + 20, "#f1c40f"));
@@ -270,12 +272,19 @@ class Insurance {
         this.isBuffed = false;
         if (this.type === 'medical') {
             this.healTimer++;
-            if (this.healTimer >= 60) {
+            if (this.healTimer >= 180) {
                 towers.forEach(t => {
                     if (t === this) return;
                     let dist = Math.hypot((t.x + 35) - (this.x + 35), (t.y + 35) - (this.y + 35));
                     if (dist < this.range && t.health < t.maxHealth) {
-                        t.health = Math.min(t.maxHealth, t.health + 10);
+                        // 1. 计算回血量（这里使用等级作为回血数值）
+                        let currentHeal = this.level;
+
+                        t.health = Math.min(t.maxHealth, t.health + currentHeal);
+
+                        // 2. 修复报错：将 healAmount 替换为 currentHeal
+                        floatingTexts.push(new FloatingText("+" + currentHeal, t.x + 35, t.y + 20, "#2ecc71"));
+
                         t.isBuffed = true;
                     }
                 });
@@ -568,19 +577,42 @@ class FloatingText {
         this.y = y;
         this.color = color;
         this.alpha = 1;
+        this.velocity = -0.5;
     }
 
     update() {
-        this.y -= 0.5;
-        this.alpha -= 0.02;
+        this.y += this.velocity;
+        this.alpha -= 0.01;
     }
 
     draw() {
+        if (this.alpha <= 0) return;
+
+        ctx.save();
         ctx.globalAlpha = this.alpha;
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        let fontSize = 14;
+
+        if (this.text.includes("Wave")) {
+            fontSize = 32;
+        }
+
+        ctx.font = `bold ${fontSize}px Arial`;
+
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 4;
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "black";
+        ctx.strokeText(this.text, this.x, this.y);
+
         ctx.fillStyle = this.color;
-        ctx.font = "bold 20px Arial";
         ctx.fillText(this.text, this.x, this.y);
-        ctx.globalAlpha = 1;
+
+        ctx.restore();
     }
 }
 
@@ -776,7 +808,9 @@ function handleWave() {
                 wave++;
                 enemiesSpawned = 0;
                 waveInProgress = true;
-                floatingTexts.push(new FloatingText("Wave " + wave, canvas.width / 2 - 40, 100, "white"));
+                floatingTexts.push(
+                    new FloatingText("Wave " + wave, GAME_WIDTH / 2, GAME_HEIGHT / 2, "white")
+                );
             }
         }, 2000);
     }
@@ -979,11 +1013,13 @@ class Particle {
     }
 
     draw() {
+        ctx.save();
         ctx.globalAlpha = this.alpha;
         ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.font = "bold 28px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
         ctx.globalAlpha = 1;
     }
 }
@@ -1057,10 +1093,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-floatingTexts.push(
-    new FloatingText("Wave 1", canvas.width / 2 - 40, 100, "white")
-);
-
 pauseBtn.addEventListener("click", () => {
     isPaused = !isPaused;
 
@@ -1113,6 +1145,7 @@ tutorialBtn.addEventListener("click", () => {
     document.getElementById("tutorial-content").innerHTML = `
         <div style="line-height: 1.6;">
             • <b>Build Towers:</b> Click an insurance type then click the map.<br>
+            • <b>Upgrade Towers:</b> Click an existing tower.<br>
             • <b>Upgrade:</b> Click an existing tower to level it up.<br>
             • <b>Points:</b> You need to place at least <b>3 towers</b> to earn points.<br><br>
             
@@ -1140,5 +1173,9 @@ closeTutorial.addEventListener("click", () => {
     isPaused = false;
     tutorialModal.style.display = "none";
 });
+
+floatingTexts.push(
+    new FloatingText("Wave " + wave, GAME_WIDTH / 2, GAME_HEIGHT / 2, "white")
+);
 
 animate();
