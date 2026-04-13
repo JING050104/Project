@@ -30,7 +30,7 @@ for (let i = 1; i <= TILE_CONFIG.cleanCount; i++) {
     img.src = `${TILE_CONFIG.path}clean (${i}).png`;
     cleanTiles.push(img);
 }
-
+//fire
 const fireReadyFrames = [];
 for (let i = 1; i <= 2; i++) {
     let img = new Image();
@@ -45,6 +45,7 @@ for (let i = 1; i <= 2; i++) {
     fireAttackFrames.push(img);
 }
 
+//flood
 const floodReadyFrames = [];
 for (let i = 1; i <= 2; i++) {
     let img = new Image();
@@ -58,6 +59,14 @@ for (let i = 1; i <= 2; i++) {
     img.src = `risk-image/flood (${i}).png`;
     floodAttackFrames.push(img);
 }
+
+//thief
+const thiefSprite = new Image();
+thiefSprite.src = 'risk-image/StreetThief.png';
+
+//virus
+const virusSprite = new Image();
+virusSprite.src = 'risk-image/virus.png';
 
 let gameMapLayout = [];
 let startTime = Date.now();
@@ -286,7 +295,6 @@ class Risk {
         this.speed = 1.5;
         this.escaped = false;
         this.isAttacking = false;
-        this.currentFrames = fireReadyFrames;
         this.frameIndex = 0;
         this.frameTimer = 0;
         this.frameInterval = 15;
@@ -322,10 +330,11 @@ class Risk {
             this.damage = 1.2;
             this.label = "🌊";
             this.currentFrames = floodReadyFrames;
-        } else {
+        } else if (this.type === 'thief') {
             this.speed = 1.3;
             this.damage = 0.5;
             this.label = "👤";
+            this.currentFrames = [null, null];
         }
 
         this.baseSpeed = this.speed;
@@ -437,24 +446,48 @@ class Risk {
         ctx.translate(centerX, centerY);
         ctx.scale(-1, 1);
 
-        const imgToDraw = this.currentFrames[this.frameIndex];
+        if (this.type === 'thief') {
+            const frameW = 32;
+            const frameH = 32;
+            let sx, sy;
 
-        if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
-            const size = 32;
-            ctx.drawImage(
-                imgToDraw,
-                -size / 2,
-                -size / 2,
-                size,
-                size
-            );
+            let colIndex = (this.frameIndex === 0) ? 0 : 4;
+
+            if (this.isAttacking) {
+                sy = 3 * frameH;
+            } else {
+                sy = 2 * frameH;
+            }
+            sx = colIndex * frameW;
+
+            if (thiefSprite.complete) {
+                ctx.drawImage(
+                    thiefSprite,
+                    sx, sy, frameW, frameH,
+                    -16, -16, 32, 32
+                );
+            }
         } else {
-            ctx.fillStyle = this.type === 'fire' ? 'orange' : 'cyan';
-            ctx.beginPath();
-            ctx.arc(centerX, this.y + 30, 15, 0, Math.PI * 2);
-            ctx.fill();
+
+            const imgToDraw = this.currentFrames[this.frameIndex];
+
+            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
+                const size = 32;
+                ctx.drawImage(
+                    imgToDraw,
+                    -size / 2,
+                    -size / 2,
+                    size,
+                    size
+                );
+            } else {
+                ctx.fillStyle = this.type === 'fire' ? 'orange' : 'cyan';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 30, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
         }
-        ctx.restore();
     }
 }
 
@@ -822,8 +855,12 @@ function handleLogic() {
         en.blocked = false;
 
         towers.forEach(tower => {
-            let dist = Math.hypot((en.x + 35) - (tower.x + 35), (en.y + 35) - (tower.y + 35));
-            if (dist < 35) {
+            const buffer = 5;
+            if (en.x + 35 >= tower.x - buffer &&
+                en.x + 35 <= tower.x + cellSize + buffer &&
+                en.y + 35 >= tower.y - buffer &&
+                en.y + 35 <= tower.y + cellSize + buffer) {
+
                 en.blocked = true;
                 en.targetTower = tower;
             }
