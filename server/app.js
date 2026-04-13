@@ -161,22 +161,18 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
 
     try {
         const checkResult = await db.execute(`
-            SELECT created_at FROM point_transactions 
-            WHERE user_id = $1 AND activity_type = 'Daily Spin' 
-            ORDER BY created_at DESC LIMIT 1`, 
+            SELECT transaction_id FROM point_transactions 
+            WHERE user_id = $1 
+            AND activity_type = 'Daily Spin' 
+            AND created_at >= CURRENT_DATE`,
             [userId]
         );
 
         if (checkResult.length > 0) {
-            const lastSpinDate = new Date(checkResult[0].created_at).toDateString();
-            const today = new Date().toDateString();
-
-            if (lastSpinDate === today) {
-                return res.status(403).json({ 
-                    success: false, 
-                    error: "You have already spun the wheel today. Come back tomorrow!" 
-                });
-            }
+            return res.status(403).json({
+                success: false,
+                error: "You already spin today, please come back tomorrow!"
+            });
         }
 
         await db.execute('BEGIN');
@@ -201,10 +197,18 @@ app.post("/api/spin-reward", ensureAuthenticated, async (req, res) => {
         res.json({ success: true, type: 'points' });
 
     } catch (err) {
-        try { await db.execute('ROLLBACK'); } catch (e) {}
+        try { await db.execute('ROLLBACK'); } catch (e) { }
         console.error("Spin Reward Error Details:", err.message);
         res.status(500).json({ success: false, error: err.message });
     }
+});
+
+app.get("/api/check-spin-status", ensureAuthenticated, async (req, res) => {
+    const result = await db.execute(`
+        SELECT transaction_id FROM point_transactions 
+        WHERE user_id = $1 AND activity_type = 'Daily Spin' 
+        AND created_at >= CURRENT_DATE`, [req.user.id]);
+    res.json({ canSpin: result.length === 0 });
 });
 
 // C. 獲取背包
