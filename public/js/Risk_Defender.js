@@ -320,6 +320,7 @@ class Risk {
             this.speed = 1.8;
             this.damage = 0.8;
             this.label = "🦠";
+            this.currentFrames = [];
         } else if (this.type === 'fire') {
             this.speed = 0.8;
             this.damage = 1.8;
@@ -334,7 +335,7 @@ class Risk {
             this.speed = 1.3;
             this.damage = 0.5;
             this.label = "👤";
-            this.currentFrames = [null, null];
+            this.currentFrames = [];
         }
 
         this.baseSpeed = this.speed;
@@ -350,7 +351,14 @@ class Risk {
         this.frameTimer++;
         if (this.frameTimer >= this.frameInterval) {
             this.frameTimer = 0;
-            this.frameIndex = (this.frameIndex + 1) % this.currentFrames.length;
+            if (this.type === 'thief') {
+                this.frameIndex = (this.frameIndex + 1) % 2;
+            } else if (this.currentFrames && this.currentFrames.length > 0) {
+                this.frameIndex = (this.frameIndex + 1) % this.currentFrames.length;
+            }
+            else if (this.type === 'virus') {
+                this.frameIndex = (this.frameIndex + 1) % 12;
+            }
         }
 
         if (this.blocked) {
@@ -430,7 +438,6 @@ class Risk {
     }
 
     draw() {
-
         ctx.save();
         const centerX = this.x + 35;
         const centerY = this.y + 35;
@@ -444,50 +451,63 @@ class Risk {
         ctx.fillRect(centerX - barWidth / 2, topY, (this.health / this.maxHealth) * barWidth, barHeight);
 
         ctx.translate(centerX, centerY);
-        ctx.scale(-1, 1);
 
         if (this.type === 'thief') {
-            const frameW = 32;
-            const frameH = 32;
-            let sx, sy;
-
-            let colIndex = (this.frameIndex === 0) ? 0 : 4;
-
-            if (this.isAttacking) {
-                sy = 3 * frameH;
+            ctx.scale(-1, 1);
+            if (thiefSprite.complete && thiefSprite.naturalWidth > 0) {
+                const fw = 32, fh = 32;
+                let col = (this.frameIndex === 0) ? 0 : 4;
+                let sy = this.isAttacking ? 3 * fh : 2 * fh;
+                ctx.drawImage(thiefSprite, col * fw, sy, fw, fh, -16, -16, 32, 32);
             } else {
-                sy = 2 * frameH;
+                this.drawFallback();
             }
-            sx = colIndex * frameW;
+        } else if (this.type === 'virus') {
+            if (virusSprite.complete && virusSprite.naturalWidth > 0) {
+                const fw = 40;
+                const fh = 40;
+                let sx;
+                let sy = 0;
 
-            if (thiefSprite.complete) {
+                if (this.isAttacking) {
+                    let attackIdx = 5 + (this.frameIndex % 6);
+                    sx = attackIdx * fw;
+                } else {
+                    let walkIdx = this.frameIndex % 4;
+                    sx = walkIdx * fw;
+                }
+
                 ctx.drawImage(
-                    thiefSprite,
-                    sx, sy, frameW, frameH,
-                    -16, -16, 32, 32
+                    virusSprite,
+                    sx, sy, fw, fh,
+                    -20, -20, 40, 40
                 );
+            } else {
+                this.drawFallback();
             }
+
         } else {
-
-            const imgToDraw = this.currentFrames[this.frameIndex];
-
-            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
-                const size = 32;
-                ctx.drawImage(
-                    imgToDraw,
-                    -size / 2,
-                    -size / 2,
-                    size,
-                    size
-                );
+            ctx.scale(-1, 1);
+            if (this.currentFrames && this.currentFrames.length > 0) {
+                const img = this.currentFrames[this.frameIndex];
+                if (img && img.complete) {
+                    ctx.drawImage(img, -16, -16, 32, 32);
+                } else {
+                    this.drawFallback();
+                }
             } else {
-                ctx.fillStyle = this.type === 'fire' ? 'orange' : 'cyan';
-                ctx.beginPath();
-                ctx.arc(centerX, this.y + 30, 15, 0, Math.PI * 2);
-                ctx.fill();
+                this.drawFallback();
             }
-            ctx.restore();
         }
+        ctx.restore();
+    }
+
+    drawFallback() {
+        ctx.scale(-1, 1);
+        ctx.font = "24px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.label || "👾", 0, 0);
     }
 }
 
