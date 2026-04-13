@@ -258,8 +258,13 @@ tutorialBtn.addEventListener("click", () => {
 
     document.getElementById("tutorial-content").innerHTML = `
         • <b>Find Risks:</b> Look for hazards and click them.<br>
-        • <b>Lives (❤️):</b> You have 3 lives. Don't click wrong!<br>
-        • <b>Anti-Cheat:</b> Image is blurred when paused.<br>
+        • <b>Scoring System:</b>
+            <ul style="margin: 5px 0 5px 20px; list-style-type: none; padding: 0;">
+                <li>1st attempt: 3 Points</li>
+                <li>2nd attempt: 2 Points</li>
+                <li>3rd attempt: 1 Point</li>
+            </ul>
+        • <b>Chances:</b> You have 3 attempts per level.<br>
         • <b>Goal:</b> Find all risks to reach the next level.`;
 
     tutorialModal.style.display = "flex";
