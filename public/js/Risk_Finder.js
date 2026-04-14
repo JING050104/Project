@@ -56,6 +56,20 @@ async function initGame() {
     }
 }
 
+(async function initCheck() {
+    const gameType = 'RiskFinder';
+    try {
+        const res = await fetch(`/api/check-can-play?gameType=${gameType}`);
+        const data = await res.json();
+        if (!data.canPlay) {
+            alert("You already done Risk Finder challenge today!");
+            window.location.href = "dashboard.html"; 
+        }
+    } catch (err) {
+        console.error("Check failed:", err);
+    }
+})();
+
 function startRealTimeTimer() {
     const timeDisplay = document.getElementById('time-spent');
     timerInterval = setInterval(() => {
@@ -190,9 +204,6 @@ function endGame() {
     let timeUsedMS = endTime - startTime - totalPausedTime;
     let finalSeconds = Math.floor(timeUsedMS / 1000);
 
-    let progressPercent = imageList.length > 0 ? Math.floor((currentIndex / imageList.length) * 100) : 0;
-    let beatPercent = Math.min(99, progressPercent + Math.floor(Math.random() * 10));
-
     document.getElementById('final-score').innerText = totalScore;
     document.getElementById('final-level').innerText = currentIndex;
 
@@ -200,8 +211,18 @@ function endGame() {
     if (finalTimeElem) finalTimeElem.innerText = finalSeconds + "s";
 
     const feedbackText = document.getElementById('game-feedback-text');
-    feedbackText.innerHTML = `You reached level <b>${currentIndex}</b> <br>surpassing <b>${beatPercent}%</b> player！`;
 
+    if (currentIndex < 5) {
+        if (feedbackText) {
+            feedbackText.innerHTML = `<span style="color:#ef4444">You must find at least 5 risk to get points</span>`;
+        }
+        document.getElementById('game-over-modal').style.display = 'flex';
+        return;
+    }
+
+    let progressPercent = imageList.length > 0 ? Math.floor((currentIndex / imageList.length) * 100) : 0;
+    let beatPercent = Math.min(99, progressPercent + Math.floor(Math.random() * 10));
+    feedbackText.innerHTML = `You reached level <b>${currentIndex}</b> <br>surpassing <b>${beatPercent}%</b> player！`;
     document.getElementById('game-over-modal').style.display = 'flex';
 
     const dataToSend = {
@@ -281,7 +302,7 @@ closeTutorial.addEventListener("click", () => {
     imgElement.style.filter = "none";
     wrapper.style.pointerEvents = "auto";
     isPaused = false;
-    
+
     if (pauseStartTime) {
         totalPausedTime += (Date.now() - pauseStartTime);
     }

@@ -132,8 +132,34 @@ function setupCanvas() {
     ctx.scale(dpr, dpr);
 }
 
+/**
+@param {string} towerType 塔的类型 ('car', 'home', 'medical')
+@param {string} enemyType 风险的类型 ('fire', 'flood', 'thief', 'virus')
+ */
+function canDefense(towerType, enemyType) {
+    if (enemyType === 'thief') return (towerType === 'car' || towerType === 'home');
+    if (enemyType === 'virus') return (towerType === 'medical');
+    if (enemyType === 'flood' || enemyType === 'fire') return (towerType === 'car' || towerType === 'home');
+    return false;
+}
+
 window.addEventListener('resize', setupCanvas);
 setupCanvas();
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const gameType = 'RiskDefender';
+    try {
+        const res = await fetch(`/api/check-can-play?gameType=${gameType}`);
+        const data = await res.json();
+
+        if (!data.canPlay) {
+            alert("You already played Risk Defender today. Please come back tomorrow!");
+            window.location.href = "dashboard.html"; 
+        }
+    } catch (e) {
+        console.error("Limit check failed", e);
+    }
+});
 
 function checkTutorialOnLoad() {
     const skipTutorial = sessionStorage.getItem('skipRiskTutorial');
@@ -177,17 +203,17 @@ class Insurance {
             case 'car':
                 this.sx = 0;
                 this.label = "Car";
-                this.cost = 40; this.health = 50; this.attackSpeed = 90; this.attackPower = 3.5; this.range = 75;
+                this.cost = 40; this.health = 50; this.attackSpeed = 90; this.attackPower = 2.5; this.range = 75;
                 break;
             case 'home':
                 this.sx = 64;
                 this.label = "Property";
-                this.cost = 50; this.health = 100; this.attackSpeed = 30; this.attackPower = 1.0; this.range = 100;
+                this.cost = 50; this.health = 75; this.attackSpeed = 60; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
                 this.sx = 128;
                 this.label = "Life";
-                this.cost = 60; this.health = 25; this.attackSpeed = 60; this.attackPower = 0; this.range = 80;
+                this.cost = 60; this.health = 25; this.attackSpeed = 60; this.attackPower = 2.0; this.range = 80;
                 this.healTimer = 0;
                 break;
         }
@@ -288,12 +314,10 @@ class Insurance {
                     if (t === this) return;
                     let dist = Math.hypot((t.x + 35) - (this.x + 35), (t.y + 35) - (this.y + 35));
                     if (dist < this.range && t.health < t.maxHealth) {
-                        // 1. 计算回血量（这里使用等级作为回血数值）
                         let currentHeal = this.level;
 
                         t.health = Math.min(t.maxHealth, t.health + currentHeal);
 
-                        // 2. 修复报错：将 healAmount 替换为 currentHeal
                         floatingTexts.push(new FloatingText("+" + currentHeal, t.x + 35, t.y + 20, "#2ecc71"));
 
                         t.isBuffed = true;
@@ -454,10 +478,7 @@ class Risk {
     }
 
     shouldBeAttractedTo(t) {
-        if (this.type === 'thief' && (t.type === 'car' || t.type === 'home')) return true;
-        if (this.type === 'virus' && t.type === 'medical') return true;
-        if ((this.type === 'flood' || this.type === 'fire') && (t.type === 'car' || t.type === 'home')) return true;
-        return false;
+        return canDefense(t.type, this.type);
     }
 
     draw() {
@@ -583,7 +604,7 @@ class Bullet {
 
 class FloatingText {
     constructor(text, x, y, color) {
-        this.text = text;
+        this.text = (text !== undefined && text !== null) ? String(text) : "";
         this.x = x;
         this.y = y;
         this.color = color;
@@ -597,7 +618,7 @@ class FloatingText {
     }
 
     draw() {
-        if (this.alpha <= 0) return;
+        if (this.alpha <= 0 || !this.text) return;
 
         ctx.save();
         ctx.globalAlpha = this.alpha;
@@ -723,34 +744,54 @@ function showGameOver() {
     let finalPoints = gold;
     if (finalPoints < 0) finalPoints = 0;
 
-    let basePercent = Math.min(90, wave * 10);
-    let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
+    const MIN_TIME = 50;
+    const MIN_WAVE = 5;
+    const MIN_TOWERS = 3;
+    let isCheat = false;
+    let cheatMessage = "";
 
-    if (feedbackText) {
-        feedbackText.innerHTML = `You reached Wave <b>${wave}</b>, surpassing <b>${beatPercent}%</b> people!`;
+    if (!hasPlacedTower || totalTowersPlaced < MIN_TOWERS) {
+        isCheat = true;
+        cheatMessage = `Need to place at least ${MIN_TOWERS} towers.`;
+    } else if (timeUsedSeconds < MIN_TIME) {
+        isCheat = true;
+        cheatMessage = `Game ended too early (Need ${MIN_TIME}s).`;
+    } else if (wave < MIN_WAVE) {
+        isCheat = true;
+        cheatMessage = `You must reach at least Wave ${MIN_WAVE}.`;
     }
 
-    if (totalTowersPlaced < 3) {
+    if (isCheat) {
         finalPoints = 0;
         if (placementStatusTxt) {
-            placementStatusTxt.textContent = "Not enough towers placed throughout the game (Need 3).";
+            placementStatusTxt.textContent = cheatMessage;
             placementStatusTxt.style.color = "#e74c3c";
+        }
+        if (feedbackText) {
+            feedbackText.innerHTML = `<span style="color:#e74c3c">Invalid Session: Survival criteria not met.</span>`;
         }
     } else {
         if (placementStatusTxt) {
             placementStatusTxt.textContent = "Towers successfully deployed.";
             placementStatusTxt.style.color = "#2ecc71";
         }
-    }
-
-    if (!hasPlacedTower) {
-        finalPoints = 0;
+        let basePercent = Math.min(90, wave * 10);
+        let beatPercent = Math.min(99, basePercent + Math.floor(Math.random() * 9) + 1);
+        if (feedbackText) {
+            feedbackText.innerHTML = `You reached Wave <b>${wave}</b>, surpassing <b>${beatPercent}%</b> people!`;
+        }
     }
 
     if (finalWaveTxt) finalWaveTxt.innerText = wave;
     if (finalGoldTxt) finalGoldTxt.innerText = finalPoints;
     if (finalTimeDisplay) finalTimeDisplay.innerText = timeUsedSeconds + "s";
     if (modal) modal.style.display = "flex";
+
+    if (finalPoints <= 0 || isCheat) {
+        console.log("Invalid or below-standard scores will not be saved.");
+        gameState = "submitted";
+        return;
+    }
 
     console.log("Game Over! Sending data:", { finalPoints, wave, timeUsedSeconds });
 
@@ -884,7 +925,6 @@ function handleLogic() {
     /* ========= Stage 1 ========= */
 
     towers.forEach(tower => {
-        if (tower.type === 'medical') return;
         tower.timer++;
 
         let target = null;
@@ -892,6 +932,14 @@ function handleLogic() {
 
         enemies.forEach(enemy => {
             if (enemy.isDying) return;
+
+            let canAttack = false;
+            if (enemy.type === 'thief' && (tower.type === 'car' || tower.type === 'home')) canAttack = true;
+            if (enemy.type === 'virus' && tower.type === 'medical') canAttack = true;
+            if ((enemy.type === 'flood' || enemy.type === 'fire') && (tower.type === 'car' || tower.type === 'home')) canAttack = true;
+
+            if (!canAttack) return;
+
             let enemyCenterX = enemy.x + 15;
             let enemyCenterY = enemy.y + 15;
             let towerCenterX = tower.x + 35;
@@ -925,6 +973,7 @@ function handleLogic() {
     for (let i = enemies.length - 1; i >= 0; i--) {
         let en = enemies[i];
         en.blocked = false;
+        en.targetTower = null;
 
         towers.forEach(tower => {
             const buffer = 5;
@@ -933,8 +982,15 @@ function handleLogic() {
                 en.y + 35 >= tower.y - buffer &&
                 en.y + 35 <= tower.y + cellSize + buffer) {
 
-                en.blocked = true;
-                en.targetTower = tower;
+                let shouldStop = false;
+                if (en.type === 'thief' && (tower.type === 'car' || tower.type === 'home')) shouldStop = true;
+                if (en.type === 'virus' && tower.type === 'medical') shouldStop = true;
+                if ((en.type === 'flood' || en.type === 'fire') && (tower.type === 'car' || tower.type === 'home')) shouldStop = true;
+
+                if (shouldStop) {
+                    en.blocked = true;
+                    en.targetTower = tower;
+                }
             }
         });
 
@@ -1029,7 +1085,7 @@ class Particle {
         ctx.fillStyle = this.color;
         ctx.font = "bold 28px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(this.text, this.x, this.y);
+        ctx.fillRect(this.x, this.y, this.size, this.size);
         ctx.restore();
         ctx.globalAlpha = 1;
     }
@@ -1187,7 +1243,7 @@ closeTutorial.addEventListener("click", () => {
 
     isPaused = false;
     tutorialModal.style.display = "none";
-    
+
     if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
 });
 

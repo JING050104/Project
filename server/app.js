@@ -287,14 +287,36 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
 
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
+    
     const username = req.user.username || req.user.email || 'Unknown';
     const { score, reached_level, gameType, time_used } = req.body;
+
+    if (reached_level< 5) {
+        return res.json({ 
+            success: false, 
+            message: "You doesn't reach wave 5, Score will be not recorded!" 
+        });
+    }
 
     if (!score || score <= 0) {
         return res.json({ success: true, message: "0 points, not saved." });
     }
 
     try {
+        const checkPlayedToday = await db.execute(`
+            SELECT id FROM scores 
+            WHERE user_id = $1 
+            AND game_type = $2 
+            AND DATE(created_at) = CURRENT_DATE
+        `, [userId, gameType]);
+
+        if (checkPlayedToday.rows && checkPlayedToday.rows.length > 0) {
+            return res.json({ 
+                success: false, 
+                message: `You already done ${gameType} challenge, Please come back tomorrow!` 
+            });
+        }
+
         await db.execute('BEGIN');
 
         await db.execute(`
@@ -316,15 +338,37 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         await db.execute(`
             INSERT INTO scores (user_id, username, score, reached_level, game_type, time_used, created_at)
             VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
-            [userId, username, score, reached_level, gameType, time_used] // 对应 $1 到 $6
+            [userId, username, score, reached_level, gameType, time_used]
         );
 
         await db.execute('COMMIT');
-        res.json({ success: true, message: "Scores and transactions updated!" });
+        res.json({ success: true, message: "成绩已成功保存！" });
+
     } catch (err) {
         await db.execute('ROLLBACK');
         console.error("Save Score Error Details:", err.message);
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, error: "服务器内部错误" });
+    }
+});
+
+app.get("/api/check-can-play", ensureAuthenticated, async (req, res) => {
+    const userId = req.user.id;
+    const { gameType } = req.query;
+
+    try {
+        const result = await db.execute(`
+            SELECT id FROM scores 
+            WHERE user_id = $1 
+            AND game_type = $2 
+            AND DATE(created_at) = CURRENT_DATE
+            LIMIT 1
+        `, [userId, gameType]);
+
+        res.json({ 
+            canPlay: result.rows.length === 0 
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
