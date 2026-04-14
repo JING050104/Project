@@ -97,6 +97,7 @@ let minDist = Infinity;
 let rewardGiven = false;
 let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical';
+let particles = [];
 
 function setupCanvas() {
     const wrapper = document.querySelector('.canvas-wrapper');
@@ -133,6 +134,16 @@ function setupCanvas() {
 
 window.addEventListener('resize', setupCanvas);
 setupCanvas();
+
+function checkTutorialOnLoad() {
+    const skipTutorial = sessionStorage.getItem('skipRiskTutorial');
+
+    if (!skipTutorial) {
+        setTimeout(() => {
+            tutorialBtn.click();
+        }, 500);
+    }
+}
 
 /* ========================
    🏰 Tower Class
@@ -1024,8 +1035,6 @@ class Particle {
     }
 }
 
-let particles = [];
-
 /* ========================
    🎬 Animation
 ======================== */
@@ -1145,33 +1154,41 @@ tutorialBtn.addEventListener("click", () => {
     document.getElementById("tutorial-content").innerHTML = `
         <div style="line-height: 1.6;">
             • <b>Build Towers:</b> Click an insurance type then click the map.<br>
-            • <b>Upgrade Towers:</b> Click an existing tower.<br>
             • <b>Upgrade:</b> Click an existing tower to level it up.<br>
             • <b>Points:</b> You need to place at least <b>3 towers</b> to earn points.<br><br>
             
             <b>Counter Relationships:</b><br>
             <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; margin-top: 5px;">
+
+                <img src="risk-image/fireready (1).png" style="${imgStyle}"> 
+                <b>Fire</b> is countered by <b>Home</b><br>
+                
+                <img src="risk-image/floodready (1).png" style="${imgStyle}"> 
+                <b>Flood</b> is countered by <b>Car/Home</b>
+
                 <img src="risk-image/StreetThief.png" style="${imgStyle} object-fit:none; object-position: 0px -64px;"> 
                 <b>Thief</b> is countered by <b>Car/Home</b><br>
                 
                 <img src="risk-image/virus.png" style="${imgStyle} object-fit:none; object-position: 0px 0px;"> 
                 <b>Virus</b> is countered by <b>Medical</b><br>
                 
-                <img src="risk-image/fireready (1).png" style="${imgStyle}"> 
-                <b>Fire</b> is countered by <b>Home</b><br>
-                
-                <img src="risk-image/floodready (1).png" style="${imgStyle}"> 
-                <b>Flood</b> is countered by <b>Car/Home</b>
             </div>
             <br>
             • <b>Goal:</b> Survive as many waves as possible.
-        </div>`;
+            </div>`;
     tutorialModal.style.display = "flex";
 });
 
 closeTutorial.addEventListener("click", () => {
+    const dontShowCheckbox = document.getElementById("dont-show-again");
+    if (dontShowCheckbox && dontShowCheckbox.checked) {
+        sessionStorage.setItem('skipRiskTutorial', 'true');
+    }
+
     isPaused = false;
     tutorialModal.style.display = "none";
+    
+    if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
 });
 
 floatingTexts.push(
@@ -1179,3 +1196,10 @@ floatingTexts.push(
 );
 
 animate();
+
+window.addEventListener('load', () => {
+    const isSkip = sessionStorage.getItem('skipRiskTutorial');
+    if (!isSkip) {
+        tutorialBtn.click();
+    }
+});

@@ -272,13 +272,32 @@ tutorialBtn.addEventListener("click", () => {
 });
 
 closeTutorial.addEventListener("click", () => {
+    const dontShowCheckbox = document.getElementById("dont-show-again-finder");
+    if (dontShowCheckbox && dontShowCheckbox.checked) {
+        sessionStorage.setItem('skipRiskFinderTutorial', 'true');
+    }
+
     tutorialModal.style.display = "none";
+    imgElement.style.filter = "none";
+    wrapper.style.pointerEvents = "auto";
+    isPaused = false;
+    
+    if (pauseStartTime) {
+        totalPausedTime += (Date.now() - pauseStartTime);
+    }
 });
 
 settingsToggleBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const isVisible = settingsMenu.style.display === "block";
     settingsMenu.style.display = isVisible ? "none" : "block";
+});
+
+window.addEventListener('load', () => {
+    const isSkip = sessionStorage.getItem('skipRiskFinderTutorial');
+    if (!isSkip) {
+        tutorialBtn.click();
+    }
 });
 
 initGame();
