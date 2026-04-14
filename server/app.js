@@ -342,18 +342,19 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         );
 
         await db.execute('COMMIT');
-        res.json({ success: true, message: "成绩已成功保存！" });
+        res.json({ success: true, message: "Save Successfully!" });
 
     } catch (err) {
         await db.execute('ROLLBACK');
         console.error("Save Score Error Details:", err.message);
-        res.status(500).json({ success: false, error: "服务器内部错误" });
+        res.status(500).json({ success: false, error: "System error" });
     }
 });
 
 app.get("/api/check-can-play", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { gameType } = req.query;
+    
 
     try {
         const result = await db.execute(`
@@ -365,11 +366,11 @@ app.get("/api/check-can-play", ensureAuthenticated, async (req, res) => {
         `, [userId, gameType]);
 
         res.json({ 
-            canPlay: result.rows.length === 0 
+            canPlay: result.length === 0 
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
-    }
+}
 });
 
 // F. 兌換禮券（已優化）

@@ -133,8 +133,8 @@ function setupCanvas() {
 }
 
 /**
-@param {string} towerType 塔的类型 ('car', 'home', 'medical')
-@param {string} enemyType 风险的类型 ('fire', 'flood', 'thief', 'virus')
+@param {string} towerType 
+@param {string} enemyType 
  */
 function canDefense(towerType, enemyType) {
     if (enemyType === 'thief') return (towerType === 'car' || towerType === 'home');
