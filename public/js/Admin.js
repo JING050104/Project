@@ -151,17 +151,24 @@ document.addEventListener("DOMContentLoaded", () => {
     //users
     loadUsers = async function () {
         try {
+            const userTableBody = document.getElementById("user-table-body");
+            if (!userTableBody) return;
+
+            userTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading users...</td></tr>';
+
             const response = await fetch("/api/admin/users");
             const data = await response.json();
 
-            const userTableBody = document.getElementById("user-table-body");
-            if (!userTableBody) return;
             userTableBody.innerHTML = "";
 
             if (data.success && Array.isArray(data.users)) {
+                if (data.users.length === 0) {
+                    userTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No users found.</td></tr>';
+                    return;
+                }
+
                 data.users.forEach(user => {
                     const row = document.createElement("tr");
-
                     const statusText = user.is_verified ? "Verified" : "Pending";
                     const statusClass = user.is_verified ? "status-verified" : "status-pending";
 
@@ -191,9 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Load Users Error:", err);
             const userTableBody = document.getElementById("user-table-body");
             if (userTableBody) {
-                userTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">
-                Failed to connect to server.
-            </td></tr>`;
+                userTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Failed to connect to server.</td></tr>`;
             }
         }
     };
