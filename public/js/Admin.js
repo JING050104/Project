@@ -223,11 +223,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.success && Array.isArray(data.vouchers)) {
                 data.vouchers.forEach(voucher => {
                     const tr = document.createElement("tr");
+
+                    // --- 逻辑添加开始：判断库存 ---
+                    const isLowStock = parseInt(voucher.stock) < 10;
+                    const stockStyle = isLowStock ? 'style="color: #e74c3c; font-weight: bold;"' : '';
+
                     tr.innerHTML = `
                     <td>${voucher.id}</td>
                     <td id="td-v-name-${voucher.id}">${voucher.name}</td>
-                    <td>${voucher.stock}</td>
-                    <td>${voucher.cost}</td>
+                    <td ${stockStyle}>${voucher.stock}</td> <td>${voucher.cost}</td>
                     <td>${voucher.description}</td>
                     <td id="td-v-actions-${voucher.id}">
                         <button class="edit-btn" onclick="startEditVoucher(${voucher.id})"><i class="fas fa-edit"></i></button>
