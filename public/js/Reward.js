@@ -57,6 +57,16 @@ function renderAvailableVouchers(voucherList) {
         const ownedBtn = clone.querySelector('.v-owned-btn');
         const lowPointsBtn = clone.querySelector('.v-low-points-btn');
 
+        const isUnavailable = parseInt(v.stock) < 5;
+        if (isUnavailable) {
+            redeemBtn.innerText = "Out of stock";
+            redeemBtn.disabled = true;
+            redeemBtn.style.backgroundColor = "#94a3b8"; // 变灰
+            redeemBtn.onclick = null;
+        } else {
+            redeemBtn.onclick = () => redeemVoucher(v.name, v.cost);
+        }
+        
         if (isOwned) {
             ownedBtn.style.display = 'block';
             redeemBtn.style.display = 'none';

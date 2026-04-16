@@ -287,14 +287,14 @@ app.post('/api/activate-item', ensureAuthenticated, async (req, res) => {
 
 app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
-    
+
     const username = req.user.username || req.user.email || 'Unknown';
     const { score, reached_level, gameType, time_used } = req.body;
 
-    if (reached_level< 5) {
-        return res.json({ 
-            success: false, 
-            message: "You doesn't reach wave 5, Score will be not recorded!" 
+    if (reached_level < 5) {
+        return res.json({
+            success: false,
+            message: "You doesn't reach wave 5, Score will be not recorded!"
         });
     }
 
@@ -311,9 +311,9 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
         `, [userId, gameType]);
 
         if (checkPlayedToday.rows && checkPlayedToday.rows.length > 0) {
-            return res.json({ 
-                success: false, 
-                message: `You already done ${gameType} challenge, Please come back tomorrow!` 
+            return res.json({
+                success: false,
+                message: `You already done ${gameType} challenge, Please come back tomorrow!`
             });
         }
 
@@ -354,7 +354,7 @@ app.post("/api/save-score", ensureAuthenticated, async (req, res) => {
 app.get("/api/check-can-play", ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const { gameType } = req.query;
-    
+
 
     try {
         const result = await db.execute(`
@@ -365,12 +365,12 @@ app.get("/api/check-can-play", ensureAuthenticated, async (req, res) => {
             LIMIT 1
         `, [userId, gameType]);
 
-        res.json({ 
-            canPlay: result.length === 0 
+        res.json({
+            canPlay: result.length === 0
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
-}
+    }
 });
 
 // F. 兌換禮券（已優化）
@@ -419,13 +419,29 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             [userId, -cost, 'Redemption', `Redeemed ${voucherName}`]
         );
 
-        const voucherRes = await db.execute("SELECT id FROM vouchers WHERE name = $1", [voucherName]);
+        const voucherRes = await db.execute("SELECT id, stock FROM vouchers WHERE name = $1", [voucherName]);
         if (voucherRes.length === 0) {
             await db.execute('ROLLBACK');
             return res.status(404).json({ error: "Voucher not found" });
         }
 
+        const currentStock = voucherRes[0].stock;
+        if (currentStock < 5) {
+            await db.execute('ROLLBACK');
+            return res.status(400).json({ error: "Voucher is currently unavailable (low stock)." });
+        }
+
         const voucherId = voucherRes[0].id;
+
+        const updateRes = await db.execute(
+            "UPDATE vouchers SET stock = stock - 1 WHERE id = $1 AND stock > 0",
+            [voucherId]
+        );
+
+        if (updateRes.rowCount === 0) {
+            await db.execute('ROLLBACK');
+            return res.status(400).json({ error: "Sorry, out of stock!" });
+        }
 
         await db.execute("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
 

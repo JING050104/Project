@@ -224,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 data.vouchers.forEach(voucher => {
                     const tr = document.createElement("tr");
 
-                    // --- 逻辑添加开始：判断库存 ---
                     const isLowStock = parseInt(voucher.stock) < 10;
                     const stockStyle = isLowStock ? 'style="color: #e74c3c; font-weight: bold;"' : '';
 
