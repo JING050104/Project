@@ -26,12 +26,8 @@ const toTitleCase = (str) => {
 
 const avatarStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = path.join(__dirname, '..', 'public', 'uploads', 'avatars'); 
+        const dir = path.resolve(__dirname, '..', 'public', 'uploads', 'avatars');
         
-        console.log("=== 文件将被存入这个物理路径 ===");
-        console.log(dir);
-        console.log("==============================");
-
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }

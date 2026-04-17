@@ -282,6 +282,7 @@ async function uploadNewAvatar(event) {
         });
 
         const data = await res.json();
+        console.log("服务器返回的路径是:", data.avatarUrl);
         if (data.success) {
             document.getElementById('userAvatar').src = data.avatarUrl;
             alert("Profile image updated successfully!");
