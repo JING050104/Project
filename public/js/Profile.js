@@ -1,4 +1,3 @@
-// --- Modal Control Variables ---
 const resetModal = document.getElementById("resetModal");
 const resetStep1 = document.getElementById("resetStep1");
 const resetStep2 = document.getElementById("resetStep2");
@@ -9,8 +8,8 @@ const closeEmailModal = document.getElementById("closeEmailModal");
 
 let resetEmailStorage = "";
 let originalEmail = "";
+let originalUsername = "";
 
-// --- 1. Open/Close Modal ---
 if (forgotLink) {
     forgotLink.onclick = (e) => {
         e.preventDefault();
@@ -19,14 +18,12 @@ if (forgotLink) {
         document.getElementById("resetEmail").value = currentUserEmail;
         document.getElementById("confirmEmailDisplay").textContent = currentUserEmail;
 
-        // 确保打开时只显示 Step 1
         resetStep1.style.display = "block";
         resetStep2.style.display = "none";
         resetModal.style.display = "flex";
     };
 }
 
-// 密码强度检查监听
 document.querySelectorAll('#NewPassword, #ModalNewPassword').forEach(input => {
     input.addEventListener('input', (e) => {
         const val = e.target.value;
@@ -41,7 +38,6 @@ document.querySelectorAll('#NewPassword, #ModalNewPassword').forEach(input => {
 if (closeResetBtn) {
     closeResetBtn.onclick = () => {
         resetModal.style.display = "none";
-        // 关闭时重置状态
         resetStep1.style.display = "block";
         resetStep2.style.display = "none";
     };
@@ -53,7 +49,6 @@ if (closeEmailModal) {
     };
 }
 
-// --- 2. Send Reset Code ---
 document.getElementById("resetSendBtn").onclick = async () => {
     const email = document.getElementById("resetEmail").value;
     if (!email) return alert("Please enter your email");
@@ -90,7 +85,6 @@ document.getElementById("resetSendBtn").onclick = async () => {
     }
 };
 
-// --- 3. Verify and Update (Step 2) ---
 document.getElementById("resetFinishBtn").onclick = async () => {
     const code = document.getElementById("resetVerifyCode").value;
     const newPassword = document.getElementById("ModalNewPassword").value;
@@ -117,7 +111,6 @@ document.getElementById("resetFinishBtn").onclick = async () => {
     }
 };
 
-// --- 4. Profile Logic ---
 function updateRequirement(id, isValid) {
     const items = document.querySelectorAll(`#${id}`);
     items.forEach(item => {
@@ -145,6 +138,7 @@ async function loadUserProfile() {
         if (data.user) {
             const u = data.user;
             originalEmail = u.email;
+            originalUsername = u.username;
 
             if (document.getElementById('editUsername')) document.getElementById('editUsername').value = u.username;
             if (document.getElementById('editEmail')) document.getElementById('editEmail').value = u.email;
@@ -162,7 +156,6 @@ async function loadUserProfile() {
     }
 }
 
-// 统一的 Profile Update 逻辑
 document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -171,6 +164,11 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
     const newPass = document.getElementById('NewPassword').value;
     const confirmPass = document.getElementById('regConfirmPassword').value;
     const newEmail = document.getElementById('editEmail').value.trim();
+    
+    if (newUsername === originalUsername || newEmail === originalEmail && !document.getElementById('NewPassword').value) {
+        return alert("New username/email cannot be the same as the current one.");
+    }
+
     if (!newEmail) return alert("Email cannot be empty");
 
     if (newPass) {
@@ -197,7 +195,6 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
             alert("Server error while sending code.");
         }
     } else {
-        // 没改 Email，直接更新资料
         submitFinalUpdate({
             username: newUsername,
             email: newEmail,
