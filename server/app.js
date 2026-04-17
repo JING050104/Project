@@ -10,6 +10,9 @@ const authRoutes = require('./routes/auth');
 const ensureAuthenticated = require("./middleware/auth");
 const multer = require('multer');
 const xlsx = require('xlsx');
+const cloudinary = require('./cloudinary');
+const streamifier = require('streamifier');
+
 const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
 const fs = require('fs');
@@ -24,29 +27,19 @@ const toTitleCase = (str) => {
         .join(' ');
 };
 
-const avatarStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = path.resolve(__dirname, '..', 'public', 'uploads', 'avatars'); 
-        
-        console.log("=== 物理检查 ===");
-        console.log("正在尝试写入硬盘路径:", dir);
-
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+const uploadAvatar = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPG, PNG and WEBP images are allowed'));
         }
-        cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'avatar-' + uniqueSuffix + ext);
     }
 });
 
-const uploadAvatar = multer({
-    storage: avatarStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }
-});
 
 require('./passport')(passport);
 
@@ -143,8 +136,8 @@ app.get('/api/leaderboard', async (req, res) => {
     const currentUsername = req.user.username;
 
     try {
-        let personalBestSort = ""; 
-        let finalDisplaySort = ""; 
+        let personalBestSort = "";
+        let finalDisplaySort = "";
         if (gameType === 'RiskDefender') {
             personalBestSort = "reached_level DESC, score DESC, time_used ASC";
             finalDisplaySort = "reached_level DESC, score DESC, time_used ASC";
@@ -165,8 +158,8 @@ app.get('/api/leaderboard', async (req, res) => {
                 WHERE s.game_type = $1
                 ORDER BY s.username, ${personalBestSort} -- 關鍵：確保抓到的是「關卡最高」的那場
             ) AS unique_scores
-            ORDER BY ${finalDisplaySort} LIMIT 10`; 
-        
+            ORDER BY ${finalDisplaySort} LIMIT 10`;
+
         const topTenRes = await db.query(topTenQuery, [gameType]);
         const topTen = topTenRes.rows || topTenRes;
 
@@ -185,13 +178,13 @@ app.get('/api/leaderboard', async (req, res) => {
                 ) as all_unique
             ) as ranked_list
             WHERE username = $2`;
-        
+
         const userRankRes = await db.query(userRankQuery, [gameType, currentUsername]);
         const userStats = (userRankRes.rows && userRankRes.rows.length > 0) ? userRankRes.rows[0] : null;
 
         res.json({
             topTen: topTen,
-            userStats: userStats 
+            userStats: userStats
         });
     } catch (err) {
         console.error(err);
@@ -536,24 +529,49 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
 app.post("/api/update-avatar", ensureAuthenticated, uploadAvatar.single('avatar'), async (req, res) => {
     try {
         if (!req.file) {
-            console.log("Multer 错误: 没有收到文件");
             return res.status(400).json({ success: false, message: "No file uploaded" });
         }
 
-        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+        const uploadToCloudinary = () =>
+            new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "user_avatars",
+                        resource_type: "image",
+                        public_id: `user_${req.user.id}_${Date.now()}`,
+                        overwrite: true
+                    },
+                    (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result);
+                    }
+                );
+
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+
+        const result = await uploadToCloudinary();
+        const avatarUrl = result.secure_url;
 
         await db.execute(
             "UPDATE users SET profile_image = $1 WHERE id = $2",
             [avatarUrl, req.user.id]
         );
+
         if (req.user) {
             req.user.profile_image = avatarUrl;
         }
 
-        res.json({ success: true, avatarUrl: avatarUrl });
+        res.json({
+            success: true,
+            avatarUrl: avatarUrl
+        });
     } catch (err) {
         console.error("Avatar API Error:", err);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        res.status(500).json({
+            success: false,
+            message: "Failed to upload avatar"
+        });
     }
 });
 
@@ -895,9 +913,4 @@ setInterval(async () => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
-});
-
-app.use((err, req, res, next) => {
-    console.error("检测到全局错误:", err.message);
-    res.status(500).send("Global Error: " + err.message);
 });

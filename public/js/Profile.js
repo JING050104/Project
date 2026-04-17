@@ -141,14 +141,20 @@ async function loadUserProfile() {
             const u = data.user;
 
             const avatarUrl = (u.profile_image && u.profile_image !== "undefined" && u.profile_image !== null)
-                ? u.profile_image 
+                ? u.profile_image
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
             originalEmail = u.email;
             originalUsername = u.username;
 
             if (document.getElementById('editUsername')) document.getElementById('editUsername').value = u.username;
             if (document.getElementById('editEmail')) document.getElementById('editEmail').value = u.email;
-            if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = avatarUrl;
+            const avatarEl = document.getElementById('userAvatar');
+            if (avatarEl) {
+                avatarEl.src = avatarUrl;
+                avatarEl.onerror = function () {
+                    this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
+                };
+            }
             if (document.getElementById("confirmEmailDisplay")) document.getElementById("confirmEmailDisplay").textContent = u.email;
             if (document.getElementById("resetEmail")) document.getElementById("resetEmail").value = u.email;
         } else {
@@ -167,7 +173,7 @@ document.getElementById('profileUpdateForm').addEventListener('submit', async (e
     const newPass = document.getElementById('NewPassword').value;
     const confirmPass = document.getElementById('regConfirmPassword').value;
     const newEmail = document.getElementById('editEmail').value.trim();
-    
+
     if (newUsername === originalUsername || newEmail === originalEmail && !document.getElementById('NewPassword').value) {
         return alert("New username/email cannot be the same as the current one.");
     }
@@ -278,7 +284,7 @@ async function uploadNewAvatar(event) {
     try {
         const res = await fetch('/api/update-avatar', {
             method: 'POST',
-            body: formData 
+            body: formData
         });
 
         const data = await res.json();
