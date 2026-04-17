@@ -139,7 +139,8 @@ async function loadUserProfile() {
 
         if (data.user) {
             const u = data.user;
-            const avatarUrl = u.profile_image 
+
+            const avatarUrl = (u.profile_image && u.profile_image !== "undefined" && u.profile_image !== null)
                 ? u.profile_image 
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
             originalEmail = u.email;
@@ -147,7 +148,6 @@ async function loadUserProfile() {
 
             if (document.getElementById('editUsername')) document.getElementById('editUsername').value = u.username;
             if (document.getElementById('editEmail')) document.getElementById('editEmail').value = u.email;
-
             if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = avatarUrl;
             if (document.getElementById("confirmEmailDisplay")) document.getElementById("confirmEmailDisplay").textContent = u.email;
             if (document.getElementById("resetEmail")) document.getElementById("resetEmail").value = u.email;

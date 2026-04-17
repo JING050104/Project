@@ -541,6 +541,9 @@ app.post("/api/update-avatar", ensureAuthenticated, uploadAvatar.single('avatar'
             "UPDATE users SET profile_image = $1 WHERE id = $2",
             [avatarUrl, req.user.id]
         );
+        if (req.user) {
+            req.user.profile_image = avatarUrl;
+        }
 
         res.json({ success: true, avatarUrl: avatarUrl });
     } catch (err) {
