@@ -26,7 +26,7 @@ const toTitleCase = (str) => {
 
 const avatarStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = './public/uploads/avatars';
+        const dir = `/uploads/avatars/${req.file.filename}`;
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
