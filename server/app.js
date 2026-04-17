@@ -26,7 +26,7 @@ const toTitleCase = (str) => {
 
 const avatarStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = `/uploads/avatars/${req.file.filename}`;
+        const dir = './public/uploads/avatars'; 
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -34,7 +34,8 @@ const avatarStorage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
-        cb(null, `avatar-${req.user.id}-${Date.now()}${ext}`);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'avatar-' + uniqueSuffix + ext);
     }
 });
 

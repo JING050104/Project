@@ -2189,6 +2189,26 @@ button:disabled {
     color: #94a3b8;
 }
 
+.rank-separator td {
+    background-color: #f8f9fa !important;
+    color: #888;
+    font-size: 0.85em;
+    padding: 8px 0 !important;
+    border: none !important;
+}
+
+.current-user-row {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    box-shadow: inset 0 0 0 2px #000000 !important;
+    position: relative;
+    z-index: 10;
+}
+
+.current-user-row td {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
 @media (max-width: 768px) {
 
     .hearts-overlay {
