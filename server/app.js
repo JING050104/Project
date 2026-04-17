@@ -896,3 +896,8 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+app.use((err, req, res, next) => {
+    console.error("检测到全局错误:", err.message);
+    res.status(500).send("Global Error: " + err.message);
+});
