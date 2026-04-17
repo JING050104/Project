@@ -203,17 +203,17 @@ class Insurance {
             case 'car':
                 this.sx = 0;
                 this.label = "Car";
-                this.cost = 40; this.health = 50; this.attackSpeed = 90; this.attackPower = 2.5; this.range = 75;
+                this.cost = 40; this.health = 150; this.attackSpeed = 90; this.attackPower = 2.5; this.range = 75;
                 break;
             case 'home':
                 this.sx = 64;
                 this.label = "Property";
-                this.cost = 50; this.health = 75; this.attackSpeed = 60; this.attackPower = 1.0; this.range = 100;
+                this.cost = 50; this.health = 200; this.attackSpeed = 60; this.attackPower = 1.0; this.range = 100;
                 break;
             case 'medical':
                 this.sx = 128;
                 this.label = "Life";
-                this.cost = 60; this.health = 25; this.attackSpeed = 60; this.attackPower = 2.0; this.range = 80;
+                this.cost = 60; this.health = 100; this.attackSpeed = 60; this.attackPower = 2.0; this.range = 80;
                 this.healTimer = 0;
                 break;
         }
@@ -365,17 +365,17 @@ class Risk {
 
         if (this.type === 'virus') {
             this.speed = 1.8;
-            this.damage = 0.8;
+            this.damage = 0.5;
             this.label = "🦠";
             this.currentFrames = [];
         } else if (this.type === 'fire') {
             this.speed = 0.8;
-            this.damage = 1.8;
+            this.damage = 1.0;
             this.label = "🔥";
             this.currentFrames = fireReadyFrames;
         } else if (this.type === 'flood') {
             this.speed = 0.6;
-            this.damage = 1.2;
+            this.damage = 1.0;
             this.label = "🌊";
             this.currentFrames = floodReadyFrames;
         } else if (this.type === 'thief') {
@@ -850,7 +850,7 @@ function handleWave() {
         waveInProgress = false;
 
         if (hasPlacedTower) {
-            let bonus = 30;
+            let bonus = 50;
             gold += bonus;
             floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
         }
@@ -1027,7 +1027,7 @@ function handleLogic() {
 
         if (en.health <= 0 && !en.isDying) {
             en.isDying = true;
-            gold += 5;
+            gold += 10;
             floatingTexts.push(new FloatingText("+$5", en.x + 35, en.y + 35, "#FFD700"));
             for (let j = 0; j < 10; j++) {
                 particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));

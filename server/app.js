@@ -38,9 +38,9 @@ const avatarStorage = multer.diskStorage({
     }
 });
 
-const uploadAvatar = multer({ 
+const uploadAvatar = multer({
     storage: avatarStorage,
-    limits: { fileSize: 2 * 1024 * 1024 } 
+    limits: { fileSize: 2 * 1024 * 1024 }
 });
 
 require('./passport')(passport);
@@ -134,37 +134,63 @@ app.get('/api/get-vouchers', ensureAuthenticated, async (req, res) => {
 });
 
 app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const { gameType } = req.query;
+    const { gameType } = req.query;
+    const currentUsername = req.user.username;
 
-        let orderByClause = "";
-        if (gameType === 'risk_id') {
-            orderByClause = "score DESC, time_used ASC";
-        } else if (gameType === 'tower_defense') {
-            orderByClause = "reached_level DESC, score DESC, time_used ASC";
+    try {
+        let personalBestSort = ""; 
+        let finalDisplaySort = ""; 
+        if (gameType === 'RiskDefender') {
+            personalBestSort = "reached_level DESC, score DESC, time_used ASC";
+            finalDisplaySort = "reached_level DESC, score DESC, time_used ASC";
+        } else if (gameType === 'RiskFinder') {
+            personalBestSort = "score DESC, reached_level DESC, time_used ASC";
+            finalDisplaySort = "score DESC, reached_level DESC, time_used ASC";
         } else {
-            orderByClause = "score DESC, time_used ASC";
+            personalBestSort = "score DESC, time_used ASC";
+            finalDisplaySort = "score DESC, time_used ASC";
         }
 
-        const queryText = `
-            SELECT username, score, reached_level, time_used
+        const topTenQuery = `
+            SELECT username, profile_image, score, reached_level, time_used
             FROM (
-                SELECT DISTINCT ON (username) 
-                    username, score, reached_level, time_used
-                FROM scores
-                WHERE game_type = $1
-                ORDER BY username, ${orderByClause}
+                SELECT DISTINCT ON (s.username) s.username, u.profile_image, s.score, s.reached_level, s.time_used
+                FROM scores s
+                LEFT JOIN users u ON s.username = u.username
+                WHERE s.game_type = $1
+                ORDER BY s.username, ${personalBestSort} -- 關鍵：確保抓到的是「關卡最高」的那場
             ) AS unique_scores
-            ORDER BY ${orderByClause}
-            LIMIT 10
-        `;
+            ORDER BY ${finalDisplaySort} LIMIT 10`; 
+        
+        const topTenRes = await db.query(topTenQuery, [gameType]);
+        const topTen = topTenRes.rows || topTenRes;
 
-        const result = await db.query(queryText, [gameType]);
-        res.json(result.rows || result);
+        const userRankQuery = `
+            SELECT rank, username, profile_image, score, reached_level, time_used
+            FROM (
+                SELECT 
+                    ROW_NUMBER() OVER (ORDER BY ${finalDisplaySort}) as rank,
+                    username, profile_image, score, reached_level, time_used
+                FROM (
+                    SELECT DISTINCT ON (s.username) s.username, u.profile_image, s.score, s.reached_level, s.time_used
+                    FROM scores s
+                    LEFT JOIN users u ON s.username = u.username
+                    WHERE s.game_type = $1
+                    ORDER BY s.username, ${personalBestSort}
+                ) as all_unique
+            ) as ranked_list
+            WHERE username = $2`;
+        
+        const userRankRes = await db.query(userRankQuery, [gameType, currentUsername]);
+        const userStats = (userRankRes.rows && userRankRes.rows.length > 0) ? userRankRes.rows[0] : null;
 
+        res.json({
+            topTen: topTen,
+            userStats: userStats 
+        });
     } catch (err) {
-        console.error("Leaderboard Error:", err.message);
-        res.status(500).json({ error: "Database error" });
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
