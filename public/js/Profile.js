@@ -5,6 +5,8 @@ const emailVerifyModal = document.getElementById("emailVerifyModal");
 const forgotLink = document.getElementById("forgotPasswordLink");
 const closeResetBtn = document.getElementById("closeResetBtn");
 const closeEmailModal = document.getElementById("closeEmailModal");
+const uploadBtn = document.getElementById('uploadBtn');
+const avatarInput = document.getElementById('avatarInput');
 
 let resetEmailStorage = "";
 let originalEmail = "";
@@ -137,15 +139,16 @@ async function loadUserProfile() {
 
         if (data.user) {
             const u = data.user;
+            const avatarUrl = u.profile_image 
+                ? u.profile_image 
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
             originalEmail = u.email;
             originalUsername = u.username;
 
             if (document.getElementById('editUsername')) document.getElementById('editUsername').value = u.username;
             if (document.getElementById('editEmail')) document.getElementById('editEmail').value = u.email;
 
-            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=4a90e2&color=fff`;
             if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = avatarUrl;
-
             if (document.getElementById("confirmEmailDisplay")) document.getElementById("confirmEmailDisplay").textContent = u.email;
             if (document.getElementById("resetEmail")) document.getElementById("resetEmail").value = u.email;
         } else {
@@ -254,6 +257,40 @@ function toggleVisibility(inputId) {
             icon.classList.remove('fa-eye');
             icon.classList.add('fa-eye-slash');
         }
+    }
+}
+
+if (uploadBtn && avatarInput) {
+    uploadBtn.onclick = () => avatarInput.click();
+}
+
+async function uploadNewAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+        return alert("File is too large! Maximum 2MB.");
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+        const res = await fetch('/api/update-avatar', {
+            method: 'POST',
+            body: formData 
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('userAvatar').src = data.avatarUrl;
+            alert("Profile image updated successfully!");
+        } else {
+            alert("Upload failed: " + data.message);
+        }
+    } catch (err) {
+        console.error("Upload error:", err);
+        alert("Server error during upload.");
     }
 }
 

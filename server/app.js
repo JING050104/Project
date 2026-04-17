@@ -12,6 +12,7 @@ const multer = require('multer');
 const xlsx = require('xlsx');
 const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
+const fs = require('fs');
 const toTitleCase = (str) => {
     if (str === null || str === undefined) return "";
     return str.toString()
@@ -22,6 +23,25 @@ const toTitleCase = (str) => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 };
+
+const avatarStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = './public/uploads/avatars';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `avatar-${req.user.id}-${Date.now()}${ext}`);
+    }
+});
+
+const uploadAvatar = multer({ 
+    storage: avatarStorage,
+    limits: { fileSize: 2 * 1024 * 1024 } 
+});
 
 require('./passport')(passport);
 
@@ -479,6 +499,26 @@ app.get("/api/get-point-history", ensureAuthenticated, async (req, res) => {
     } catch (err) {
         console.error("Database Error:", err.message);
         res.status(500).json({ error: "Failed to fetch point history" });
+    }
+});
+
+app.post("/api/update-avatar", ensureAuthenticated, uploadAvatar.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file uploaded" });
+        }
+
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+        await db.execute(
+            "UPDATE users SET profile_image = $1 WHERE id = $2",
+            [avatarUrl, req.user.id]
+        );
+
+        res.json({ success: true, avatarUrl: avatarUrl });
+    } catch (err) {
+        console.error("Avatar API Error:", err);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 
