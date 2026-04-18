@@ -291,40 +291,61 @@ router.post('/send-update-email-code', async (req, res) => {
 router.post('/update-profile', async (req, res) => {
     try {
         if (!req.isAuthenticated()) {
-            return res.status(401).json({ message: "Not logged in" });
+            return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
         const { username, email, currentPassword, newPassword, emailCode } = req.body;
         const user = req.user;
+        const currentUserId = user.id;
         let finalPassword = user.password;
 
+        if (username && username !== user.username) {
+            const currentUserId = user.id;
+
+            const checkUser = await db.query(
+                'SELECT id FROM users WHERE username = $1 AND id != $2',
+                [username, currentUserId]
+            );
+
+            if (checkUser && checkUser.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Username is already taken by another user."
+                });
+            }
+        }
+
         if (newPassword) {
-            if (!currentPassword) return res.status(400).json({ message: "Current password required to set new password." });
+            if (!currentPassword) {
+                return res.status(400).json({ success: false, message: "Current password required to set new password." });
+            }
             const isMatch = await bcrypt.compare(currentPassword, user.password);
-            if (!isMatch) return res.status(400).json({ message: "Current password incorrect." });
+            if (!isMatch) {
+                return res.status(400).json({ success: false, message: "Current password incorrect." });
+            }
             finalPassword = await bcrypt.hash(newPassword, 10);
         }
 
         if (email && email !== user.email) {
             if (!emailCode) {
-                return res.status(400).json({ message: "Verification code is required to change email." });
+                return res.status(400).json({ success: false, message: "Verification code is required to change email." });
             }
-            const dbUser = await db.execute(
+
+            const codeCheck = await db.query(
                 "SELECT id FROM users WHERE id = $1 AND reset_code = $2 AND reset_expires > NOW()",
-                [user.id, emailCode]
+                [currentUserId, emailCode]
             );
 
-            if (dbUser.length === 0) {
-                return res.status(400).json({ message: "Invalid or expired email verification code." });
+            if (!codeCheck.rows || codeCheck.rows.length === 0) {
+                return res.status(400).json({ success: false, message: "Invalid or expired email verification code." });
             }
         }
 
-        await db.execute(
+        await db.query(
             "UPDATE users SET username = $1, email = $2, password = $3, reset_code = NULL, reset_expires = NULL WHERE id = $4",
-            [username || user.username, email || user.email, finalPassword, user.id]
+            [username || user.username, email || user.email, finalPassword, currentUserId]
         );
 
-        // 更新 session 中的 user 資料
         req.user.username = username || user.username;
         req.user.email = email || user.email;
         req.user.password = finalPassword;
@@ -333,7 +354,7 @@ router.post('/update-profile', async (req, res) => {
 
     } catch (err) {
         console.error("Update Profile Error:", err.message);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ success: false, message: "Server error" });
     }
 });
 
