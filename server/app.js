@@ -487,8 +487,6 @@ app.post("/api/redeem-voucher", ensureAuthenticated, async (req, res) => {
             return res.status(400).json({ error: "Sorry, out of stock!" });
         }
 
-        await db.execute("UPDATE vouchers SET stock = stock - 1 WHERE id = $1", [voucherId]);
-
         await db.execute(`
             INSERT INTO user_inventory (user_id, voucher_id, item_name, quantity, status) 
             VALUES ($1, $2, $3, 1, 'inactive')`,

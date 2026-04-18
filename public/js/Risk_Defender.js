@@ -731,9 +731,8 @@ canvas.addEventListener("click", (e) => {
 });
 
 function showGameOver() {
-    if (gameState === "gameOver" || gameState === "submitted") return;
-    gameState = "gameOver";
-
+    if (gameState === "gameOver" || gameState === "submitting" || gameState === "submitted") return;
+    gameState = "submitting";
     const modal = document.getElementById("game-over-modal");
     const finalWaveTxt = document.getElementById("final-wave");
     const finalGoldTxt = document.getElementById("final-gold");
@@ -808,6 +807,7 @@ function showGameOver() {
         body: JSON.stringify(dataToSend)
     })
         .then(res => {
+            gameState = "submitted";
             if (!res.ok) throw new Error('Server responded with error');
             return res.json();
         })
