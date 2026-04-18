@@ -113,6 +113,10 @@
       <div class="content-header">
         <h2>Voucher Management</h2>
         <div class="header-actions">
+          <button class="btn-refresh" id="bulk-delete-vouchers" onclick="bulkDeleteVouchers()"
+            style="background-color: #e74c3c; color: white; margin-right: 10px; display: none;">
+            <i class="fas fa-trash-alt"></i> Delete Selected
+          </button>
           <a href="#" id="download-template"
             style="margin-right: 15px; font-size: 0.85rem; color: #6a5acd; text-decoration: none; border-bottom: 1px dashed #6a5acd;">
             <i class="fa-solid fa-download"></i> Download Template
@@ -130,7 +134,8 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th onclick="sortTable('voucher-table-body', 0)" style="cursor:pointer">ID <i class="fas fa-sort"></i>
+              <th style="width: 40px;">
+                <input type="checkbox" id="select-all-vouchers" onclick="toggleSelectAll(this)">
               </th>
               <th>Voucher Name</th>
               <th onclick="sortTable('voucher-table-body', 2)" style="cursor:pointer">Stock <i class="fas fa-sort"></i>
@@ -159,6 +164,7 @@
         </table>
       </div>
     </section>
+
     <div id="history-modal" class="modal"
       style="display:none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
       <div class="modal-content"

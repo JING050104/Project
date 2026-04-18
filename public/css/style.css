@@ -2083,7 +2083,6 @@ button:disabled {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    table-layout: auto !important;
 }
 
 .admin-table th,
@@ -2092,7 +2091,7 @@ button:disabled {
     border-bottom: 1px solid var(--admin-border);
     font-size: 0.95rem;
     white-space: nowrap;
-    width: 1px;
+    width: auto;
 }
 
 .admin-section {

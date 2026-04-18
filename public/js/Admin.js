@@ -228,15 +228,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     const stockStyle = isLowStock ? 'style="color: #e74c3c; font-weight: bold;"' : '';
 
                     tr.innerHTML = `
-                    <td>${voucher.id}</td>
-                    <td id="td-v-name-${voucher.id}">${voucher.name}</td>
-                    <td ${stockStyle}>${voucher.stock}</td> <td>${voucher.cost}</td>
-                    <td>${voucher.description}</td>
-                    <td id="td-v-actions-${voucher.id}">
-                        <button class="edit-btn" onclick="startEditVoucher(${voucher.id})"><i class="fas fa-edit"></i></button>
-                        <button class="delete-btn" onclick="deleteVoucher(${voucher.id})"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
+                        <td>
+                            <input type="checkbox" class="voucher-checkbox" value="${voucher.id}" onchange="updateBulkDeleteVisibility()">
+                        </td>
+                        <td id="td-v-name-${voucher.id}">${voucher.name}</td>
+                        <td ${stockStyle}>${voucher.stock}</td>
+                        <td>${voucher.cost}</td>
+                        <td>${voucher.description}</td>
+                        <td>
+                            <button class="edit-btn" onclick="startEditVoucher(${voucher.id})"><i class="fas fa-edit"></i></button>
+                        </td>
+                    `;
                     voucherTableBody.appendChild(tr);
                 });
             } else {
@@ -406,26 +408,6 @@ async function saveEditVoucherAction(id) {
     }
 }
 
-async function deleteVoucher(id) {
-    if (!confirm(`Are you sure you want to delete Voucher ID: ${id}?`)) return;
-
-    try {
-        const response = await fetch(`/api/admin/delete-voucher/${id}`, {
-            method: 'DELETE'
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            alert("Voucher deleted successfully!")
-            loadVouchers();
-        } else {
-            alert("Delete failed: " + data.message);
-        }
-    } catch (err) {
-        alert("Server error while deleting.");
-    }
-}
-
 async function handleExcelUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -575,7 +557,6 @@ function updateSortIcons(tableBodyId, columnIndex, isAscending) {
 }
 
 async function viewHistory(userId, username) {
-    console.log("History button clicked！User ID:", userId);
     const modal = document.getElementById("history-modal");
     const tableBody = document.getElementById("history-table-body");
     document.getElementById("history-user-title").innerText = `Point History: ${username}`;
@@ -617,6 +598,44 @@ async function viewHistory(userId, username) {
 
 function closeHistoryModal() {
     document.getElementById("history-modal").style.display = "none";
+}
+
+function toggleSelectAll(masterCheckbox) {
+    const checkboxes = document.querySelectorAll('.voucher-checkbox');
+    checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+    updateBulkDeleteVisibility();
+}
+
+function updateBulkDeleteVisibility() {
+    const selectedCount = document.querySelectorAll('.voucher-checkbox:checked').length;
+    const btn = document.getElementById('bulk-delete-vouchers');
+    btn.style.display = selectedCount > 0 ? 'inline-block' : 'none';
+}
+
+async function bulkDeleteVouchers() {
+    const selected = document.querySelectorAll('.voucher-checkbox:checked');
+    const ids = Array.from(selected).map(cb => cb.value);
+    if (ids.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${ids.length} vouchers?`)) return;
+
+    try {
+        const response = await fetch('/api/admin/vouchers/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("Vouchers deleted successfully!");
+            document.getElementById('select-all-vouchers').checked = false;
+            loadVouchers();
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (err) {
+        console.error("Bulk delete error:", err);
+    }
 }
 
 document.getElementById('toggle-sidebar-btn').addEventListener('click', function () {

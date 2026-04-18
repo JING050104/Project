@@ -707,6 +707,29 @@ app.get("/api/admin/vouchers", (req, res) => {
     }
 });
 
+app.post('/api/admin/vouchers/bulk-delete', async (req, res) => {
+    const { ids } = req.body;
+
+    // Validation
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, message: "No IDs provided" });
+    }
+
+    try {
+        const sql = "DELETE FROM vouchers WHERE id = ANY($1)";
+        
+        const result = await db.query(sql, [ids]);
+
+        res.json({ 
+            success: true, 
+            message: `${result.rowCount} vouchers deleted successfully.` 
+        });
+    } catch (err) {
+        console.error("Database Error:", err);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+
 app.post("/api/admin/add-voucher", async (req, res) => {
     const { name, stock, cost, description } = req.body;
 
