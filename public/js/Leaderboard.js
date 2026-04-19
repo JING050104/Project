@@ -14,10 +14,10 @@ async function loadLeaderboard(gameType, element) {
 
     try {
         const response = await fetch(`/api/leaderboard?gameType=${gameType}`);
-        
+
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        
-        const result = await response.json(); 
+
+        const result = await response.json();
         const { topTen, userStats } = result;
 
         if (!topTen || topTen.length === 0) {
@@ -25,8 +25,9 @@ async function loadLeaderboard(gameType, element) {
             return;
         }
 
-        let rowsHtml = topTen.map((entry, index) => {
-            return renderRowTemplate(entry, index + 1, gameType, false);
+        let rowsHtml = topTen.map((entry) => {
+            const isCurrentUser = userStats && entry.username === userStats.username;
+            return renderRowTemplate(entry, entry.rank, gameType, isCurrentUser);
         }).join('');
 
         if (userStats && parseInt(userStats.rank) > 10) {
@@ -55,7 +56,7 @@ function renderRowTemplate(entry, rank, gameType, isCurrentUser) {
 
     let rankDisplay = rank;
     let rowClass = 'fade-in';
-    
+
     if (isCurrentUser) rowClass += ' current-user-row';
 
     if (rank === 1) { rankDisplay = '🥇'; rowClass += ' top-1'; }

@@ -85,8 +85,8 @@ let bullets = [];
 let frames = 0;
 let selectedType = 'home';
 let baseHealth = 100;
-let gold = 200;
-let wave = 1;
+let gold = 2000;
+let wave = 10;
 let enemiesSpawned = 0;
 let totalEnemiesThisWave = 0;
 let waveInProgress = true;
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (!data.canPlay) {
             alert("You already played Risk Defender today. Please come back tomorrow!");
-            window.location.href = "dashboard.html"; 
+            window.location.href = "dashboard.html";
         }
     } catch (e) {
         console.error("Limit check failed", e);
@@ -820,6 +820,17 @@ function showGameOver() {
         });
 }
 
+function showWinScreen() {
+    if (gameState === "submitting" || gameState === "submitted") return;
+
+    const feedbackText = document.getElementById('game-feedback-text');
+    if (feedbackText) {
+        feedbackText.innerHTML = `<span style="color:#f1c40f">Congratulations! You cleared Wave 10!</span>`;
+    }
+
+    showGameOver();
+}
+
 /* ========================
    🌊 Wave System
 ======================== */
@@ -853,6 +864,18 @@ function handleWave() {
             let bonus = 50;
             gold += bonus;
             floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
+        }
+
+        if (wave >= 10) {
+            setTimeout(() => {
+                const feedbackText = document.getElementById('game-feedback-text');
+                if (feedbackText) {
+                    feedbackText.innerHTML = `<span style="color:#f1c40f; font-size:20px;">WIN! You cleared all 10 Waves!</span>`;
+                }
+
+                showGameOver();
+            }, 1000);
+            return;
         }
 
         setTimeout(() => {

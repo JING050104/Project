@@ -133,11 +133,12 @@ app.get('/api/get-vouchers', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/leaderboard', async (req, res) => {
     const { gameType } = req.query;
-    const currentUsername = req.user.username;
+    const currentUserId = req.user?.id || null;
 
     try {
         let personalBestSort = "";
         let finalDisplaySort = "";
+
         if (gameType === 'RiskDefender') {
             personalBestSort = "reached_level DESC, score DESC, time_used ASC";
             finalDisplaySort = "reached_level DESC, score DESC, time_used ASC";
@@ -149,45 +150,46 @@ app.get('/api/leaderboard', async (req, res) => {
             finalDisplaySort = "score DESC, time_used ASC";
         }
 
-        const topTenQuery = `
-            SELECT username, profile_image, score, reached_level, time_used
+        const rankedQuery = `
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY ${finalDisplaySort}) as rank,
+                user_id,
+                username,
+                profile_image,
+                score,
+                reached_level,
+                time_used
             FROM (
-                SELECT DISTINCT ON (s.username) s.username, u.profile_image, s.score, s.reached_level, s.time_used
+                SELECT DISTINCT ON (s.user_id)
+                    s.user_id,
+                    u.username,
+                    u.profile_image,
+                    s.score,
+                    s.reached_level,
+                    s.time_used
                 FROM scores s
-                LEFT JOIN users u ON s.username = u.username
+                LEFT JOIN users u ON s.user_id = u.id
                 WHERE s.game_type = $1
-                ORDER BY s.username, ${personalBestSort} -- 關鍵：確保抓到的是「關卡最高」的那場
+                ORDER BY s.user_id, ${personalBestSort}
             ) AS unique_scores
-            ORDER BY ${finalDisplaySort} LIMIT 10`;
+            ORDER BY ${finalDisplaySort}
+        `;
 
-        const topTenRes = await db.query(topTenQuery, [gameType]);
-        const topTen = topTenRes.rows || topTenRes;
+        const rankedRes = await db.query(rankedQuery, [gameType]);
+        const rankedList = rankedRes.rows || rankedRes || [];
 
-        const userRankQuery = `
-            SELECT rank, username, profile_image, score, reached_level, time_used
-            FROM (
-                SELECT 
-                    ROW_NUMBER() OVER (ORDER BY ${finalDisplaySort}) as rank,
-                    username, profile_image, score, reached_level, time_used
-                FROM (
-                    SELECT DISTINCT ON (s.username) s.username, u.profile_image, s.score, s.reached_level, s.time_used
-                    FROM scores s
-                    LEFT JOIN users u ON s.username = u.username
-                    WHERE s.game_type = $1
-                    ORDER BY s.username, ${personalBestSort}
-                ) as all_unique
-            ) as ranked_list
-            WHERE username = $2`;
-
-        const userRankRes = await db.query(userRankQuery, [gameType, currentUsername]);
-        const userStats = (userRankRes.rows && userRankRes.rows.length > 0) ? userRankRes.rows[0] : null;
+        const topTen = rankedList.slice(0, 10);
+        const userStats = currentUserId
+            ? rankedList.find(row => Number(row.user_id) === Number(currentUserId)) || null
+            : null;
 
         res.json({
-            topTen: topTen,
-            userStats: userStats
+            topTen,
+            userStats
         });
+
     } catch (err) {
-        console.error(err);
+        console.error("Leaderboard Error:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
