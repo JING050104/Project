@@ -336,7 +336,7 @@ router.post('/update-profile', async (req, res) => {
                 [currentUserId, emailCode]
             );
 
-            if (!codeCheck.rows || codeCheck.rows.length === 0) {
+            if (!codeCheck|| codeCheck.length === 0) {
                 return res.status(400).json({ success: false, message: "Invalid or expired email verification code." });
             }
         }

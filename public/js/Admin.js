@@ -235,8 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td ${stockStyle}>${voucher.stock}</td>
                         <td>${voucher.cost}</td>
                         <td>${voucher.description}</td>
-                        <td>
-                            <button class="edit-btn" onclick="startEditVoucher(${voucher.id})"><i class="fas fa-edit"></i></button>
+                        <td id="td-actions-${voucher.id}">  <button class="edit-btn" onclick="startEditVoucher(${voucher.id})"><i class="fas fa-edit"></i></button>
                         </td>
                     `;
                     voucherTableBody.appendChild(tr);
@@ -363,7 +362,7 @@ function startEditVoucher(id) {
     const stockTd = nameTd.nextElementSibling;
     const costTd = stockTd.nextElementSibling;
     const descTd = costTd.nextElementSibling;
-    const actionsTd = document.getElementById(`td-v-actions-${id}`);
+    const actionsTd = document.getElementById(`td-actions-${id}`);
 
     const curName = nameTd.innerText;
     const curStock = stockTd.innerText;

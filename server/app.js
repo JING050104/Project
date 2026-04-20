@@ -638,12 +638,13 @@ app.put("/api/admin/edit-user/:id", async (req, res) => {
             return res.status(403).json({ success: false, message: "Unauthorized" });
         }
 
-        const userRes = await db.execute("SELECT username FROM users WHERE id = $1", [targetUserId]);
-        if (userRes.length > 0) {
-            const oldUsername = userRes[0].username;
-            if (oldUsername === username) {
-                return res.status(400).json({ success: false, message: "New username must be different from the old one." });
-            }
+        const checkConflict = await db.execute(
+            "SELECT id FROM users WHERE username = $1 AND id != $2", 
+            [username, targetUserId]
+        );
+
+        if (checkConflict.length > 0) {
+            return res.status(400).json({ success: false, message: "Username already taken by another user." });
         }
 
         await db.execute(

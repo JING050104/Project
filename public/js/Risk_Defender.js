@@ -1027,21 +1027,30 @@ function handleLogic() {
         }
 
         if (forceEscape || en.escaped) {
-            baseHealth -= 10;
-            if (hudHp) hudHp.innerText = baseHealth;
-            floatingTexts.push(new FloatingText("-10 HP", en.x + 35, en.y + 35, "red"));
-
-            if (en.type === 'thief') {
-                const moneyLost = 20;
-                gold = Math.max(0, gold - moneyLost);
-                floatingTexts.push(new FloatingText(`-$${moneyLost}`, en.x + 35, en.y + 10, "#e74c3c"));
-                if (hudGold) hudGold.innerText = gold;
+            if (en.type === 'virus') {
+                const hpDeduction = 15;
+                baseHealth -= hpDeduction;
+                floatingTexts.push(new FloatingText(`-${hpDeduction}`, en.x + 35, en.y + 35, "red"));
             }
+
+            else if (en.type === 'thief' || en.type === 'fire' || en.type === 'flood') {
+                const recoverCost = 30;
+                gold = Math.max(0, gold - recoverCost);
+
+                baseHealth -= 2;
+
+                floatingTexts.push(new FloatingText(`-$${recoverCost}`, en.x + 35, en.y + 10, "#e74c3c"));
+                floatingTexts.push(new FloatingText("-2 HP (Stress)", en.x + 35, en.y + 35, "orange"));
+            }
+
+            if (hudHp) hudHp.innerText = baseHealth;
+            if (hudGold) hudGold.innerText = gold;
 
             enemies.splice(i, 1);
 
-            if (baseHealth <= 0) {
-                baseHealth = 0;
+            if (baseHealth <= 0 || gold <= 0) {
+                if (baseHealth <= 0) baseHealth = 0;
+                if (gold <= 0) gold = 0;
                 gameState = "gameover";
                 showGameOver();
             }
@@ -1050,8 +1059,17 @@ function handleLogic() {
 
         if (en.health <= 0 && !en.isDying) {
             en.isDying = true;
-            gold += 10;
-            floatingTexts.push(new FloatingText("+$5", en.x + 35, en.y + 35, "#FFD700"));
+            if (en.type === 'virus') {
+                const healAmount = 5;
+                baseHealth = Math.min(100, baseHealth + healAmount); // 假设上限100
+                floatingTexts.push(new FloatingText(`+${healAmount} HP Recovery`, en.x + 35, en.y + 35, "#2ecc71"));
+                if (hudHp) hudHp.innerText = baseHealth;
+            } else if (en.type === 'thief' || en.type === 'fire' || en.type === 'flood') {
+                const claimAmount = 20;
+                gold += claimAmount;
+                floatingTexts.push(new FloatingText(`+$${claimAmount} Claim`, en.x + 35, en.y + 35, "#FFD700"));
+                if (hudGold) hudGold.innerText = gold;
+            }
             for (let j = 0; j < 10; j++) {
                 particles.push(new Particle(en.x + 35, en.y + 35, '#c0392b'));
             }
@@ -1232,29 +1250,24 @@ tutorialBtn.addEventListener("click", () => {
 
     document.getElementById("tutorial-content").innerHTML = `
         <div style="line-height: 1.6;">
-            • <b>Build Towers:</b> Click an insurance type then click the map.<br>
-            • <b>Upgrade:</b> Click an existing tower to level it up.<br>
-            • <b>Points:</b> You need to place at least <b>3 towers</b> to earn points.<br><br>
             
-            <b>Counter Relationships:</b><br>
+            <b>Risk Counter Chart:</b><br>
             <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; margin-top: 5px;">
+                <img src="risk-image/virus.png" style="${imgStyle} object-fit:none; object-position: 0px 0px;"> 
+                <b>Virus</b> vs <b>Medical</b> → <span style="color:#2ecc71;">+HP Recovery</span> / <span style="color:#e74c3c;">-HP Damage</span><br>
+
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
 
                 <img src="risk-image/fireready (1).png" style="${imgStyle}"> 
-                <b>Fire</b> is countered by <b>Home</b><br>
-                
                 <img src="risk-image/floodready (1).png" style="${imgStyle}"> 
-                <b>Flood</b> is countered by <b>Car/Home</b>
-
-                <img src="risk-image/StreetThief.png" style="${imgStyle} object-fit:none; object-position: 0px -64px;"> 
-                <b>Thief</b> is countered by <b>Car/Home</b><br>
-                
-                <img src="risk-image/virus.png" style="${imgStyle} object-fit:none; object-position: 0px 0px;"> 
-                <b>Virus</b> is countered by <b>Medical</b><br>
-                
+                <img src="risk-image/StreetThief.png" style="${imgStyle} object-fit:none; object-position: 0px -64px;"> <br>
+                <b>Property Risks</b> vs <b>Home/Car</b> → <span style="color:#f1c40f;">+Gold Claim</span> / <span style="color:#e74c3c;">-Gold Repair</span>
             </div>
             <br>
-            • <b>Goal:</b> Survive as many waves as possible.
-            </div>`;
+            • <b>Upgrade:</b> Click an existing tower to level it up.<br>
+            <b>Critical Failure:</b> Health (HP)=0 / Gold = 0</b>. <br>
+            • <b>Goal:</b> Survive !
+        </div>`;
     tutorialModal.style.display = "flex";
 });
 
