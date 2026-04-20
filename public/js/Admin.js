@@ -370,7 +370,7 @@ function startEditVoucher(id) {
     const curDesc = descTd.innerText;
 
     nameTd.innerHTML = `<input type="text" id="input-vname-${id}" value="${curName}" style="width:100%">`;
-    stockTd.innerHTML = `<input type="number" id="input-vstock-${id}" value="${curStock}" style="width:100%">`;
+    stockTd.innerHTML = `<input type="number" id="input-vstock-${id}" value="${curStock}" min="0" style="width:100%">`;
     costTd.innerHTML = `<input type="number" id="input-vcost-${id}" value="${curCost}" style="width:100%">`;
     descTd.innerHTML = `<input type="text" id="input-vdesc-${id}" value="${curDesc}" style="width:100%">`;
 
