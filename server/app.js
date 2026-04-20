@@ -754,6 +754,10 @@ app.put("/api/admin/edit-voucher/:id", async (req, res) => {
     const targetVoucherId = req.params.id;
     const { name, stock, cost, description } = req.body;
 
+    if (parseInt(stock) < 0) {
+        return res.status(400).json({ success: false, message: "Stock cannot be negative." });
+    }
+    
     try {
         if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
             return res.status(403).json({ success: false, message: "Unauthorized" });
