@@ -12,7 +12,7 @@ const closeTutorial = document.getElementById("close-tutorial");
 
 const mouse = { x: 0, y: 0 };
 const canvasRect = canvas.getBoundingClientRect();
-const PLACEMENT_COOLDOWN = 2000;
+const PLACEMENT_COOLDOWN = 500;
 const cellSize = 70;
 
 //tower
@@ -86,7 +86,7 @@ let frames = 0;
 let selectedType = 'home';
 let baseHealth = 100;
 let gold = 200;
-let wave = 1;
+let wave = 5;
 let enemiesSpawned = 0;
 let totalEnemiesThisWave = 0;
 let waveInProgress = true;
@@ -98,6 +98,10 @@ let rewardGiven = false;
 let GAME_WIDTH, GAME_HEIGHT;
 let gameMode = 'vertical';
 let particles = [];
+let resumeCountdown = 0;
+let isCountingDown = false;
+let statusMessage = "";
+let statusMessageTimer = 0;
 
 function setupCanvas() {
     const wrapper = document.querySelector('.canvas-wrapper');
@@ -245,10 +249,8 @@ class Insurance {
         const padding = 2;
         const actualSx = this.sx + padding;
         const actualSw = this.sw - (padding * 2);
-
         const drawWidth = cellSize * 0.7;
         const drawHeight = (this.sh / this.sw) * drawWidth;
-
         const offsetX = (cellSize - drawWidth) / 2;
         const offsetY = cellSize - drawHeight;
 
@@ -258,15 +260,12 @@ class Insurance {
             this.x + offsetX, this.y + offsetY, drawWidth, drawHeight
         );
 
-        const hpBarY = this.y + cellSize - 8;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(this.x + cellSize * 0.1, hpBarY, cellSize * 0.8, 5);
-        ctx.fillStyle = '#2ecc71';
-        ctx.fillRect(this.x + cellSize * 0.1, hpBarY, (this.health / this.maxHealth) * cellSize * 0.8, 5);
-
         ctx.fillStyle = "white";
         ctx.font = "bold 12px Arial";
-        ctx.fillText("Lv." + this.level, this.x + 5, this.y + 15);
+        ctx.textAlign = "left";
+        ctx.shadowBlur = 3;
+        ctx.shadowColor = "black";
+        ctx.fillText("Lv." + this.level, this.x + 8, this.y + 18);
 
         if (this.isBuffed) {
             ctx.fillStyle = "#2ecc71";
@@ -274,6 +273,7 @@ class Insurance {
             ctx.textAlign = "center";
             ctx.fillText("+", this.x + center, this.y + center);
         }
+
         ctx.restore();
     }
 
@@ -326,6 +326,43 @@ class Insurance {
                 this.healTimer = 0;
             }
         }
+    }
+
+    drawHealthBar() {
+        const barWidth = cellSize * 0.7;
+        const barHeight = 5;
+        const barX = this.x + (cellSize - barWidth) / 2;
+        const barY = this.y + cellSize - 10;
+
+        ctx.save();
+
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(barX, barY, barWidth, barHeight, 2);
+        else ctx.rect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fill();
+
+        const healthPercent = Math.max(0, this.health / this.maxHealth);
+        if (healthPercent > 0) {
+            let healthColor = '#2ecc71';
+            if (healthPercent < 0.3) healthColor = '#e74c3c';
+            else if (healthPercent < 0.6) healthColor = '#f1c40f';
+
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(barX, barY, barWidth * healthPercent, barHeight, 2);
+            else ctx.rect(barX, barY, barWidth * healthPercent, barHeight);
+
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = healthColor;
+            ctx.fillStyle = healthColor;
+            ctx.fill();
+
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight / 2);
+        }
+
+        ctx.restore();
     }
 }
 
@@ -423,7 +460,6 @@ class Risk {
             if (this.attackTimer >= this.attackSpeed) {
                 if (this.targetTower) {
                     this.targetTower.health -= this.damage;
-                    floatingTexts.push(new FloatingText("-" + this.damage, this.targetTower.x + 35, this.targetTower.y, "red"));
                 }
                 this.attackTimer = 0;
             }
@@ -486,14 +522,7 @@ class Risk {
         const centerX = this.x + 35;
         const centerY = this.y + 35;
 
-        const barWidth = 40;
-        const barHeight = 4;
-        const topY = this.y - 15;
-        ctx.fillStyle = 'black';
-        ctx.fillRect(centerX - barWidth / 2, topY, barWidth, barHeight);
-        ctx.fillStyle = 'red';
-        ctx.fillRect(centerX - barWidth / 2, topY, (this.health / this.maxHealth) * barWidth, barHeight);
-
+        ctx.save();
         ctx.translate(centerX, centerY);
 
         if (this.type === 'thief') {
@@ -508,11 +537,9 @@ class Risk {
             }
         } else if (this.type === 'virus') {
             if (virusSprite.complete && virusSprite.naturalWidth > 0) {
-                const fw = 40;
-                const fh = 40;
+                const fw = 40, fh = 40;
                 let sx;
                 let sy = 0;
-
                 if (this.isAttacking) {
                     let attackIdx = 5 + (this.frameIndex % 6);
                     sx = attackIdx * fw;
@@ -520,16 +547,10 @@ class Risk {
                     let walkIdx = this.frameIndex % 4;
                     sx = walkIdx * fw;
                 }
-
-                ctx.drawImage(
-                    virusSprite,
-                    sx, sy, fw, fh,
-                    -20, -20, 40, 40
-                );
+                ctx.drawImage(virusSprite, sx, sy, fw, fh, -20, -20, 40, 40);
             } else {
                 this.drawFallback();
             }
-
         } else {
             ctx.scale(-1, 1);
             if (this.currentFrames && this.currentFrames.length > 0) {
@@ -543,6 +564,39 @@ class Risk {
                 this.drawFallback();
             }
         }
+        ctx.restore();
+
+        const barWidth = 40;
+        const barHeight = 5;
+        const barX = centerX - barWidth / 2;
+        const barY = this.y + 55;
+
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(barX, barY, barWidth, barHeight, 2);
+        else ctx.rect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fill();
+
+        const healthPercent = Math.max(0, this.health / this.maxHealth);
+        if (healthPercent > 0) {
+            let healthColor = '#2ecc71';
+            if (healthPercent < 0.3) healthColor = '#e74c3c';
+            else if (healthPercent < 0.6) healthColor = '#f1c40f';
+
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(barX, barY, barWidth * healthPercent, barHeight, 2);
+            else ctx.rect(barX, barY, barWidth * healthPercent, barHeight);
+
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = healthColor;
+            ctx.fillStyle = healthColor;
+            ctx.fill();
+
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight / 2);
+        }
+
         ctx.restore();
     }
 
@@ -579,8 +633,6 @@ class Bullet {
 
         if (dist < 10) {
             this.target.health -= this.damage;
-
-            floatingTexts.push(new FloatingText("-" + this.damage.toFixed(1), this.target.x + 35, this.target.y + 35, "yellow"));
             this.hit = true;
             return;
         }
@@ -861,9 +913,9 @@ function handleWave() {
         waveInProgress = false;
 
         if (hasPlacedTower) {
-            let bonus = 50;
+            let bonus = 20;
             gold += bonus;
-            floatingTexts.push(new FloatingText(`+${bonus} Gold!`, canvas.width / 2, canvas.height / 2, "#FFD700"));
+            flashHUD('hud-gold', 'animate-gold-add');
         }
 
         if (wave >= 10) {
@@ -995,15 +1047,38 @@ function handleLogic() {
     /* ========= Stage 2 ========= */
     for (let i = enemies.length - 1; i >= 0; i--) {
         let en = enemies[i];
+        let xOff = (Math.random() - 0.5) * 20;
+
+        for (let j = 0; j < enemies.length; j++) {
+            if (i === j) continue;
+            let other = enemies[j];
+            if (other.isDying) continue;
+
+            let dx = en.x - other.x;
+            let dy = en.y - other.y;
+            let distanceSq = dx * dx + dy * dy;
+            let minDistance = 22;
+            if (distanceSq < minDistance * minDistance && distanceSq > 0) {
+                let distance = Math.sqrt(distanceSq);
+                let overlap = minDistance - distance;
+                let separationFactor = 0.05;
+                en.x += (dx / distance) * overlap * separationFactor;
+                en.y += (dy / distance) * overlap * separationFactor;
+            }
+        }
+
         en.blocked = false;
         en.targetTower = null;
 
         towers.forEach(tower => {
-            const buffer = 5;
-            if (en.x + 35 >= tower.x - buffer &&
-                en.x + 35 <= tower.x + cellSize + buffer &&
-                en.y + 35 >= tower.y - buffer &&
-                en.y + 35 <= tower.y + cellSize + buffer) {
+            const buffer = 10;
+            const centerX = en.x + 35;
+            const centerY = en.y + 35;
+
+            if (centerX >= tower.x - buffer &&
+                centerX <= tower.x + cellSize + buffer &&
+                centerY >= tower.y - buffer &&
+                centerY <= tower.y + cellSize + buffer) {
 
                 let shouldStop = false;
                 if (en.type === 'thief' && (tower.type === 'car' || tower.type === 'home')) shouldStop = true;
@@ -1029,18 +1104,24 @@ function handleLogic() {
         if (forceEscape || en.escaped) {
             if (en.type === 'virus') {
                 const hpDeduction = 15;
-                baseHealth -= hpDeduction;
-                floatingTexts.push(new FloatingText(`-${hpDeduction}`, en.x + 35, en.y + 35, "red"));
+                baseHealth = Math.max(0, baseHealth - hpDeduction);
+
+                setStatusMessage(`Virus escaped! No Medical Insurance: -${hpDeduction} HP`);
+
+                flashHUD('hud-hp', 'animate-hp-remove');
             }
 
             else if (en.type === 'thief' || en.type === 'fire' || en.type === 'flood') {
                 const recoverCost = 30;
+                const hpDeduction = 2;
+
                 gold = Math.max(0, gold - recoverCost);
+                baseHealth = Math.max(0, baseHealth - hpDeduction);
 
-                baseHealth -= 2;
+                setStatusMessage(`Uninsured Asset Loss: -$${recoverCost}, -${hpDeduction} HP`);
 
-                floatingTexts.push(new FloatingText(`-$${recoverCost}`, en.x + 35, en.y + 10, "#e74c3c"));
-                floatingTexts.push(new FloatingText("-2 HP (Stress)", en.x + 35, en.y + 35, "orange"));
+                flashHUD('hud-gold', 'animate-gold-remove');
+                flashHUD('hud-hp', 'animate-hp-remove');
             }
 
             if (hudHp) hudHp.innerText = baseHealth;
@@ -1054,6 +1135,7 @@ function handleLogic() {
                 gameState = "gameover";
                 showGameOver();
             }
+
             continue;
         }
 
@@ -1061,13 +1143,15 @@ function handleLogic() {
             en.isDying = true;
             if (en.type === 'virus') {
                 const healAmount = 5;
-                baseHealth = Math.min(100, baseHealth + healAmount); // 假设上限100
-                floatingTexts.push(new FloatingText(`+${healAmount} HP Recovery`, en.x + 35, en.y + 35, "#2ecc71"));
+                baseHealth = Math.min(100, baseHealth + healAmount);
+                setStatusMessage(`Medical Claim Approved! +${healAmount} HP`);
+                flashHUD('hud-hp', 'animate-hp-add');
                 if (hudHp) hudHp.innerText = baseHealth;
             } else if (en.type === 'thief' || en.type === 'fire' || en.type === 'flood') {
-                const claimAmount = 20;
+                const claimAmount = 10;
                 gold += claimAmount;
-                floatingTexts.push(new FloatingText(`+$${claimAmount} Claim`, en.x + 35, en.y + 35, "#FFD700"));
+                setStatusMessage(`Claim Approved! +$${claimAmount}`);
+                flashHUD('hud-gold', 'animate-gold-add');
                 if (hudGold) hudGold.innerText = gold;
             }
             for (let j = 0; j < 10; j++) {
@@ -1156,65 +1240,109 @@ function animate() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-
-    if (gameState === "playing" && !isPaused) {
-        timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
-        const hudTime = document.getElementById("hud-time");
-        if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
-    }
-
     drawGrid();
+    towers.sort((a, b) => a.y - b.y);
+    enemies.sort((a, b) => a.y - b.y);
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].update();
-        particles[i].draw();
-        if (particles[i].alpha <= 0) {
-            particles.splice(i, 1);
-        }
+    towers.forEach(t => t.draw());
+    enemies.forEach(e => e.draw());
+    bullets.forEach(b => b.draw());
+    towers.forEach(t => t.drawHealthBar());
+
+    if (statusMessageTimer > 0) {
+        ctx.save();
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+        ctx.fillRect(20, GAME_HEIGHT - 50, GAME_WIDTH - 40, 32);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(statusMessage, GAME_WIDTH / 2, GAME_HEIGHT - 34);
+
+        ctx.restore();
     }
 
-    if (isPaused) {
-        towers.forEach(t => t.draw());
-        enemies.forEach(e => e.draw());
+    if (isCountingDown) {
+        ctx.save();
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 80px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(resumeCountdown, GAME_WIDTH / 2, GAME_HEIGHT / 2);
+
+        ctx.font = "bold 20px Arial";
+        ctx.fillText("READY? BUILD NOW!", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60);
+        ctx.restore();
+
+        drawHoverEffect();
+
         requestAnimationFrame(animate);
         return;
     }
 
-    if (gameState === "gameOver") {
-        towers.forEach(t => t.draw());
-        enemies.forEach(e => e.draw());
+    if (!isPaused && statusMessageTimer > 0) {
+        statusMessageTimer--;
+    }
+
+    if (isPaused) {
+        requestAnimationFrame(animate);
         return;
     }
 
-    handleLogic();
-    towers.forEach(t => t.draw());
-    enemies.forEach(e => e.draw());
-    bullets.forEach(b => b.draw());
-    floatingTexts.forEach((text, i) => {
-        text.update(); text.draw();
-        if (text.alpha <= 0) floatingTexts.splice(i, 1);
-    });
+    if (gameState === "playing") {
+        timeUsedSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+        const hudTime = document.getElementById("hud-time");
+        if (hudTime) hudTime.innerText = timeUsedSeconds + "s";
+
+        handleLogic();
+    }
+
+    particles.forEach((p, i) => { p.update(); p.draw(); if (p.alpha <= 0) particles.splice(i, 1); });
+    floatingTexts.forEach((text, i) => { text.update(); text.draw(); if (text.alpha <= 0) floatingTexts.splice(i, 1); });
 
     frames++;
     requestAnimationFrame(animate);
 }
 
-pauseBtn.addEventListener("click", () => {
-    isPaused = !isPaused;
+function startResumeCountdown() {
+    isCountingDown = true;
+    resumeCountdown = 3;
 
-    if (isPaused) {
+    canvas.style.filter = "none";
+    canvas.style.pointerEvents = "auto";
+
+    let timer = setInterval(() => {
+        resumeCountdown--;
+        if (resumeCountdown <= 0) {
+            clearInterval(timer);
+            isCountingDown = false;
+
+            if (pauseStartTime) {
+                totalPausedTime += (Date.now() - pauseStartTime);
+                pauseStartTime = null;
+            }
+        }
+    }, 1000);
+}
+
+pauseBtn.addEventListener("click", () => {
+    if (!isPaused) {
+        isPaused = true;
         pauseStartTime = Date.now();
         pauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Resume</span>';
-
-        canvas.style.filter = "blur(10px)";
         canvas.style.pointerEvents = "none";
     } else {
-        if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
+        isPaused = false;
         pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause Game</span>';
         settingsMenu.style.display = "none";
 
-        canvas.style.filter = "none";
-        canvas.style.pointerEvents = "auto";
+        startResumeCountdown();
     }
 });
 
@@ -1279,6 +1407,7 @@ closeTutorial.addEventListener("click", () => {
 
     isPaused = false;
     tutorialModal.style.display = "none";
+    startResumeCountdown();
 
     if (pauseStartTime) totalPausedTime += (Date.now() - pauseStartTime);
 });
@@ -1286,6 +1415,26 @@ closeTutorial.addEventListener("click", () => {
 floatingTexts.push(
     new FloatingText("Wave " + wave, GAME_WIDTH / 2, GAME_HEIGHT / 2, "white")
 );
+
+function flashHUD(elementId, className) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    el.classList.remove('animate-gold-add', 'animate-gold-remove', 'animate-hp-add', 'animate-hp-remove');
+
+    void el.offsetWidth;
+
+    el.classList.add(className);
+
+    setTimeout(() => {
+        el.classList.remove(className);
+    }, 450);
+}
+
+function setStatusMessage(message) {
+    statusMessage = message;
+    statusMessageTimer = 120;
+}
 
 animate();
 
