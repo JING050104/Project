@@ -639,7 +639,7 @@ app.put("/api/admin/edit-user/:id", async (req, res) => {
         }
 
         const checkConflict = await db.execute(
-            "SELECT id FROM users WHERE username = $1 AND id != $2", 
+            "SELECT id FROM users WHERE username = $1 AND id != $2",
             [username, targetUserId]
         );
 
@@ -718,12 +718,12 @@ app.post('/api/admin/vouchers/bulk-delete', async (req, res) => {
 
     try {
         const sql = "DELETE FROM vouchers WHERE id = ANY($1)";
-        
+
         const result = await db.query(sql, [ids]);
 
-        res.json({ 
-            success: true, 
-            message: `${result.rowCount} vouchers deleted successfully.` 
+        res.json({
+            success: true,
+            message: `${result.rowCount} vouchers deleted successfully.`
         });
     } catch (err) {
         console.error("Database Error:", err);
@@ -757,7 +757,15 @@ app.put("/api/admin/edit-voucher/:id", async (req, res) => {
     if (parseInt(stock) < 0) {
         return res.status(400).json({ success: false, message: "Stock cannot be negative." });
     }
-    
+
+    if (parseInt(cost) < 0) {
+        return res.status(400).json({ success: false, message: "Cost cannot be negative." });
+    }
+
+    if (!name || name.trim() === "") {
+        return res.status(400).json({ success: false, message: "Name cannot be empty." });
+    }
+
     try {
         if (!req.isAuthenticated() || String(req.user.role).trim().toLowerCase() !== 'admin') {
             return res.status(403).json({ success: false, message: "Unauthorized" });
