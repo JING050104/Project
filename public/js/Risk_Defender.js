@@ -795,7 +795,6 @@ function showGameOver() {
     let finalPoints = gold;
     if (finalPoints < 0) finalPoints = 0;
 
-    const MIN_TIME = 50;
     const MIN_WAVE = 5;
     const MIN_TOWERS = 3;
     let isCheat = false;
@@ -804,9 +803,6 @@ function showGameOver() {
     if (!hasPlacedTower || totalTowersPlaced < MIN_TOWERS) {
         isCheat = true;
         cheatMessage = `Need to place at least ${MIN_TOWERS} towers.`;
-    } else if (timeUsedSeconds < MIN_TIME) {
-        isCheat = true;
-        cheatMessage = `Game ended too early (Need ${MIN_TIME}s).`;
     } else if (wave < MIN_WAVE) {
         isCheat = true;
         cheatMessage = `You must reach at least Wave ${MIN_WAVE}.`;
